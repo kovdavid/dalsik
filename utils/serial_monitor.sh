@@ -1,3 +1,8 @@
 #!/bin/sh
 
-minicom -b 9600 -D /dev/ttyACM0
+TARGET=${1:-/dev/ttyACM0}
+
+while read -r line < $TARGET; do
+    echo $line
+    echo "$(date '+%FT%T')======"
+done
