@@ -11,5 +11,7 @@ BOOTLOADER_PATH   = caterina
 BOOTLOADER_FILE   = Caterina-promicro16.hex
 ISP_PROG          = usbasp
 AVRDUDE_OPTS      = -v
+USER_LIB_PATH     = /opt/avr/packages/arduino/hardware/avr/1.6.20/libraries
+ARDUINO_LIBS      = EEPROM HID
 
 include /home/davs/workspace/avr/Arduino-Makefile/Arduino.mk
