@@ -23,6 +23,10 @@ void loop()
         delayMicroseconds(500);
     }
 
+    if (Serial.available() > 0) {
+
+    }
+
     unsigned long now_msec = millis();
 
     if ((now_msec - prev_loop_msec) > 1) {

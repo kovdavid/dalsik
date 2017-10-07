@@ -36,12 +36,6 @@ typedef struct {
     uint8_t byte2;
 } KeyGenericBytes;
 
-// KEY
-//  normal       { type = NORMAL_KEY, key = 0x02, 0x00 }
-//  layer        { type = LAYER_KEY, layer = LAYER1, 0x00 }
-//  dual_key     { type = DUAL_KEY, tap_key = 0x02, hold_key = 0x03 }
-//  tapdance_key { type = TAPDANCE_KEY, once_key = 0x02, twice_key = 0x03 }
-
 // EEPROM - 3B/key; 48keys; 6layers; 3*48*6=864B
 // EEPROM for persistence only; it is kept in memory at runtime?
 
@@ -56,7 +50,7 @@ typedef struct {
     };
 } KeyInfo;
 
-class Keymap
+class KeyMap
 {
     private:
         uint8_t eeprom_offset;
@@ -64,7 +58,7 @@ class Keymap
 
         int get_eeprom_address(uint8_t row, uint8_t col);
     public:
-        Keymap(void);
+        KeyMap(void);
         KeyInfo get_key(uint8_t row, uint8_t col);
         void set_layer(uint8_t layer);
         void clear();

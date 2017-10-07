@@ -12,13 +12,12 @@
 
 extern const uint8_t KEYBOARD_HID_DESC[] PROGMEM;
 
-uint8_t keystate[ROW_PIN_COUNT][COL_PIN_COUNT] = {0};
-uint8_t debounce[ROW_PIN_COUNT][COL_PIN_COUNT] = {0};
-KeyReport report;
-
 Keyboard::Keyboard() {
     static HIDSubDescriptor node(KEYBOARD_HID_DESC, sizeof(KEYBOARD_HID_DESC));
     HID().AppendDescriptor(&node);
+
+    memset(this->keystate, 0, sizeof(uint8_t)*ROW_PIN_COUNT*COL_PIN_COUNT);
+    memset(this->debounce, 0, sizeof(uint8_t)*ROW_PIN_COUNT*COL_PIN_COUNT);
 
     for (uint8_t i = 0; i < ROW_PIN_COUNT; i++) {
         pinMode(ROW_PINS[i], INPUT_PULLUP);
@@ -28,7 +27,7 @@ Keyboard::Keyboard() {
     }
 
     this->keys_pressed = 0;
-    keyreport_clear(&(this->_keyReport));
+    keyreport_clear(&(this->keyreport));
 }
 
 void Keyboard::loop(unsigned long now_msec)
@@ -47,19 +46,23 @@ void Keyboard::matrix_scan(unsigned long now_msec)
         digitalWrite(ROW_PINS[row], LOW);
 
         for (int col = 0; col < COL_PIN_COUNT; col++) {
-            int input = digitalRead(COL_PINS[col]);
-            uint8_t debounced_input = debounce_input(&(debounce[row][col]), input);
+            uint8_t input = digitalRead(COL_PINS[col]);
+            uint8_t debounced_input = this->debounce_input(row, col, input);
 
             if (debounced_input == DEBOUNCE_CHANGING) {
                 continue; // Wait, till the value stabilizes
             }
 
-            if (debounced_input != keystate[row][col]) {
-                keystate[row][col] = debounced_input;
+            if (debounced_input != this->keystate[row][col]) {
+                KeyInfo changed_key = this->keymap.get_key(row, col);
+
+                this->keystate[row][col] = debounced_input;
                 if (debounced_input == DEBOUNCE_MAX) {
                     this->keys_pressed++;
+                    keyreport_press_key(&(this->keyreport), changed_key.normal.key);
                 } else {
                     this->keys_pressed--;
+                    keyreport_release_key(&(this->keyreport), changed_key.normal.key);
                     if (this->keys_pressed == 0) {
                         this->clear_report();
                     }
@@ -71,20 +74,21 @@ void Keyboard::matrix_scan(unsigned long now_msec)
     }
 }
 
-uint8_t debounce_input(uint8_t* debounce_state, int input)
+uint8_t Keyboard::debounce_input(uint8_t row, uint8_t col, uint8_t input)
 {
+    uint8_t debounce_state = this->debounce[row][col];
     if (input) {
-        if (*debounce_state > 0) {
-            (*debounce_state)--;
+        if (debounce_state > 0) {
+            this->debounce[row][col]--;
         }
-        if (*debounce_state == 0) {
+        if (debounce_state == 0) {
             return DEBOUNCE_LOW;
         }
     } else {
-        if (*debounce_state < DEBOUNCE_MAX) {
-            (*debounce_state)++;
+        if (debounce_state < DEBOUNCE_MAX) {
+            this->debounce[row][col]++;
         }
-        if (*debounce_state == DEBOUNCE_MAX) {
+        if (debounce_state == DEBOUNCE_MAX) {
             return DEBOUNCE_HIGH;
         }
     }
@@ -94,5 +98,5 @@ uint8_t debounce_input(uint8_t* debounce_state, int input)
 
 void Keyboard::clear_report()
 {
-    memset(&(this->_keyReport), 0, sizeof(KeyReport));
+    memset(&(this->keyreport), 0, sizeof(KeyReport));
 }

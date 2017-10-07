@@ -3,6 +3,7 @@
 
 #define DEBUG 0
 
+#define LAYER_COUNT 6
 #define ROW_PIN_COUNT 4
 #define COL_PIN_COUNT 4
 #define _ROW_PINS A3, A2, A1, A0
