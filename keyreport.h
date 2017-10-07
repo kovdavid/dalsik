@@ -7,6 +7,14 @@ typedef struct {
     uint8_t keys[6];
 } KeyReport;
 
+void keyreport_clear(KeyReport* report);
+void keyreport_press(KeyReport* report, uint8_t keycode);
+void keyreport_release(KeyReport* report, uint8_t keycode);
+void keyreport_press_modifier(KeyReport* report, uint8_t keycode);
+void keyreport_release_modifier(KeyReport* report, uint8_t keycode);
+void keyreport_press_key(KeyReport* report, uint8_t keycode);
+void keyreport_release_key(KeyReport* report, uint8_t keycode);
+
 #endif
 
 // bit number

@@ -3,6 +3,7 @@
 #include "dalsik.h"
 #include "keyboard_hid_desc.h"
 #include "keymap.h"
+#include "keyreport.h"
 
 #define DEBOUNCE_MAX 5
 #define DEBOUNCE_LOW 0x00
@@ -27,6 +28,7 @@ Keyboard::Keyboard() {
     }
 
     this->keys_pressed = 0;
+    keyreport_clear(&(this->_keyReport));
 }
 
 void Keyboard::loop(unsigned long now_msec)
