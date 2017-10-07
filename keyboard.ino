@@ -64,11 +64,11 @@ void Keyboard::matrix_scan(unsigned long now_msec)
                 if (debounced_input == DEBOUNCE_MAX) {
                     this->keys_pressed++;
                     Serial.println("Pressed");
-                    keyreport_press_key(&(this->keyreport), changed_key.normal.key);
+                    keyreport_press(&(this->keyreport), changed_key.normal.key);
                 } else {
                     this->keys_pressed--;
                     Serial.println("Released");
-                    keyreport_release_key(&(this->keyreport), changed_key.normal.key);
+                    keyreport_release(&(this->keyreport), changed_key.normal.key);
                     if (this->keys_pressed == 0) {
                         this->clear_report();
                     }
