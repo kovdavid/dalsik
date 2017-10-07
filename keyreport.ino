@@ -58,7 +58,7 @@ void keyreport_release_key(KeyReport* report, uint8_t keycode)
         if (report->keys[i] == keycode) {
             // shift the rest of the keys to the left
             for (uint8_t j = i; j < 5; j++) {
-                report->keys[j] = report->keys[j+i];
+                report->keys[j] = report->keys[j+1];
             }
             report->keys[5] = 0x00;
             return;
