@@ -56,10 +56,11 @@ class KeyMap
         uint8_t eeprom_offset;
         uint8_t layer_index;
 
-        int get_eeprom_address(uint8_t row, uint8_t col);
+        int get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col);
     public:
         KeyMap(void);
         KeyInfo get_key(uint8_t row, uint8_t col);
+        KeyInfo get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col);
         void set_layer(uint8_t layer);
         void clear();
         void set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key);

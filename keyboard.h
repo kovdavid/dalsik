@@ -8,7 +8,7 @@
 class Keyboard
 {
     private:
-        void send_report(KeyReport* report);
+        void send_report();
         void matrix_scan(unsigned long now_msec);
         void clear_report(void);
         uint8_t debounce_input(uint8_t row, uint8_t col, uint8_t input);

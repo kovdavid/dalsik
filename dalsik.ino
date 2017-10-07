@@ -24,7 +24,7 @@ void loop()
     }
 
     if (Serial.available() > 0) {
-
+        process_serial_command(&keyboard);
     }
 
     unsigned long now_msec = millis();
