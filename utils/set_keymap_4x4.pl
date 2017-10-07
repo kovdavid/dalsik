@@ -5,6 +5,8 @@ use warnings;
 
 my $serial = shift || "/dev/ttyACM0";
 
+`stty -F $serial 9600 raw -echo`;
+
 open my $fh, ">:raw", $serial or die "Could not open $serial";
 
 my $keymap = [

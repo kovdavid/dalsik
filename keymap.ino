@@ -18,9 +18,11 @@ inline int KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col)
 {
     return
         this->eeprom_offset
-        + layer*KEY_COUNT*sizeof(KeyInfo)
-        + row*COL_PIN_COUNT
-        + col;
+        + sizeof(KeyInfo)*(
+            layer*KEY_COUNT
+            + row*COL_PIN_COUNT
+            + col
+        );
 }
 
 KeyInfo KeyMap::get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col)
