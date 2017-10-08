@@ -23,7 +23,7 @@ typedef struct {
 
 typedef struct {
     uint8_t tap_key;
-    uint8_t hold_key;
+    uint8_t hold_modifier;
 } KeyDual;
 
 typedef struct {
@@ -49,6 +49,8 @@ typedef struct {
         KeyGenericBytes generic_bytes;
     };
 } KeyInfo;
+
+inline int keyinfo_compare(KeyInfo key1, KeyInfo key2);
 
 class KeyMap
 {

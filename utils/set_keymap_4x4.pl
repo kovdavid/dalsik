@@ -9,11 +9,13 @@ my $serial = shift || "/dev/ttyACM0";
 
 open my $fh, ">:raw", $serial or die "Could not open $serial";
 
+# \x01 - NORMAL_KEY
+
 my $keymap = [
-    ["\x59", "\x5a", "\x5b", "\x04"],
-    ["\x5c", "\x5d", "\x5e", "\x05"],
-    ["\x5f", "\x60", "\x61", "\x06"],
-    ["\xe1", "\x62", "\x56", "\x07"],
+    ["\x01\x59\x00", "\x01\x5a\x00", "\x01\x5b\x00", "\x01\x04\x00"],
+    ["\x01\x5c\x00", "\x01\x5d\x00", "\x01\x5e\x00", "\x01\x05\x00"],
+    ["\x01\x5f\x00", "\x01\x60\x00", "\x01\x61\x00", "\x01\x06\x00"],
+    ["\x03\x57\xe1", "\x01\x62\x00", "\x01\x56\x00", "\x01\x07\x00"],
 ];
 
 my $row_num = 0;
@@ -21,7 +23,7 @@ for my $row (@{ $keymap }) {
     my $col_num = 0;
     for my $col (@{ $row }) {
         my $prefix = "DAVSSET_KEY\x00".chr($row_num).chr($col_num);
-        unless (print $fh "$prefix\x01${col}\x00\n") {
+        unless (print $fh "$prefix${col}\n") {
             die "Could not print row:$row_num col:$col_num: $!";
         }
         $col_num++;

@@ -67,3 +67,8 @@ void KeyMap::clear()
         EEPROM.update(i, 0x00);
     }
 }
+
+inline int keyinfo_compare(KeyInfo key1, KeyInfo key2)
+{
+    return memcmp(&key1, &key2, sizeof(KeyInfo));
+}

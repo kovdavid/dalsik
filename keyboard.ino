@@ -49,9 +49,9 @@ void Keyboard::matrix_scan(unsigned long now_msec)
                 this->keystate[row][col] = debounced_input;
 
                 if (debounced_input == DEBOUNCE_MAX) {
-                    this->keyreport.press(row, col);
+                    this->keyreport.press(now_msec, row, col);
                 } else {
-                    this->keyreport.release(row, col);
+                    this->keyreport.release(now_msec, row, col);
                 }
 
                 pinMode(ROW_PINS[row], INPUT_PULLUP);

@@ -5,6 +5,7 @@
 KeyReport::KeyReport()
 {
     this->clear();
+    memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
 }
 
 void KeyReport::clear()
@@ -16,7 +17,7 @@ void KeyReport::clear()
     this->keys_pressed = 0;
 }
 
-void KeyReport::press(uint8_t row, uint8_t col)
+void KeyReport::press(unsigned long now_msec, uint8_t row, uint8_t col)
 {
 #if DEBUG
     Serial.print("Pressed key");
@@ -28,6 +29,8 @@ void KeyReport::press(uint8_t row, uint8_t col)
 
     KeyInfo changed_key = this->keymap.get_key(row, col);
 
+    this->dual_state_press_hook(changed_key);
+
     switch (changed_key.type) {
         case KEY_NORMAL:
             this->press_normal_key(changed_key);
@@ -35,11 +38,25 @@ void KeyReport::press(uint8_t row, uint8_t col)
         case KEY_LAYER:
             this->press_layer_key(changed_key);
             break;
+        case KEY_DUAL:
+            this->press_dual_key(changed_key);
+            break;
         default:
             return; // KEY_UNSET + other unknown types
     }
 
     this->send_report();
+}
+
+inline void KeyReport::dual_state_press_hook(KeyInfo key)
+{
+    if (this->dual_key_state.mode == DUAL_MODE_NOT_PRESSED) {
+        return;
+    }
+
+    this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
+    KeyInfo key_info = { KEY_NORMAL, this->dual_key_state.key.hold_modifier, 0x00 };
+    this->press_normal_key(key_info);
 }
 
 inline void KeyReport::press_normal_key(KeyInfo key)
@@ -68,7 +85,20 @@ inline void KeyReport::press_layer_key(KeyInfo key)
     this->keymap.set_layer(key.layer.layer);
 }
 
-void KeyReport::release(uint8_t row, uint8_t col)
+inline void KeyReport::press_dual_key(KeyInfo key)
+{
+    this->dual_key_state.key = key.dual;
+    if (this->keys_pressed > 1) {
+        this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
+
+        KeyInfo key_info = { KEY_NORMAL, key.dual.hold_modifier, 0x00 };
+        this->press_normal_key(key_info);
+    } else {
+        this->dual_key_state.mode = DUAL_MODE_PENDING;
+    }
+}
+
+void KeyReport::release(unsigned long now_msec, uint8_t row, uint8_t col)
 {
 #if DEBUG
     Serial.print("Released key");
@@ -86,6 +116,9 @@ void KeyReport::release(uint8_t row, uint8_t col)
             break;
         case KEY_LAYER:
             this->release_layer_key(changed_key);
+            break;
+        case KEY_DUAL:
+            this->release_dual_key(changed_key);
             break;
     }
 
@@ -121,6 +154,21 @@ inline void KeyReport::release_normal_key(KeyInfo key)
 inline void KeyReport::release_layer_key(KeyInfo key)
 {
     this->keymap.set_layer(0);
+}
+
+inline void KeyReport::release_dual_key(KeyInfo key)
+{
+    if (this->dual_key_state.mode == DUAL_MODE_HOLD_MODIFIER) {
+        KeyInfo key_info = { KEY_NORMAL, key.dual.hold_modifier, 0x00 };
+        this->release_normal_key(key_info);
+    } else {
+        KeyInfo key_info = { KEY_NORMAL, key.dual.tap_key, 0x00 };
+        this->press_normal_key(key_info);
+        this->send_report();
+        this->release_normal_key(key_info);
+    }
+
+    memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
 }
 
 void KeyReport::check_special_keys(unsigned long now_msec)
