@@ -82,7 +82,7 @@ uint8_t execute_command(Keyboard* keyboard)
         if (col >= COL_PIN_COUNT) return 5; // Invalid col
 
         KeyInfo key = { key_b1, key_b2, key_b3 };
-        keyboard->keymap.set_key(layer, row, col, key);
+        keyboard->keyreport.keymap.set_key(layer, row, col, key);
 
         return 0;
     } else if (memcmp(buffer, CMD_GET_KEY_PREFIX, sizeof(CMD_GET_KEY_PREFIX)) == 0) {
@@ -107,7 +107,7 @@ uint8_t execute_command(Keyboard* keyboard)
         if (row >= ROW_PIN_COUNT) return 8; // Invalid row
         if (col >= COL_PIN_COUNT) return 9; // Invalid col
 
-        KeyInfo key = keyboard->keymap.get_key_from_layer(layer, row, col);
+        KeyInfo key = keyboard->keyreport.keymap.get_key_from_layer(layer, row, col);
 
         Serial.print("KEY|");
         Serial.print(key.type);
@@ -120,7 +120,7 @@ uint8_t execute_command(Keyboard* keyboard)
         return 0;
     } else if (memcmp(buffer, CMD_CLEAR_KEYMAP, sizeof(CMD_CLEAR_KEYMAP)) == 0) {
         Serial.println("Clearing keymap");
-        keyboard->keymap.clear();
+        keyboard->keyreport.keymap.clear();
         Serial.println("Keymap cleared");
         return 0;
     } else if (memcmp(buffer, CMD_PING, sizeof(CMD_PING)) == 0) {

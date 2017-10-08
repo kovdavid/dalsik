@@ -1,19 +1,38 @@
 #ifndef KEYREPORT_h
 #define KEYREPORT_h
 
+#include "keymap.h"
+
 typedef struct {
     uint8_t modifiers;
     uint8_t reserved;
     uint8_t keys[6];
-} KeyReport;
+} HIDKeyboardReport;
 
-void keyreport_clear(KeyReport* report);
-void keyreport_press(KeyReport* report, uint8_t keycode);
-void keyreport_release(KeyReport* report, uint8_t keycode);
-void keyreport_press_modifier(KeyReport* report, uint8_t keycode);
-void keyreport_release_modifier(KeyReport* report, uint8_t keycode);
-void keyreport_press_key(KeyReport* report, uint8_t keycode);
-void keyreport_release_key(KeyReport* report, uint8_t keycode);
+class KeyReport
+{
+    private:
+        void print_to_serial();
+    public:
+        KeyReport(void);
+
+        void clear();
+        void send_report();
+        void check_special_keys(unsigned long now_msec);
+
+        void press(uint8_t row, uint8_t col);
+        void press_normal_key(KeyInfo key);
+        void press_layer_key(KeyInfo key);
+
+        void release(uint8_t row, uint8_t col);
+        void release_normal_key(KeyInfo key);
+        void release_layer_key(KeyInfo key);
+
+        HIDKeyboardReport hid_report;
+        KeyMap keymap;
+        uint8_t keys_pressed;
+};
+
 
 #endif
 

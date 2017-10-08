@@ -41,18 +41,3 @@ void loop()
     // MCUCR |= _BV(JTD);
     // MCUCR |= _BV(JTD);
 // #endif
-
-// KeyReport report = {0};
-// report.keys[0] = 0x04;
-// keyboard_send_report(&report);
-// report.keys[0] = key;
-// sendKeyReport(&report);
-// delay(10);
-// report.keys[0] = 0x00;
-// sendKeyReport(&report);
-
-// if (Serial.available() > 0) {
-    // int c = Serial.read();
-    // key = c;
-    // Serial.println("OK");
-// }
