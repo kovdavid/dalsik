@@ -4,7 +4,7 @@
 
 #define BUFFER_SIZE 64
 
-static const char PREFIX[] = { 'D', 'A', 'L', 'S', 'I', 'K' };
+static const char PREFIX[] = { 'D', 'A', 'L', 'S', 'I', 'K', '-' };
 static const char CMD_SET_KEY_PREFIX[] = { 'S', 'E', 'T', '_', 'K', 'E', 'Y' };
 static const char CMD_GET_KEY_PREFIX[] = { 'G', 'E', 'T', '_', 'K', 'E', 'Y' };
 static const char CMD_CLEAR_KEYMAP[] = { 'C', 'L', 'E', 'A', 'R', '_', 'E', 'E', 'P', 'R', 'O', 'M' };

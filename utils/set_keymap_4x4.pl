@@ -22,7 +22,7 @@ my $row_num = 0;
 for my $row (@{ $keymap }) {
     my $col_num = 0;
     for my $col (@{ $row }) {
-        my $prefix = "DALSIKSET_KEY\x00".chr($row_num).chr($col_num);
+        my $prefix = "DALSIK-SET_KEY\x00".chr($row_num).chr($col_num);
         unless (print $fh "$prefix${col}\n") {
             die "Could not print row:$row_num col:$col_num: $!";
         }
