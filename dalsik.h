@@ -22,8 +22,13 @@
 #define ROW_PIN_COUNT 4
 #define ONE_SIDE_COL_PIN_COUNT 4
 #define BOTH_SIDE_COL_PIN_COUNT 2*ONE_SIDE_COL_PIN_COUNT
-#define _ROW_PINS A3, A2, A1, A0
-#define _COL_PINS 15, 14, 16, 10
+#define _ROW_PINS 6, 7, 8, 9
+#define _COL_PINS A1, A0, 15, 14
+// FULL _COL_PINS A1, A0, 15, 14, 16, 10
+
+#define USE_ON_OFF_PIN 1
+#define ONOFF_OUT_PIN 4
+#define ONOFF_IN_PIN 5
 
 const uint8_t ROW_PINS[ROW_PIN_COUNT] = { _ROW_PINS };
 const uint8_t COL_PINS[ONE_SIDE_COL_PIN_COUNT] = { _COL_PINS };

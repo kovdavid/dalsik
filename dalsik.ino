@@ -3,9 +3,7 @@
 #include "master_report.h"
 #include "slave_report.h"
 #include <Wire.h>
-
-#define ONOFF_OUT_PIN 9
-#define ONOFF_IN_PIN 8
+#include <avr/io.h>
 
 Keyboard keyboard;
 KeyMap keymap;
@@ -19,26 +17,35 @@ SlaveReport slave_report;
 uint8_t I2C_read_from_slave = 0;
 
 void setup() {
+    // Disable JTAG, so we can use PORTF
+    MCUCR |= _BV(JTD);
+    MCUCR |= _BV(JTD);
+
+#if USE_ON_OFF_PIN
     pinMode(ONOFF_IN_PIN, INPUT_PULLUP);
     pinMode(ONOFF_OUT_PIN, OUTPUT);
     digitalWrite(ONOFF_OUT_PIN, LOW);
+#endif
 
 #if I2C_MASTER
     Wire.begin(I2C_MASTER_ADDRESS);
     Wire.onReceive(I2C_receive_event);
-    Serial.begin(125000);
+    Serial.begin(115200);
 #else
     Wire.begin(I2C_SLAVE_ADDRESS);
 #endif
+    // Wire.setClock(400000);
 
     delay(300);
 }
 
 void loop() {
+#if USE_ON_OFF_PIN
     // Turn off the whole keyboard with a switch
     while (digitalRead(ONOFF_IN_PIN) == HIGH) {
         delayMicroseconds(500);
     }
+#endif
 
 #if I2C_MASTER
     if (Serial.available() > 0) {
