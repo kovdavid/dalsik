@@ -9,6 +9,7 @@ Just for fun :) I made this to see if I can do it and to learn. The list of feat
 * Layers
 * DualKey - tap for standard key, hold with other key for modifier (like CTRL+ESC on a single key)
 * Designed for the [Let's Split](https://github.com/nicinabox/lets-split-guide) keyboard by [wootpatoot](https://www.reddit.com/user/wootpatoot)
+* Split keyboard support via I2C
 
 ### Inspired by
 
