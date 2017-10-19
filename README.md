@@ -16,6 +16,5 @@ To flash the atmega32u4, use the [Arduino IDE](https://www.arduino.cc). Set `I2C
 Depending on which half you want to connect via USB, set the `MASTER_SIDE` value in `dalsik.h` to `MASTER_SIDE_LEFT` or `MASTER_SIDE_RIGHT`.
 
 ### Inspired by
-[Animus firmware](https://github.com/blahlicus/animus-family)
-[QMK](https://github.com/qmk/qmk_firmware)
-
+* [Animus firmware](https://github.com/blahlicus/animus-family)
+* [QMK](https://github.com/qmk/qmk_firmware)
