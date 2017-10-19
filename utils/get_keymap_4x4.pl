@@ -11,7 +11,7 @@ open my $fh, "+<:raw", $serial or die "Could not open $serial";
 
 for my $row (0..3) {
     for my $col (0..3) {
-        my $cmd = "DAVSGET_KEY\x00".chr($row).chr($col);
+        my $cmd = "DALSIKGET_KEY\x00".chr($row).chr($col);
 
         unless (print $fh "$cmd\n") {
             die "Could send command row:$row col:$col: $!";
