@@ -24,11 +24,7 @@ void setup() {
     pinMode(ONOFF_OUT_PIN, OUTPUT);
     digitalWrite(ONOFF_OUT_PIN, LOW);
 
-#if I2C_MASTER
-    I2C_master_init();
-#else
-    I2C_slave_init();
-#endif
+    I2C_init();
 
 #if I2C_MASTER
     Serial.begin(9600);
@@ -37,13 +33,13 @@ void setup() {
     delay(300);
 }
 
-inline void I2C_master_init() {
+inline void I2C_init() {
+#if I2C_MASTER
     Wire.begin(I2C_MASTER_ADDRESS);
     Wire.onReceive(I2C_receive_event);
-}
-
-inline void I2C_slave_init() {
+#else
     Wire.begin(I2C_SLAVE_ADDRESS);
+#endif
 }
 
 void loop() {
@@ -77,6 +73,7 @@ void loop() {
     }
 }
 
+#if I2C_MASTER
 void read_changed_key_from_slave() {
     uint8_t buffer[3] = { 0 };
     uint8_t buffer_index = 0;
@@ -104,3 +101,4 @@ void I2C_receive_event(int count) {
     Serial.print("\n");
 #endif
 }
+#endif
