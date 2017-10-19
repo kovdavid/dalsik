@@ -4,12 +4,6 @@
 
 KeyMap::KeyMap() {
     this->layer_index = 0;
-    this->toggled_layer_index = 0;
-}
-
-void KeyMap::toggle_layer(uint8_t layer) {
-    this->layer_index = layer;
-    this->toggled_layer_index = layer;
 }
 
 void KeyMap::set_layer(uint8_t layer) {
