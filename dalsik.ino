@@ -23,22 +23,15 @@ void setup() {
     pinMode(ONOFF_OUT_PIN, OUTPUT);
     digitalWrite(ONOFF_OUT_PIN, LOW);
 
-    I2C_init();
-
-#if I2C_MASTER
-    Serial.begin(9600);
-#endif
-
-    delay(300);
-}
-
-inline void I2C_init() {
 #if I2C_MASTER
     Wire.begin(I2C_MASTER_ADDRESS);
     Wire.onReceive(I2C_receive_event);
+    Serial.begin(125000);
 #else
     Wire.begin(I2C_SLAVE_ADDRESS);
 #endif
+
+    delay(300);
 }
 
 void loop() {
