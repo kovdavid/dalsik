@@ -1,13 +1,46 @@
 #include "EEPROM.h"
 #include "dalsik.h"
 #include "keymap.h"
+#include "array_utils.h"
 
 KeyMap::KeyMap() {
     this->layer_index = 0;
+    this->toggled_layer_index = 0;
+    this->clear();
 }
 
 void KeyMap::set_layer(uint8_t layer) {
     this->layer_index = layer;
+    append_uniq_to_uint8_array(this->layer_history, LAYER_HISTORY_CAPACITY, layer);
+}
+
+// We could have pressed multiple layer keys, so releasing one means we switch to the other one
+void KeyMap::remove_layer(uint8_t layer) {
+    remove_uniq_from_uint8_array(this->layer_history, LAYER_HISTORY_CAPACITY, layer);
+    uint8_t prev_layer = last_nonzero_elem_of_uint8_array(
+        this->layer_history, LAYER_HISTORY_CAPACITY
+    );
+    if (prev_layer > 0) {
+        this->layer_index = prev_layer;
+    }
+}
+
+void KeyMap::toggle_layer(uint8_t layer) {
+    if (this->toggled_layer_index == layer) {
+        this->toggled_layer_index = 0;
+        this->remove_layer(layer);
+    } else {
+        this->toggled_layer_index = layer;
+        this->set_layer(layer);
+    }
+}
+
+void KeyMap::clear() {
+    this->layer_index = 0;
+    memset(this->layer_history, 0, LAYER_HISTORY_CAPACITY);
+    if (this->toggled_layer_index > 0) {
+        this->set_layer(this->toggled_layer_index);
+    }
 }
 
 inline int KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col) {

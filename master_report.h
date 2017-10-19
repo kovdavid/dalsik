@@ -1,13 +1,15 @@
-#ifndef MASTER_REPORT_h
-#define MASTER_REPORT_h
+#ifndef MASTER_REPORT_H
+#define MASTER_REPORT_H
 
 #include "keyboard.h"
 #include "keymap.h"
 
+#define HID_KEYS_COUNT 6
+
 typedef struct {
     uint8_t modifiers;
     uint8_t reserved;
-    uint8_t keys[6];
+    uint8_t keys[HID_KEYS_COUNT];
 } HIDKeyboardReport;
 
 #define DUAL_MODE_NOT_PRESSED   0x00
@@ -36,11 +38,13 @@ class MasterReport {
         void press(KeyInfo key_info);
         void press_normal_key(KeyInfo key_info);
         void press_layer_key(KeyInfo key_info);
+        void press_toggle_layer_key(KeyInfo key_info);
         void press_dual_key(KeyInfo key_info);
 
         void release(KeyInfo key_info);
         void release_normal_key(KeyInfo key_info);
         void release_layer_key(KeyInfo key_info);
+        void release_toggle_layer_key(KeyInfo key_info);
         void release_dual_key(KeyInfo key_info);
 
         HIDKeyboardReport hid_report;

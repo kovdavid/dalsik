@@ -1,5 +1,5 @@
-#ifndef KEYMAP_h
-#define KEYMAP_h
+#ifndef KEYMAP_H
+#define KEYMAP_H
 
 #include "dalsik.h"
 
@@ -20,6 +20,9 @@
 
 // EEPROM - 2B/key; 24keys; 6layers; 2*24*6=288B
 
+// 10 fingers; we won't support pressing more layers than 10 at once.
+#define LAYER_HISTORY_CAPACITY 10
+
 typedef struct {
     uint8_t type;
     uint8_t key;
@@ -33,6 +36,8 @@ const inline char* key_type_to_string(KeyInfo key_info);
 class KeyMap {
     private:
         uint8_t layer_index;
+        uint8_t toggled_layer_index;
+        uint8_t layer_history[LAYER_HISTORY_CAPACITY];
 
         int get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col);
     public:
@@ -42,7 +47,10 @@ class KeyMap {
         KeyInfo get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col);
         void set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key);
         void set_layer(uint8_t layer);
+        void remove_layer(uint8_t layer);
+        void toggle_layer(uint8_t layer);
         void eeprom_clear();
+        void clear();
 };
 
 #endif

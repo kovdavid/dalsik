@@ -1,5 +1,5 @@
-#ifndef KEYBOARD_h
-#define KEYBOARD_h
+#ifndef KEYBOARD_H
+#define KEYBOARD_H
 
 #include "dalsik.h"
 

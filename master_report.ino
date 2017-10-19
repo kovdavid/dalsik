@@ -2,6 +2,7 @@
 #include "HID.h"
 #include "keyboard_hid_desc.h"
 #include "keymap.h"
+#include "array_utils.h"
 
 MasterReport::MasterReport(KeyMap* keymap) {
     this->keymap = keymap;
@@ -16,7 +17,7 @@ void MasterReport::clear() {
 
     this->num_keys_pressed = 0;
 
-    this->keymap->set_layer(0);
+    this->keymap->clear();
 }
 
 void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
@@ -51,6 +52,8 @@ void MasterReport::press(KeyInfo key_info) {
         this->press_normal_key(key_info);
     } else if (key_info.type == KEY_LAYER_PRESS) {
         this->press_layer_key(key_info);
+    } else if (key_info.type == KEY_LAYER_TOGGLE) {
+        this->press_toggle_layer_key(key_info);
     } else if (is_dual_key(key_info)) {
         this->press_dual_key(key_info);
     } else {
@@ -76,20 +79,16 @@ inline void MasterReport::press_normal_key(KeyInfo key_info) {
         uint8_t bitmask = 1 << modifier_bit;
         this->hid_report.modifiers |= bitmask;
     } else { // key
-        for (uint8_t i = 0; i < 6; i++) {
-            if (this->hid_report.keys[i] == key) {
-                return; // already pressed
-            }
-            if (this->hid_report.keys[i] == 0x00) {
-                this->hid_report.keys[i] = key;
-                return;
-            }
-        }
+        append_uniq_to_uint8_array(this->hid_report.keys, HID_KEYS_COUNT, key);
     }
 }
 
 inline void MasterReport::press_layer_key(KeyInfo key_info) {
     this->keymap->set_layer(key_info.key);
+}
+
+inline void MasterReport::press_toggle_layer_key(KeyInfo key_info) {
+    this->keymap->toggle_layer(key_info.key);
 }
 
 inline void MasterReport::press_dual_key(KeyInfo key_info) {
@@ -121,6 +120,8 @@ void MasterReport::release(KeyInfo key_info) {
         this->release_normal_key(key_info);
     } else if (key_info.type == KEY_LAYER_PRESS) {
         this->release_layer_key(key_info);
+    } else if (key_info.type == KEY_LAYER_TOGGLE) {
+        this->release_toggle_layer_key(key_info);
     } else if (is_dual_key(key_info)) {
         this->release_dual_key(key_info);
     } else {
@@ -142,21 +143,16 @@ inline void MasterReport::release_normal_key(KeyInfo key_info) {
         uint8_t bitmask = (1 << modifier_bit) ^ 0xFF;
         this->hid_report.modifiers &= bitmask;
     } else { // key
-        for (uint8_t i = 0; i < 6; i++) {
-            if (this->hid_report.keys[i] == key) {
-                // shift the rest of the keys to the left
-                for (uint8_t j = i; j < 5; j++) {
-                    this->hid_report.keys[j] = this->hid_report.keys[j+1];
-                }
-                this->hid_report.keys[5] = 0x00;
-                return;
-            }
-        }
+        remove_uniq_from_uint8_array(this->hid_report.keys, HID_KEYS_COUNT, key);
     }
 }
 
 inline void MasterReport::release_layer_key(KeyInfo key_info) {
-    this->keymap->set_layer(0);
+    this->keymap->remove_layer(key_info.key);
+}
+
+inline void MasterReport::release_toggle_layer_key(KeyInfo key_info) {
+    // do nothing; toggle_layer key has only effect on press
 }
 
 inline void MasterReport::release_dual_key(KeyInfo key_info) {
