@@ -3,7 +3,6 @@
 #include "keymap.h"
 
 KeyMap::KeyMap() {
-    uint8_t offset = EEPROM.read(0x00);
     this->layer_index = 0;
     this->toggled_layer_index = 0;
 }
@@ -18,7 +17,7 @@ void KeyMap::set_layer(uint8_t layer) {
 }
 
 inline int KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col) {
-    return sizeof(KeyInfo)*( layer*KEY_COUNT + row*COL_PIN_COUNT + col );
+    return sizeof(KeyInfo)*( layer*KEY_COUNT + row*BOTH_SIDE_COL_PIN_COUNT + col );
 }
 
 KeyInfo KeyMap::get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col) {

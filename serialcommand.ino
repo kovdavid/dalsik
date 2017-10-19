@@ -76,7 +76,7 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
 
         if (layer >= LAYER_COUNT) return 3; // Invalid layer
         if (row >= ROW_PIN_COUNT) return 4; // Invalid row
-        if (col >= COL_PIN_COUNT) return 5; // Invalid col
+        if (col >= BOTH_SIDE_COL_PIN_COUNT) return 5; // Invalid col
 
         KeyInfo key_info = { key_type, key };
         keymap->set_key(layer, row, col, key_info);
@@ -104,7 +104,7 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
 
         if (layer >= LAYER_COUNT) return 7; // Invalid layer
         if (row >= ROW_PIN_COUNT) return 8; // Invalid row
-        if (col >= COL_PIN_COUNT) return 9; // Invalid col
+        if (col >= BOTH_SIDE_COL_PIN_COUNT) return 9; // Invalid col
 
         KeyInfo key_info = keymap->get_key_from_layer(layer, row, col);
 

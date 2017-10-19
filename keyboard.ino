@@ -13,13 +13,13 @@ Keyboard::Keyboard() {
     static HIDSubDescriptor node(KEYBOARD_HID_DESC, sizeof(KEYBOARD_HID_DESC));
     HID().AppendDescriptor(&node);
 
-    memset(this->keystate, 0, sizeof(uint8_t)*ROW_PIN_COUNT*COL_PIN_COUNT);
-    memset(this->debounce, 0, sizeof(uint8_t)*ROW_PIN_COUNT*COL_PIN_COUNT);
+    memset(this->keystate, 0, sizeof(uint8_t)*ROW_PIN_COUNT*ONE_SIDE_COL_PIN_COUNT);
+    memset(this->debounce, 0, sizeof(uint8_t)*ROW_PIN_COUNT*ONE_SIDE_COL_PIN_COUNT);
 
     for (uint8_t i = 0; i < ROW_PIN_COUNT; i++) {
         pinMode(ROW_PINS[i], INPUT_PULLUP);
     }
-    for (uint8_t i = 0; i < COL_PIN_COUNT; i++) {
+    for (uint8_t i = 0; i < ONE_SIDE_COL_PIN_COUNT; i++) {
         pinMode(COL_PINS[i], INPUT_PULLUP);
     }
 }
@@ -29,7 +29,7 @@ ChangedKeyCoords Keyboard::matrix_scan() {
         pinMode(ROW_PINS[row], OUTPUT);
         digitalWrite(ROW_PINS[row], LOW);
 
-        for (uint8_t col = 0; col < COL_PIN_COUNT; col++) {
+        for (uint8_t col = 0; col < ONE_SIDE_COL_PIN_COUNT; col++) {
             uint8_t input = !digitalRead(COL_PINS[col]);
             uint8_t debounced_input = this->debounce_input(row, col, input);
 
@@ -80,14 +80,14 @@ uint8_t Keyboard::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
 
 // The keymap is on the master, so the two splits should act as one keyboard
 // Therefore depending on the MASTER_SIDE we need to adjust the col value
-// Essentially the right half should add COL_PIN_COUNT to col, because column numbering
+// Essentially the right half should add ONE_SIDE_COL_PIN_COUNT to col, because column numbering
 // goes from left to right, no matter which side is the master (master is connected via USB)
 inline uint8_t get_normalized_col(uint8_t col) {
 #if I2C_MASTER && MASTER_SIDE == MASTER_SIDE_RIGHT
-    return col + COL_PIN_COUNT;
+    return col + ONE_SIDE_COL_PIN_COUNT;
 #endif
 #if I2C_SLAVE && MASTER_SIDE == MASTER_SIDE_LEFT
-    return col + COL_PIN_COUNT;
+    return col + ONE_SIDE_COL_PIN_COUNT;
 #endif
     return col;
 }

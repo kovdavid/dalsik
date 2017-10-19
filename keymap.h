@@ -3,7 +3,7 @@
 
 #include "dalsik.h"
 
-#define KEY_COUNT ROW_PIN_COUNT * COL_PIN_COUNT
+#define KEY_COUNT ROW_PIN_COUNT * BOTH_SIDE_COL_PIN_COUNT
 
 #define KEY_UNSET        0x00
 #define KEY_NORMAL       0x01
