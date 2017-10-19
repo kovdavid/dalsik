@@ -15,6 +15,8 @@ void MasterReport::clear() {
     memset(this->hid_report.keys, 0, 6);
 
     this->num_keys_pressed = 0;
+
+    this->keymap->set_layer(0);
 }
 
 void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
