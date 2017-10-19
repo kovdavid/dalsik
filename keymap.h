@@ -32,7 +32,6 @@ const inline char* key_type_to_string(KeyInfo key_info);
 
 class KeyMap {
     private:
-        uint8_t eeprom_offset;
         uint8_t layer_index;
         uint8_t toggled_layer_index;
 

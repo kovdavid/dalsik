@@ -4,7 +4,6 @@
 
 KeyMap::KeyMap() {
     uint8_t offset = EEPROM.read(0x00);
-    this->eeprom_offset = offset;
     this->layer_index = 0;
     this->toggled_layer_index = 0;
 }
@@ -19,13 +18,7 @@ void KeyMap::set_layer(uint8_t layer) {
 }
 
 inline int KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col) {
-    return
-        this->eeprom_offset
-        + sizeof(KeyInfo)*(
-            layer*KEY_COUNT
-            + row*COL_PIN_COUNT
-            + col
-        );
+    return sizeof(KeyInfo)*( layer*KEY_COUNT + row*COL_PIN_COUNT + col );
 }
 
 KeyInfo KeyMap::get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col) {
@@ -58,8 +51,7 @@ void KeyMap::set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key_info) 
 }
 
 void KeyMap::eeprom_clear() {
-    EEPROM.update(0, 0x01); // eeprom_offset
-    for (uint32_t i = 1; i < EEPROM.length(); i++) {
+    for (uint32_t i = 0; i < EEPROM.length(); i++) {
         EEPROM.update(i, 0x00);
     }
 }
