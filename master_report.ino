@@ -61,13 +61,11 @@ void MasterReport::press(KeyInfo key_info) {
 }
 
 inline void MasterReport::press_hook_for_dual_keys() {
-    if (this->dual_key_state.mode == DUAL_MODE_NOT_PRESSED) {
-        return;
+    if (this->dual_key_state.mode == DUAL_MODE_PENDING) {
+        this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
+        KeyInfo key_info = { KEY_NORMAL, get_dual_key_modifier(this->dual_key_state.key_info) };
+        this->press_normal_key(key_info);
     }
-
-    this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
-    KeyInfo key_info = { KEY_NORMAL, get_dual_key_modifier(this->dual_key_state.key_info) };
-    this->press_normal_key(key_info);
 }
 
 inline void MasterReport::press_normal_key(KeyInfo key_info) {
@@ -95,18 +93,16 @@ inline void MasterReport::press_layer_key(KeyInfo key_info) {
 }
 
 inline void MasterReport::press_dual_key(KeyInfo key_info) {
-    if (this->dual_key_state.mode != DUAL_MODE_NOT_PRESSED) {
-        return;
-    }
-
-    this->dual_key_state.key_info = key_info;
-    if (this->num_keys_pressed > 1) {
-        this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
-
-        KeyInfo key_info = { KEY_NORMAL, get_dual_key_modifier(key_info) };
-        this->press_normal_key(key_info);
+    if (this->dual_key_state.mode == DUAL_MODE_NOT_PRESSED) {
+        this->dual_key_state.key_info = key_info;
+        if (this->num_keys_pressed > 1) {
+            this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
+            this->press_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
+        } else {
+            this->dual_key_state.mode = DUAL_MODE_PENDING;
+        }
     } else {
-        this->dual_key_state.mode = DUAL_MODE_PENDING;
+        this->press_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
     }
 }
 
@@ -164,18 +160,22 @@ inline void MasterReport::release_layer_key(KeyInfo key_info) {
 }
 
 inline void MasterReport::release_dual_key(KeyInfo key_info) {
-    if (this->dual_key_state.mode == DUAL_MODE_HOLD_MODIFIER) {
-        KeyInfo key_info = { KEY_NORMAL, get_dual_key_modifier(key_info) };
-        this->release_normal_key(key_info);
-    } else {
-        this->dual_key_state.mode = DUAL_MODE_TAP_KEY;
-        KeyInfo key_info = { KEY_NORMAL, key_info.key };
-        this->press_normal_key(key_info);
-        this->send_report();
-        this->release_normal_key(key_info);
-    }
+    if (key_info_compare(key_info, this->dual_key_state.key_info) == 0) {
+        if (this->dual_key_state.mode == DUAL_MODE_HOLD_MODIFIER) {
+            this->release_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
+        } else {
+            this->dual_key_state.mode = DUAL_MODE_TAP_KEY;
+            KeyInfo key_info = { KEY_NORMAL, key_info.key };
+            this->press_normal_key(key_info);
+            this->send_report();
+            this->release_normal_key(key_info);
+        }
 
-    memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
+        memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
+    } else {
+        // There were more dual_keys pressed, this one is not the first
+        this->release_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
+    }
 }
 
 void MasterReport::check_special_keys() {}

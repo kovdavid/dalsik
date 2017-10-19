@@ -25,7 +25,7 @@ typedef struct {
     uint8_t key;
 } KeyInfo;
 
-inline int keyinfo_compare(KeyInfo key_info1, KeyInfo key_info2);
+inline int key_info_compare(KeyInfo key_info1, KeyInfo key_info2);
 inline uint8_t get_dual_key_modifier(KeyInfo key_info);
 inline uint8_t is_dual_key(KeyInfo key_info);
 const inline char* key_type_to_string(KeyInfo key_info);

@@ -49,8 +49,8 @@ void KeyMap::eeprom_clear() {
     }
 }
 
-inline int keyinfo_compare(KeyInfo key1, KeyInfo key2) {
-    return memcmp(&key1, &key2, sizeof(KeyInfo));
+inline int key_info_compare(KeyInfo key_info1, KeyInfo key_info2) {
+    return memcmp(&key_info1, &key_info2, sizeof(KeyInfo));
 }
 
 inline uint8_t get_dual_key_modifier(KeyInfo key_info) {
