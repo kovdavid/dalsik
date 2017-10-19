@@ -11,5 +11,6 @@ Just for fun :) I made this to see if I can do it and to learn. The list of feat
 * Designed for the [Let's Split](https://github.com/nicinabox/lets-split-guide) keyboard by [wootpatoot](https://www.reddit.com/user/wootpatoot)
 
 ### Inspired by
-[Animus firmware](https://github.com/blahlicus/animus-family)
-[QMK](https://github.com/qmk/qmk_firmware)
+
+* [Animus firmware](https://github.com/blahlicus/animus-family)
+* [QMK](https://github.com/qmk/qmk_firmware)
