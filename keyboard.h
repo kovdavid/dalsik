@@ -3,6 +3,10 @@
 
 #include "dalsik.h"
 
+#define DEBOUNCE_MAX 0x02
+#define DEBOUNCE_LOW 0x00
+#define DEBOUNCE_CHANGING 0xFF
+
 #define EVENT_NONE 0x00
 #define EVENT_KEY_PRESS 0x01
 #define EVENT_KEY_RELEASE 0x02

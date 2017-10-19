@@ -7,7 +7,6 @@
 #define ONOFF_OUT_PIN 9
 #define ONOFF_IN_PIN 8
 
-unsigned long prev_loop_msec = 0;
 Keyboard keyboard;
 KeyMap keymap;
 
@@ -58,19 +57,25 @@ void loop() {
     }
 #endif
 
-    unsigned long now_msec = millis();
-    if ((now_msec - prev_loop_msec) > 0) {
-        prev_loop_msec = now_msec;
+    ChangedKeyCoords coords = keyboard.matrix_scan();
 
-        ChangedKeyCoords coords = keyboard.matrix_scan();
-#if I2C_MASTER
-        master_report.handle_changed_key(coords);
-#else
-        slave_report.handle_changed_key(coords);
-#endif
-    } else {
-        delayMicroseconds(500);
+#if DEBUG
+    if (coords.type != EVENT_NONE) {
+        unsigned long now = millis();
+        Serial.print("keyevent:");
+        Serial.print(coords.type, HEX);
+        Serial.print(" now:");
+        Serial.println(now);
     }
+#endif
+
+#if I2C_MASTER
+    master_report.handle_changed_key(coords);
+#else
+    slave_report.handle_changed_key(coords);
+#endif
+
+    delayMicroseconds(30);
 }
 
 #if I2C_MASTER
