@@ -13,8 +13,7 @@ typedef struct {
     uint8_t col;
 } ChangedKeyCoords;
 
-class Keyboard
-{
+class Keyboard {
     private:
         uint8_t debounce_input(uint8_t row, uint8_t col, uint8_t input);
 

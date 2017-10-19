@@ -20,8 +20,7 @@ typedef struct {
     KeyInfo key_info;
 } DualKeyState;
 
-class MasterReport
-{
+class MasterReport {
     private:
         void print_to_serial();
     public:

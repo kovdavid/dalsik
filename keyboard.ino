@@ -24,8 +24,7 @@ Keyboard::Keyboard() {
     }
 }
 
-ChangedKeyCoords Keyboard::matrix_scan()
-{
+ChangedKeyCoords Keyboard::matrix_scan() {
     for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
         pinMode(ROW_PINS[row], OUTPUT);
         digitalWrite(ROW_PINS[row], LOW);
@@ -42,10 +41,12 @@ ChangedKeyCoords Keyboard::matrix_scan()
                 this->keystate[row][col] = debounced_input;
                 pinMode(ROW_PINS[row], INPUT_PULLUP);
 
+                uint8_t normalized_col = get_normalized_col(col);
+
                 if (debounced_input == DEBOUNCE_MAX) {
-                    return ChangedKeyCoords { EVENT_KEY_PRESS, row, col };
+                    return ChangedKeyCoords { EVENT_KEY_PRESS, row, normalized_col };
                 } else {
-                    return ChangedKeyCoords { EVENT_KEY_RELEASE, row, col };
+                    return ChangedKeyCoords { EVENT_KEY_RELEASE, row, normalized_col };
                 }
             }
         }
@@ -56,8 +57,7 @@ ChangedKeyCoords Keyboard::matrix_scan()
     return ChangedKeyCoords { EVENT_NONE, 0x00, 0x00 };
 }
 
-uint8_t Keyboard::debounce_input(uint8_t row, uint8_t col, uint8_t input)
-{
+uint8_t Keyboard::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
     uint8_t debounce_state = this->debounce[row][col];
     if (input) {
         if (debounce_state < DEBOUNCE_MAX) {
@@ -76,4 +76,18 @@ uint8_t Keyboard::debounce_input(uint8_t row, uint8_t col, uint8_t input)
     }
 
     return DEBOUNCE_CHANGING;
+}
+
+// The keymap is on the master, so the two splits should act as one keyboard
+// Therefore depending on the MASTER_SIDE we need to adjust the col value
+// Essentially the right half should add COL_PIN_COUNT to col, because column numbering
+// goes from left to right, no matter which side is the master (master is connected via USB)
+inline uint8_t get_normalized_col(uint8_t col) {
+#if I2C_MASTER && MASTER_SIDE == MASTER_SIDE_RIGHT
+    return col + COL_PIN_COUNT;
+#endif
+#if I2C_SLAVE && MASTER_SIDE == MASTER_SIDE_LEFT
+    return col + COL_PIN_COUNT;
+#endif
+    return col;
 }

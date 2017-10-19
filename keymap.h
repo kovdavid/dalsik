@@ -30,8 +30,7 @@ inline uint8_t get_dual_key_modifier(KeyInfo key_info);
 inline uint8_t is_dual_key(KeyInfo key_info);
 const inline char* key_type_to_string(KeyInfo key_info);
 
-class KeyMap
-{
+class KeyMap {
     private:
         uint8_t eeprom_offset;
         uint8_t layer_index;

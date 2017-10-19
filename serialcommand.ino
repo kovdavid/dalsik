@@ -13,8 +13,7 @@ static const char CMD_PING[] = { 'P', 'I', 'N', 'G' };
 char serial_buffer[BUFFER_SIZE] = {0};
 uint8_t serial_index = 0;
 
-void process_serial_command(Keyboard* keyboard, KeyMap* keymap)
-{
+void process_serial_command(Keyboard* keyboard, KeyMap* keymap) {
     while (Serial.available()) {
         char c = (char) Serial.read();
 
@@ -31,10 +30,10 @@ void process_serial_command(Keyboard* keyboard, KeyMap* keymap)
             } else {
                 Serial.println("CMD_PARSE_ERROR");
             }
-            clear_buffer();
+            clear_serial_buffer();
         } else {
             if (serial_index > BUFFER_SIZE) {
-                clear_buffer();
+                clear_serial_buffer();
                 return;
             } else {
                 serial_buffer[serial_index++] = c;
@@ -43,8 +42,7 @@ void process_serial_command(Keyboard* keyboard, KeyMap* keymap)
     }
 }
 
-uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap)
-{
+uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
     char* buffer = &(serial_buffer[sizeof(PREFIX)]);
 
 #if DEBUG
@@ -95,9 +93,11 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap)
         uint8_t col    = buffer[0x02];
 
 #if DEBUG
-        Serial.print("|");
+        Serial.print("GET_KEY|");
         Serial.print(layer, HEX);
+        Serial.print("|");
         Serial.print(row, HEX);
+        Serial.print("|");
         Serial.print(col, HEX);
         Serial.print("|\n");
 #endif
@@ -128,8 +128,7 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap)
     return 1;
 }
 
-void clear_buffer()
-{
+void clear_serial_buffer() {
     memset(&serial_buffer, 0, sizeof(char)*BUFFER_SIZE);
     serial_index = 0;
 }

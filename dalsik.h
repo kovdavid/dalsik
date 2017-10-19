@@ -9,6 +9,12 @@
 #else
     #define I2C_SLAVE 1
 #endif
+
+#define MASTER_SIDE_LEFT 0x00
+#define MASTER_SIDE_RIGHT 0x01
+
+#define MASTER_SIZE MASTER_SIDE_LEFT
+
 #define I2C_MASTER_ADDRESS 0x01
 #define I2C_SLAVE_ADDRESS  0x02
 
