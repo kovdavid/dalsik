@@ -27,7 +27,7 @@ class MasterReport
     public:
         MasterReport(KeyMap* keymap);
 
-        void handle_key_event(KeyChangeEvent event);
+        void handle_changed_key(ChangedKeyCoords coords);
 
         void clear();
         void send_report();
@@ -47,7 +47,7 @@ class MasterReport
         HIDKeyboardReport hid_report;
         KeyMap* keymap;
         DualKeyState dual_key_state;
-        uint8_t keys_pressed;
+        uint8_t num_keys_pressed;
 };
 
 #endif

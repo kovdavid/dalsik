@@ -16,16 +16,22 @@ void MasterReport::clear()
     this->hid_report.reserved = 0;
     memset(this->hid_report.keys, 0, 6);
 
-    this->keys_pressed = 0;
+    this->num_keys_pressed = 0;
 }
 
-void MasterReport::handle_key_event(KeyChangeEvent event)
+void MasterReport::handle_changed_key(ChangedKeyCoords coords)
 {
-    if (event.type == EVENT_KEY_PRESS) {
-        this->press(event.key_info);
+    if (coords.type == EVENT_NONE) {
+        return;
     }
-    if (event.type == EVENT_KEY_RELEASE) {
-        this->release(event.key_info);
+
+    KeyInfo key_info = this->keymap->get_key(coords.row, coords.col);
+
+    if (coords.type == EVENT_KEY_PRESS) {
+        this->press(key_info);
+    }
+    if (coords.type == EVENT_KEY_RELEASE) {
+        this->release(key_info);
     }
 }
 
@@ -39,7 +45,7 @@ void MasterReport::press(KeyInfo key_info)
     Serial.print("\n");
 #endif
 
-    this->keys_pressed++;
+    this->num_keys_pressed++;
 
     this->press_hook_for_dual_keys();
 
@@ -100,7 +106,7 @@ inline void MasterReport::press_dual_key(KeyInfo key_info)
     }
 
     this->dual_key_state.key_info = key_info;
-    if (this->keys_pressed > 1) {
+    if (this->num_keys_pressed > 1) {
         this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
 
         KeyInfo key_info = { KEY_NORMAL, get_dual_key_modifier(key_info) };
@@ -120,7 +126,7 @@ void MasterReport::release(KeyInfo key_info)
     Serial.print("\n");
 #endif
 
-    this->keys_pressed--;
+    this->num_keys_pressed--;
 
     if (key_info.type == KEY_NORMAL) {
         this->release_normal_key(key_info);
@@ -132,7 +138,7 @@ void MasterReport::release(KeyInfo key_info)
         return;
     }
 
-    if (this->keys_pressed == 0) {
+    if (this->num_keys_pressed == 0) {
         this->clear();
     }
 

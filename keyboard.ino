@@ -2,7 +2,6 @@
 #include "HID.h"
 #include "dalsik.h"
 #include "keyboard_hid_desc.h"
-#include "keymap.h"
 
 #define DEBOUNCE_MAX 5
 #define DEBOUNCE_LOW 0x00
@@ -10,14 +9,12 @@
 
 extern const uint8_t KEYBOARD_HID_DESC[] PROGMEM;
 
-Keyboard::Keyboard(KeyMap* keymap) {
+Keyboard::Keyboard() {
     static HIDSubDescriptor node(KEYBOARD_HID_DESC, sizeof(KEYBOARD_HID_DESC));
     HID().AppendDescriptor(&node);
 
     memset(this->keystate, 0, sizeof(uint8_t)*ROW_PIN_COUNT*COL_PIN_COUNT);
     memset(this->debounce, 0, sizeof(uint8_t)*ROW_PIN_COUNT*COL_PIN_COUNT);
-
-    this->keymap = keymap;
 
     for (uint8_t i = 0; i < ROW_PIN_COUNT; i++) {
         pinMode(ROW_PINS[i], INPUT_PULLUP);
@@ -27,7 +24,7 @@ Keyboard::Keyboard(KeyMap* keymap) {
     }
 }
 
-KeyChangeEvent Keyboard::matrix_scan()
+ChangedKeyCoords Keyboard::matrix_scan()
 {
     for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
         pinMode(ROW_PINS[row], OUTPUT);
@@ -45,12 +42,10 @@ KeyChangeEvent Keyboard::matrix_scan()
                 this->keystate[row][col] = debounced_input;
                 pinMode(ROW_PINS[row], INPUT_PULLUP);
 
-                KeyInfo key_info = this->keymap->get_key(row, col);
-
                 if (debounced_input == DEBOUNCE_MAX) {
-                    return KeyChangeEvent { EVENT_KEY_PRESS, key_info };
+                    return ChangedKeyCoords { EVENT_KEY_PRESS, row, col };
                 } else {
-                    return KeyChangeEvent { EVENT_KEY_RELEASE, key_info };
+                    return ChangedKeyCoords { EVENT_KEY_RELEASE, row, col };
                 }
             }
         }
@@ -58,7 +53,7 @@ KeyChangeEvent Keyboard::matrix_scan()
         pinMode(ROW_PINS[row], INPUT_PULLUP);
     }
 
-    return KeyChangeEvent { EVENT_NONE, { KEY_UNSET, 0x00 } };
+    return ChangedKeyCoords { EVENT_NONE, 0x00, 0x00 };
 }
 
 uint8_t Keyboard::debounce_input(uint8_t row, uint8_t col, uint8_t input)
