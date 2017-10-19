@@ -21,10 +21,8 @@ void setup() {
     MCUCR |= _BV(JTD);
     MCUCR |= _BV(JTD);
 
-#if USE_ON_OFF_PIN
-    pinMode(ONOFF_IN_PIN, INPUT_PULLUP);
-    pinMode(ONOFF_OUT_PIN, OUTPUT);
-    digitalWrite(ONOFF_OUT_PIN, LOW);
+#if ON_OFF_PIN
+    pinMode(ON_OFF_PIN, INPUT_PULLUP);
 #endif
 
 #if I2C_MASTER
@@ -40,9 +38,9 @@ void setup() {
 }
 
 void loop() {
-#if USE_ON_OFF_PIN
+#if ON_OFF_PIN
     // Turn off the whole keyboard with a switch
-    while (digitalRead(ONOFF_IN_PIN) == HIGH) {
+    while (digitalRead(ON_OFF_PIN) == LOW) {
         delayMicroseconds(500);
     }
 #endif
