@@ -164,11 +164,11 @@ inline void MasterReport::release_dual_key(KeyInfo key_info) {
         if (this->dual_key_state.mode == DUAL_MODE_HOLD_MODIFIER) {
             this->release_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
         } else {
-            this->dual_key_state.mode = DUAL_MODE_TAP_KEY;
-            KeyInfo key_info = { KEY_NORMAL, key_info.key };
-            this->press_normal_key(key_info);
+            KeyInfo key_info_tap = { KEY_NORMAL, key_info.key };
+
+            this->press_normal_key(key_info_tap);
             this->send_report();
-            this->release_normal_key(key_info);
+            this->release_normal_key(key_info_tap);
         }
 
         memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
@@ -183,12 +183,19 @@ void MasterReport::check_special_keys() {}
 void MasterReport::print_to_serial() {
     Serial.print("MasterReport:");
     Serial.print(this->hid_report.modifiers, HEX);
+    Serial.print("|");
     Serial.print(this->hid_report.reserved, HEX);
+    Serial.print("|");
     Serial.print(this->hid_report.keys[0], HEX);
+    Serial.print("|");
     Serial.print(this->hid_report.keys[1], HEX);
+    Serial.print("|");
     Serial.print(this->hid_report.keys[2], HEX);
+    Serial.print("|");
     Serial.print(this->hid_report.keys[3], HEX);
+    Serial.print("|");
     Serial.print(this->hid_report.keys[4], HEX);
+    Serial.print("|");
     Serial.print(this->hid_report.keys[5], HEX);
     Serial.print("\n");
 }

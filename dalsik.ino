@@ -59,7 +59,7 @@ void loop() {
 #endif
 
     unsigned long now_msec = millis();
-    if ((now_msec - prev_loop_msec) > 1) {
+    if ((now_msec - prev_loop_msec) > 0) {
         prev_loop_msec = now_msec;
 
         ChangedKeyCoords coords = keyboard.matrix_scan();

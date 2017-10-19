@@ -3,7 +3,7 @@
 #include "dalsik.h"
 #include "keyboard_hid_desc.h"
 
-#define DEBOUNCE_MAX 5
+#define DEBOUNCE_MAX 3
 #define DEBOUNCE_LOW 0x00
 #define DEBOUNCE_CHANGING 0x02
 
