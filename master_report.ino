@@ -7,13 +7,14 @@
 MasterReport::MasterReport(KeyMap* keymap) {
     this->keymap = keymap;
     this->clear();
-    memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
 }
 
 void MasterReport::clear() {
     this->hid_report.modifiers = 0;
     this->hid_report.reserved = 0;
     memset(this->hid_report.keys, 0, HID_KEYS_COUNT);
+    memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
+    memset(&(this->hold_or_toggle_state), 0, sizeof(LayerHoldOrToggleState));
 
     this->num_keys_pressed = 0;
 
@@ -52,6 +53,7 @@ void MasterReport::press(KeyInfo key_info) {
 #endif
 
     this->press_hook_for_dual_keys();
+    this->press_hook_for_layer_hold_or_toggle();
 
     if (key_info.type == KEY_NORMAL) {
         this->press_normal_key(key_info);
@@ -59,59 +61,13 @@ void MasterReport::press(KeyInfo key_info) {
         this->press_layer_key(key_info);
     } else if (key_info.type == KEY_LAYER_TOGGLE) {
         this->press_toggle_layer_key(key_info);
+    } else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) {
+        this->press_layer_hold_or_toggle(key_info);
     } else if (is_dual_key(key_info)) {
         this->press_dual_key(key_info);
     } else if (is_key_with_mod(key_info)) {
         this->press_key_with_mod(key_info);
     }
-}
-
-inline void MasterReport::press_hook_for_dual_keys() {
-    if (this->dual_key_state.mode == DUAL_MODE_PENDING) {
-        this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
-        uint8_t modifier = get_dual_key_modifier(this->dual_key_state.key_info);
-        this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
-    }
-}
-
-inline void MasterReport::press_normal_key(KeyInfo key_info) {
-    uint8_t key = key_info.key;
-    if (key >= 0xE0 && key <= 0xE7) { // modifier
-        // For 'Left Shift' 0xE1 bitmask is 0x0000_0010
-        uint8_t modifier_bit = key & 0x0F;
-        uint8_t bitmask = 1 << modifier_bit;
-        this->hid_report.modifiers |= bitmask;
-    } else { // key
-        append_uniq_to_uint8_array(this->hid_report.keys, HID_KEYS_COUNT, key);
-    }
-}
-
-inline void MasterReport::press_layer_key(KeyInfo key_info) {
-    this->keymap->set_layer(key_info.key);
-}
-
-inline void MasterReport::press_toggle_layer_key(KeyInfo key_info) {
-    this->keymap->toggle_layer(key_info.key);
-}
-
-inline void MasterReport::press_dual_key(KeyInfo key_info) {
-    if (this->dual_key_state.mode == DUAL_MODE_NOT_PRESSED) {
-        this->dual_key_state.key_info = key_info;
-        if (this->num_keys_pressed > 1) {
-            this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
-            this->press_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
-        } else {
-            this->dual_key_state.mode = DUAL_MODE_PENDING;
-        }
-    } else {
-        this->press_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
-    }
-}
-
-inline void MasterReport::press_key_with_mod(KeyInfo key_info) {
-    uint8_t modifier = get_key_with_mod_modifier(key_info);
-    this->press(KeyInfo { KEY_NORMAL, modifier });
-    this->press(KeyInfo { KEY_NORMAL, key_info.key });
 }
 
 void MasterReport::release(KeyInfo key_info) {
@@ -129,6 +85,8 @@ void MasterReport::release(KeyInfo key_info) {
         this->release_layer_key(key_info);
     } else if (key_info.type == KEY_LAYER_TOGGLE) {
         this->release_toggle_layer_key(key_info);
+    } else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) {
+        this->release_layer_hold_or_toggle(key_info);
     } else if (is_dual_key(key_info)) {
         this->release_dual_key(key_info);
     } else if (is_key_with_mod(key_info)) {
@@ -137,6 +95,18 @@ void MasterReport::release(KeyInfo key_info) {
 
     if (this->num_keys_pressed == 0) {
         this->clear();
+    }
+}
+
+inline void MasterReport::press_normal_key(KeyInfo key_info) {
+    uint8_t key = key_info.key;
+    if (key >= 0xE0 && key <= 0xE7) { // modifier
+        // For 'Left Shift' 0xE1 bitmask is 0x0000_0010
+        uint8_t modifier_bit = key & 0x0F;
+        uint8_t bitmask = 1 << modifier_bit;
+        this->hid_report.modifiers |= bitmask;
+    } else { // key
+        append_uniq_to_uint8_array(this->hid_report.keys, HID_KEYS_COUNT, key);
     }
 }
 
@@ -152,12 +122,34 @@ inline void MasterReport::release_normal_key(KeyInfo key_info) {
     }
 }
 
+inline void MasterReport::press_layer_key(KeyInfo key_info) {
+    this->keymap->set_layer(key_info.key);
+}
+
 inline void MasterReport::release_layer_key(KeyInfo key_info) {
     this->keymap->remove_layer(key_info.key);
 }
 
+inline void MasterReport::press_toggle_layer_key(KeyInfo key_info) {
+    this->keymap->toggle_layer(key_info.key);
+}
+
 inline void MasterReport::release_toggle_layer_key(KeyInfo key_info) {
     // do nothing; toggle_layer key has only effect on press
+}
+
+inline void MasterReport::press_dual_key(KeyInfo key_info) {
+    if (this->dual_key_state.mode == DUAL_MODE_NOT_PRESSED) {
+        this->dual_key_state.key_info = key_info;
+        if (this->num_keys_pressed > 1) {
+            this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
+            this->press_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
+        } else {
+            this->dual_key_state.mode = DUAL_MODE_PENDING;
+        }
+    } else {
+        this->press_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
+    }
 }
 
 inline void MasterReport::release_dual_key(KeyInfo key_info) {
@@ -177,6 +169,55 @@ inline void MasterReport::release_dual_key(KeyInfo key_info) {
         // There were more dual_keys pressed, this one is not the first
         this->release_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
     }
+}
+
+inline void MasterReport::press_hook_for_dual_keys() {
+    if (this->dual_key_state.mode == DUAL_MODE_PENDING) {
+        this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
+        uint8_t modifier = get_dual_key_modifier(this->dual_key_state.key_info);
+        this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
+    }
+}
+
+inline void MasterReport::press_layer_hold_or_toggle(KeyInfo key_info) {
+    if (this->hold_or_toggle_state.mode == HOLD_OR_TOGGLE_NOT_PRESSED) {
+        this->hold_or_toggle_state.key_info = key_info;
+        if (this->num_keys_pressed > 1) {
+            this->hold_or_toggle_state.mode = HOLD_OR_TOGGLE_HOLD_LAYER;
+            this->keymap->set_layer(key_info.key);
+        } else {
+            this->hold_or_toggle_state.mode = HOLD_OR_TOGGLE_PENDING;
+        }
+    } else {
+        this->keymap->set_layer(key_info.key);
+    }
+}
+
+inline void MasterReport::release_layer_hold_or_toggle(KeyInfo key_info) {
+    if (key_info_compare(key_info, this->hold_or_toggle_state.key_info) == 0) {
+        if (this->hold_or_toggle_state.mode == HOLD_OR_TOGGLE_HOLD_LAYER) {
+            this->keymap->remove_layer(key_info.key);
+        } else {
+            this->keymap->toggle_layer(key_info.key);
+        }
+
+        memset(&(this->hold_or_toggle_state), 0, sizeof(LayerHoldOrToggleState));
+    } else {
+        this->keymap->remove_layer(key_info.key);
+    }
+}
+
+inline void MasterReport::press_hook_for_layer_hold_or_toggle() {
+    if (this->hold_or_toggle_state.mode == HOLD_OR_TOGGLE_PENDING) {
+        this->hold_or_toggle_state.mode = HOLD_OR_TOGGLE_HOLD_LAYER;
+        this->keymap->set_layer(this->hold_or_toggle_state.key_info.key);
+    }
+}
+
+inline void MasterReport::press_key_with_mod(KeyInfo key_info) {
+    uint8_t modifier = get_key_with_mod_modifier(key_info);
+    this->press(KeyInfo { KEY_NORMAL, modifier });
+    this->press(KeyInfo { KEY_NORMAL, key_info.key });
 }
 
 inline void MasterReport::release_key_with_mod(KeyInfo key_info) {

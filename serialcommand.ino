@@ -4,11 +4,13 @@
 
 #define BUFFER_SIZE 64
 
-static const char PREFIX[] = { 'D', 'A', 'L', 'S', 'I', 'K', '-' };
-static const char CMD_SET_KEY_PREFIX[] = { 'S', 'E', 'T', '_', 'K', 'E', 'Y' };
-static const char CMD_GET_KEY_PREFIX[] = { 'G', 'E', 'T', '_', 'K', 'E', 'Y' };
-static const char CMD_CLEAR_KEYMAP[] = { 'C', 'L', 'E', 'A', 'R', '_', 'E', 'E', 'P', 'R', 'O', 'M' };
-static const char CMD_PING[] = { 'P', 'I', 'N', 'G' };
+static const char PREFIX[] = { 'D','A','L','S','I','K','-' };
+static const char CMD_SET_KEY_PREFIX[] = { 'S','E','T','_','K','E','Y' };
+static const char CMD_GET_KEY_PREFIX[] = { 'G','E','T','_','K','E','Y' };
+static const char CMD_GET_LAYER_PREFIX[] = { 'G','E','T','_','L','A','Y','E','R' };
+static const char CMD_SET_LAYER_PREFIX[] = { 'S','E','T','_','L','A','Y','E','R' };
+static const char CMD_CLEAR_KEYMAP[] = { 'C','L','E','A','R','_','E','E','P','R','O','M' };
+static const char CMD_PING[] = { 'P','I','N','G' };
 
 char serial_buffer[BUFFER_SIZE] = {0};
 uint8_t serial_index = 0;
@@ -105,6 +107,20 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
         Serial.print(">\n");
 
         return 0;
+    } else if (memcmp(buffer, CMD_GET_LAYER_PREFIX, sizeof(CMD_GET_LAYER_PREFIX)) == 0) {
+        Serial.print("Layer<");
+        Serial.print(keymap->get_layer(), HEX);
+        Serial.print(">\n");
+    } else if (memcmp(buffer, CMD_SET_LAYER_PREFIX, sizeof(CMD_SET_LAYER_PREFIX)) == 0) {
+        if (sizeof(PREFIX) + sizeof(CMD_GET_KEY_PREFIX) + 1 > serial_index) {
+            return 6; // Incomplete data
+        }
+
+        buffer = &(serial_buffer[sizeof(PREFIX) + sizeof(CMD_GET_KEY_PREFIX)]);
+        uint8_t layer = buffer[0x00];
+        if (layer >= MAX_LAYER_COUNT) return 7; // Invalid layer
+
+        keymap->set_layer(layer);
     } else if (memcmp(buffer, CMD_CLEAR_KEYMAP, sizeof(CMD_CLEAR_KEYMAP)) == 0) {
         Serial.println("Clearing keymap");
         keymap->eeprom_clear();

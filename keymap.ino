@@ -9,6 +9,10 @@ KeyMap::KeyMap() {
     this->clear();
 }
 
+uint8_t KeyMap::get_layer() {
+    return this->layer_index;
+}
+
 void KeyMap::set_layer(uint8_t layer) {
     this->layer_index = layer;
     append_uniq_to_uint8_array(this->layer_history, LAYER_HISTORY_CAPACITY, layer);
@@ -20,8 +24,11 @@ void KeyMap::remove_layer(uint8_t layer) {
     uint8_t prev_layer = last_nonzero_elem_of_uint8_array(
         this->layer_history, LAYER_HISTORY_CAPACITY
     );
+
     if (prev_layer > 0) {
         this->layer_index = prev_layer;
+    } else {
+        this->layer_index = this->toggled_layer_index; // toggled layer or 0
     }
 }
 
