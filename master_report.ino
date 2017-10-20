@@ -69,8 +69,8 @@ void MasterReport::press(KeyInfo key_info) {
 inline void MasterReport::press_hook_for_dual_keys() {
     if (this->dual_key_state.mode == DUAL_MODE_PENDING) {
         this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
-        KeyInfo key_info = { KEY_NORMAL, get_dual_key_modifier(this->dual_key_state.key_info) };
-        this->press_normal_key(key_info);
+        uint8_t modifier = get_dual_key_modifier(this->dual_key_state.key_info);
+        this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
     }
 }
 
