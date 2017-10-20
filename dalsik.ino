@@ -73,7 +73,7 @@ void loop() {
     slave_report.handle_changed_key(coords);
 #endif
 
-    delayMicroseconds(30);
+    delayMicroseconds(100);
 }
 
 #if I2C_MASTER

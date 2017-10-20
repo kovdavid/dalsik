@@ -13,7 +13,7 @@ MasterReport::MasterReport(KeyMap* keymap) {
 void MasterReport::clear() {
     this->hid_report.modifiers = 0;
     this->hid_report.reserved = 0;
-    memset(this->hid_report.keys, 0, 6);
+    memset(this->hid_report.keys, 0, HID_KEYS_COUNT);
 
     this->num_keys_pressed = 0;
 
@@ -26,20 +26,23 @@ void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
     }
 
     KeyInfo key_info = this->keymap->get_key(coords.row, coords.col);
+    if (key_info.type == KEY_TRANSPARENT) { // Get the key from lower layers
+        key_info = this->keymap->get_non_transparent_key(coords.row, coords.col);
+    }
 
     if (coords.type == EVENT_KEY_PRESS) {
         this->num_keys_pressed++;
-        this->press(coords, key_info);
+        this->press(key_info);
         this->send_report();
     }
     if (coords.type == EVENT_KEY_RELEASE) {
         this->num_keys_pressed--;
-        this->release(coords, key_info);
+        this->release(key_info);
         this->send_report();
     }
 }
 
-void MasterReport::press(ChangedKeyCoords coords, KeyInfo key_info) {
+void MasterReport::press(KeyInfo key_info) {
 #if DEBUG
     Serial.print("Pressed key:");
     Serial.print(key_type_to_string(key_info));
@@ -56,12 +59,10 @@ void MasterReport::press(ChangedKeyCoords coords, KeyInfo key_info) {
         this->press_layer_key(key_info);
     } else if (key_info.type == KEY_LAYER_TOGGLE) {
         this->press_toggle_layer_key(key_info);
-    } else if (key_info.type == KEY_TRANSPARENT) {
-        this->press_transparent_key(coords);
     } else if (is_dual_key(key_info)) {
         this->press_dual_key(key_info);
-    } else {
-        return;
+    } else if (is_key_with_mod(key_info)) {
+        this->press_key_with_mod(key_info);
     }
 }
 
@@ -107,12 +108,13 @@ inline void MasterReport::press_dual_key(KeyInfo key_info) {
     }
 }
 
-inline void MasterReport::press_transparent_key(ChangedKeyCoords coords) {
-    KeyInfo key_info = this->keymap->get_non_transparent_key(coords.row, coords.col);
-    this->press(coords, key_info);
+inline void MasterReport::press_key_with_mod(KeyInfo key_info) {
+    uint8_t modifier = get_key_with_mod_modifier(key_info);
+    this->press(KeyInfo { KEY_NORMAL, modifier });
+    this->press(KeyInfo { KEY_NORMAL, key_info.key });
 }
 
-void MasterReport::release(ChangedKeyCoords coords, KeyInfo key_info) {
+void MasterReport::release(KeyInfo key_info) {
 #if DEBUG
     Serial.print("Released key:");
     Serial.print(key_type_to_string(key_info));
@@ -127,10 +129,10 @@ void MasterReport::release(ChangedKeyCoords coords, KeyInfo key_info) {
         this->release_layer_key(key_info);
     } else if (key_info.type == KEY_LAYER_TOGGLE) {
         this->release_toggle_layer_key(key_info);
-    } else if (key_info.type == KEY_TRANSPARENT) {
-        this->press_transparent_key(coords);
     } else if (is_dual_key(key_info)) {
         this->release_dual_key(key_info);
+    } else if (is_key_with_mod(key_info)) {
+        this->release_key_with_mod(key_info);
     }
 
     if (this->num_keys_pressed == 0) {
@@ -177,9 +179,10 @@ inline void MasterReport::release_dual_key(KeyInfo key_info) {
     }
 }
 
-inline void MasterReport::release_transparent_key(ChangedKeyCoords coords) {
-    KeyInfo key_info = this->keymap->get_non_transparent_key(coords.row, coords.col);
-    this->release(coords, key_info);
+inline void MasterReport::release_key_with_mod(KeyInfo key_info) {
+    uint8_t modifier = get_key_with_mod_modifier(key_info);
+    this->release(KeyInfo { KEY_NORMAL, modifier });
+    this->release(KeyInfo { KEY_NORMAL, key_info.key });
 }
 
 void MasterReport::print_to_serial() {

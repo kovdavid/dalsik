@@ -34,19 +34,19 @@ class MasterReport {
         void send_report();
         void press_hook_for_dual_keys();
 
-        void press(ChangedKeyCoords coords, KeyInfo key_info);
+        void press(KeyInfo key_info);
         void press_normal_key(KeyInfo key_info);
         void press_layer_key(KeyInfo key_info);
         void press_toggle_layer_key(KeyInfo key_info);
         void press_dual_key(KeyInfo key_info);
-        void press_transparent_key(ChangedKeyCoords coords);
+        void press_key_with_mod(KeyInfo key_info);
 
-        void release(ChangedKeyCoords coords, KeyInfo key_info);
+        void release(KeyInfo key_info);
         void release_normal_key(KeyInfo key_info);
         void release_layer_key(KeyInfo key_info);
         void release_toggle_layer_key(KeyInfo key_info);
         void release_dual_key(KeyInfo key_info);
-        void release_transparent_key(ChangedKeyCoords coords);
+        void release_key_with_mod(KeyInfo key_info);
 
         HIDKeyboardReport hid_report;
         KeyMap* keymap;

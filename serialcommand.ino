@@ -74,7 +74,7 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
         Serial.print(">\n");
 #endif
 
-        if (layer >= LAYER_COUNT) return 3; // Invalid layer
+        if (layer >= MAX_LAYER_COUNT) return 3; // Invalid layer
         if (row >= ROW_PIN_COUNT) return 4; // Invalid row
         if (col >= BOTH_SIDE_COL_PIN_COUNT) return 5; // Invalid col
 
@@ -92,7 +92,7 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
         uint8_t row    = buffer[0x01];
         uint8_t col    = buffer[0x02];
 
-        if (layer >= LAYER_COUNT) return 7; // Invalid layer
+        if (layer >= MAX_LAYER_COUNT) return 7; // Invalid layer
         if (row >= ROW_PIN_COUNT) return 8; // Invalid row
         if (col >= BOTH_SIDE_COL_PIN_COUNT) return 9; // Invalid col
 
