@@ -32,20 +32,21 @@ class MasterReport {
 
         void clear();
         void send_report();
-        void check_special_keys();
         void press_hook_for_dual_keys();
 
-        void press(KeyInfo key_info);
+        void press(ChangedKeyCoords coords, KeyInfo key_info);
         void press_normal_key(KeyInfo key_info);
         void press_layer_key(KeyInfo key_info);
         void press_toggle_layer_key(KeyInfo key_info);
         void press_dual_key(KeyInfo key_info);
+        void press_transparent_key(ChangedKeyCoords coords);
 
-        void release(KeyInfo key_info);
+        void release(ChangedKeyCoords coords, KeyInfo key_info);
         void release_normal_key(KeyInfo key_info);
         void release_layer_key(KeyInfo key_info);
         void release_toggle_layer_key(KeyInfo key_info);
         void release_dual_key(KeyInfo key_info);
+        void release_transparent_key(ChangedKeyCoords coords);
 
         HIDKeyboardReport hid_report;
         KeyMap* keymap;

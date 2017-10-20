@@ -69,6 +69,27 @@ KeyInfo KeyMap::get_key(uint8_t row, uint8_t col) {
     return key_info;
 }
 
+KeyInfo KeyMap::get_non_transparent_key(uint8_t row, uint8_t col) {
+    for (uint8_t i = LAYER_HISTORY_CAPACITY-1; i >= 0; i--) {
+        uint8_t layer = this->layer_history[i];
+        if (layer == 0x00) {
+            continue;
+        }
+
+        KeyInfo key_info = this->get_key_from_layer(layer, row, col);
+        if (key_info.type != KEY_TRANSPARENT) {
+            return key_info;
+        }
+    }
+
+    KeyInfo key_info = this->get_key_from_layer(0, row, col);
+    if (key_info.type == KEY_TRANSPARENT) {
+        return { KEY_UNSET, 0x00 };
+    } else {
+        return key_info;
+    }
+}
+
 void KeyMap::set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key_info) {
     int eeprom_address = this->get_eeprom_address(this->layer_index, row, col);
 
@@ -122,6 +143,7 @@ const inline char* key_type_to_string(KeyInfo key_info) {
         case KEY_DUAL_RALT:    return "KEY_DUAL_RALT";
         case KEY_LAYER_PRESS:  return "KEY_LAYER_PRESS";
         case KEY_LAYER_TOGGLE: return "KEY_LAYER_TOGGLE";
+        case KEY_TRANSPARENT:  return "KEY_TRANSPARENT";
         default:               return "KEY_TYPE_UNKNOWN";
     }
 }

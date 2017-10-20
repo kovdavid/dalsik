@@ -17,6 +17,7 @@
 #define KEY_DUAL_RALT    0x09
 #define KEY_LAYER_PRESS  0x0A
 #define KEY_LAYER_TOGGLE 0x0B
+#define KEY_TRANSPARENT  0x0C
 
 // EEPROM - 2B/key; 24keys; 6layers; 2*24*6=288B
 
@@ -45,6 +46,7 @@ class KeyMap {
 
         KeyInfo get_key(uint8_t row, uint8_t col);
         KeyInfo get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col);
+        KeyInfo get_non_transparent_key(uint8_t row, uint8_t col);
         void set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key);
         void set_layer(uint8_t layer);
         void remove_layer(uint8_t layer);
