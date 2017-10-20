@@ -14,7 +14,7 @@ Just for fun :) I made this to see if I can do it and to learn. The list of feat
 The slave is only reporting which row/column was pressed/released (3b/change). The actual key changes are determined on the master side. The advantage of this, that there is no need for 2-way communication between the master and slave (for example setting the layer).
 
 ### Flashing
-To flash the atmega32u4, use the [Arduino IDE](https://www.arduino.cc). Set `I2C_MASTER` to 1 in `dalsik.h` to flash the master and to 0 to flash the slave microcontroller.
+To flash the atmega32u4, use the [Arduino IDE](https://www.arduino.cc/en/main/software). Set `I2C_MASTER` to 1 in `dalsik.h` to flash the master and to 0 to flash the slave microcontroller.
 Depending on which half you want to connect via USB, set the `MASTER_SIDE` value in `dalsik.h` to `MASTER_SIDE_LEFT` or `MASTER_SIDE_RIGHT`.
 
 ### Inspired by
