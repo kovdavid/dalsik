@@ -34,6 +34,8 @@ void setup() {
 #endif
     // Wire.setClock(400000);
 
+    while (!Serial); // USB connect
+
     delay(300);
 }
 
