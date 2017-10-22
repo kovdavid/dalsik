@@ -9,7 +9,7 @@ Keyboard keyboard;
 KeyMap keymap;
 
 #if IS_MASTER
-uint8_t slave_buffer[4] = { 0 };
+uint8_t slave_buffer[2] = { 0 };
 uint8_t slave_buffer_index = 0;
 MasterReport master_report(&keymap);
 #else
@@ -106,19 +106,14 @@ void read_changed_key_from_slave() {
     while (slave_stream->available() > 0) {
         slave_buffer[slave_buffer_index++] = slave_stream->read();
 
-        if (slave_buffer_index == 4) {
-            uint8_t calc_checksum = slave_buffer[0] + slave_buffer[1] + slave_buffer[2];
-            uint8_t checksum = slave_buffer[3];
-            if (calc_checksum == checksum) {
-                ChangedKeyCoords coords = { slave_buffer[0], slave_buffer[1], slave_buffer[2] };
-                master_report.handle_changed_key(coords);
-            }
+        if (slave_buffer_index == 2) {
+            SlaveReportData data = { slave_buffer[0], slave_buffer[1] };
+            ChangedKeyCoords coords = decode_slave_report_data(data);
+            master_report.handle_changed_key(coords);
 
             slave_buffer_index = 0;
             slave_buffer[0] = 0;
             slave_buffer[1] = 0;
-            slave_buffer[2] = 0;
-            slave_buffer[3] = 0;
         }
     }
 }
