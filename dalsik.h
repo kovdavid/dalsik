@@ -7,9 +7,10 @@
 
 #define MASTER_SIDE_LEFT 0x00
 #define MASTER_SIDE_RIGHT 0x01
+// Which side has the USB cable plugged?
 #define MASTER_SIDE MASTER_SIDE_LEFT
 
-// If USE_I2C is 0, then Serial1 will be used
+// Use I2C or Serial1?
 #define USE_I2C 0
 #define I2C_MASTER_ADDRESS 0x01
 #define I2C_SLAVE_ADDRESS  0x02
@@ -22,6 +23,7 @@
 #define _COL_PINS A1, A0, 15, 14
 // FULL _COL_PINS A1, A0, 15, 14, 16, 10
 
+// Turn off the keyboard with this PIN
 #define ON_OFF_PIN 4
 
 const uint8_t ROW_PINS[ROW_PIN_COUNT] = { _ROW_PINS };

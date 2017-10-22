@@ -7,7 +7,7 @@
 static const char PREFIX[] = { 'D','A','L','S','I','K','-' };
 static const char CMD_SET_KEY_PREFIX[] = { 'S','E','T','_','K','E','Y' };
 static const char CMD_GET_KEY_PREFIX[] = { 'G','E','T','_','K','E','Y' };
-static const char CMD_GET_KEYS_PREFIX[] = { 'G','E','T','_','K','E','Y','S' };
+static const char CMD_KEYMAP_PREFIX[] = { 'K','E','Y','M','A','P' };
 static const char CMD_GET_LAYER_PREFIX[] = { 'G','E','T','_','L','A','Y','E','R' };
 static const char CMD_SET_LAYER_PREFIX[] = { 'S','E','T','_','L','A','Y','E','R' };
 static const char CMD_CLEAR_KEYMAP[] = { 'C','L','E','A','R','_','E','E','P','R','O','M' };
@@ -102,7 +102,7 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
         serial_print_key(keymap, layer, row, col);
 
         return 0;
-    } else if (memcmp(buffer, CMD_GET_KEYS_PREFIX, sizeof(CMD_GET_KEYS_PREFIX)) == 0) {
+    } else if (memcmp(buffer, CMD_KEYMAP_PREFIX, sizeof(CMD_KEYMAP_PREFIX)) == 0) {
         for (uint8_t layer = 0; layer < MAX_LAYER_COUNT; layer++) {
             for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
                 for (uint8_t col = 0; col < BOTH_SIDE_COL_PIN_COUNT; col++) {
@@ -110,10 +110,12 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
                 }
             }
         }
+        return 0;
     } else if (memcmp(buffer, CMD_GET_LAYER_PREFIX, sizeof(CMD_GET_LAYER_PREFIX)) == 0) {
         Serial.print("Layer<");
         Serial.print(keymap->get_layer(), HEX);
         Serial.print(">\n");
+        return 0;
     } else if (memcmp(buffer, CMD_SET_LAYER_PREFIX, sizeof(CMD_SET_LAYER_PREFIX)) == 0) {
         if (sizeof(PREFIX) + sizeof(CMD_GET_KEY_PREFIX) + 1 > serial_index) {
             return 6; // Incomplete data
@@ -121,9 +123,13 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
 
         buffer = &(serial_buffer[sizeof(PREFIX) + sizeof(CMD_GET_KEY_PREFIX)]);
         uint8_t layer = buffer[0x00];
-        if (layer >= MAX_LAYER_COUNT) return 7; // Invalid layer
+
+        if (layer >= MAX_LAYER_COUNT) {
+            return 7; // Invalid layer
+        }
 
         keymap->set_layer(layer);
+        return 0;
     } else if (memcmp(buffer, CMD_CLEAR_KEYMAP, sizeof(CMD_CLEAR_KEYMAP)) == 0) {
         Serial.println("Clearing keymap");
         keymap->eeprom_clear();
