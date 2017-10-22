@@ -7,6 +7,7 @@
 static const char PREFIX[] = { 'D','A','L','S','I','K','-' };
 static const char CMD_SET_KEY_PREFIX[] = { 'S','E','T','_','K','E','Y' };
 static const char CMD_GET_KEY_PREFIX[] = { 'G','E','T','_','K','E','Y' };
+static const char CMD_GET_KEYS_PREFIX[] = { 'G','E','T','_','K','E','Y','S' };
 static const char CMD_GET_LAYER_PREFIX[] = { 'G','E','T','_','L','A','Y','E','R' };
 static const char CMD_SET_LAYER_PREFIX[] = { 'S','E','T','_','L','A','Y','E','R' };
 static const char CMD_CLEAR_KEYMAP[] = { 'C','L','E','A','R','_','E','E','P','R','O','M' };
@@ -90,23 +91,25 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
         }
 
         buffer = &(serial_buffer[sizeof(PREFIX) + sizeof(CMD_GET_KEY_PREFIX)]);
-        uint8_t layer  = buffer[0x00];
-        uint8_t row    = buffer[0x01];
-        uint8_t col    = buffer[0x02];
+        uint8_t layer = buffer[0x00];
+        uint8_t row   = buffer[0x01];
+        uint8_t col   = buffer[0x02];
 
         if (layer >= MAX_LAYER_COUNT) return 7; // Invalid layer
         if (row >= ROW_PIN_COUNT) return 8; // Invalid row
         if (col >= BOTH_SIDE_COL_PIN_COUNT) return 9; // Invalid col
 
-        KeyInfo key_info = keymap->get_key_from_layer(layer, row, col);
-
-        Serial.print("KEY<");
-        Serial.print(key_type_to_string(key_info));
-        Serial.print("|");
-        Serial.print(key_info.key);
-        Serial.print(">\n");
+        serial_print_key(keymap, layer, row, col);
 
         return 0;
+    } else if (memcmp(buffer, CMD_GET_KEYS_PREFIX, sizeof(CMD_GET_KEYS_PREFIX)) == 0) {
+        for (uint8_t layer = 0; layer < MAX_LAYER_COUNT; layer++) {
+            for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
+                for (uint8_t col = 0; col < BOTH_SIDE_COL_PIN_COUNT; col++) {
+                    serial_print_key(keymap, layer, row, col);
+                }
+            }
+        }
     } else if (memcmp(buffer, CMD_GET_LAYER_PREFIX, sizeof(CMD_GET_LAYER_PREFIX)) == 0) {
         Serial.print("Layer<");
         Serial.print(keymap->get_layer(), HEX);
@@ -137,4 +140,20 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
 void clear_serial_buffer() {
     memset(&serial_buffer, 0, sizeof(char)*BUFFER_SIZE);
     serial_index = 0;
+}
+
+void serial_print_key(KeyMap* keymap, uint8_t layer, uint8_t row, uint8_t col) {
+    KeyInfo key_info = keymap->get_key_from_layer(layer, row, col);
+
+    Serial.print("KEY<L");
+    Serial.print(layer);
+    Serial.print("-R");
+    Serial.print(row);
+    Serial.print("-C");
+    Serial.print(col);
+    Serial.print("|");
+    Serial.print(key_type_to_string(key_info));
+    Serial.print("|");
+    Serial.print(key_info.key, HEX);
+    Serial.print(">\n");
 }

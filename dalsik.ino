@@ -8,13 +8,15 @@
 Keyboard keyboard;
 KeyMap keymap;
 
-#if I2C_MASTER
+#if IS_MASTER
+uint8_t slave_buffer[4] = { 0 };
+uint8_t slave_buffer_index = 0;
 MasterReport master_report(&keymap);
 #else
 SlaveReport slave_report;
 #endif
 
-uint8_t I2C_read_from_slave = 0;
+uint8_t read_from_slave = 0;
 
 void setup() {
     // Disable JTAG, so we can use PORTF
@@ -25,16 +27,23 @@ void setup() {
     pinMode(ON_OFF_PIN, INPUT_PULLUP);
 #endif
 
-#if I2C_MASTER
-    Wire.begin(I2C_MASTER_ADDRESS);
-    Wire.onReceive(I2C_receive_event);
-    Serial.begin(115200);
+#if USE_I2C
+    #if IS_MASTER
+        Wire.begin(I2C_MASTER_ADDRESS);
+        Wire.onReceive(I2C_receive_event);
+    #else
+        Wire.begin(I2C_SLAVE_ADDRESS);
+    #endif
 #else
-    Wire.begin(I2C_SLAVE_ADDRESS);
+    Serial1.begin(57600);
+    while (!Serial1);
 #endif
     // Wire.setClock(400000);
 
-    while (!Serial); // USB connect
+#if IS_MASERT || DEBUG
+    Serial.begin(115200);
+    while (!Serial);
+#endif
 
     delay(300);
 }
@@ -44,17 +53,24 @@ void loop() {
     // Turn off the whole keyboard with a switch
     while (digitalRead(ON_OFF_PIN) == LOW) {
         delayMicroseconds(500);
+        Serial.println("ON_OFF_PIN OFF");
     }
 #endif
 
-#if I2C_MASTER
+#if IS_MASTER
     if (Serial.available() > 0) {
         process_serial_command(&keyboard, &keymap);
     }
-    if (I2C_read_from_slave) {
-        I2C_read_from_slave = 0;
+    #if USE_I2C
+    if (read_from_slave) {
+        read_from_slave = 0;
         read_changed_key_from_slave();
     }
+    #else
+    if (Serial1.available() > 0) {
+        read_changed_key_from_slave();
+    }
+    #endif
 #endif
 
     ChangedKeyCoords coords = keyboard.matrix_scan();
@@ -69,7 +85,7 @@ void loop() {
     }
 #endif
 
-#if I2C_MASTER
+#if IS_MASTER
     master_report.handle_changed_key(coords);
 #else
     slave_report.handle_changed_key(coords);
@@ -78,32 +94,36 @@ void loop() {
     delayMicroseconds(100);
 }
 
-#if I2C_MASTER
+#if IS_MASTER
 void read_changed_key_from_slave() {
-    uint8_t buffer[3] = { 0 };
-    uint8_t buffer_index = 0;
 
-    while (Wire.available() > 0) {
-        buffer[buffer_index++] = Wire.read();
+    #if USE_I2C
+    Stream* slave_stream = &Wire;
+    #else
+    Stream* slave_stream = &Serial1;
+    #endif
 
-        if (buffer_index == 3) {
-            ChangedKeyCoords coords = { buffer[0], buffer[1], buffer[2] };
-            master_report.handle_changed_key(coords);
+    while (slave_stream->available() > 0) {
+        slave_buffer[slave_buffer_index++] = slave_stream->read();
 
-            buffer_index = 0;
-            buffer[0] = 0;
-            buffer[1] = 0;
-            buffer[2] = 0;
+        if (slave_buffer_index == 4) {
+            uint8_t calc_checksum = slave_buffer[0] + slave_buffer[1] + slave_buffer[2];
+            uint8_t checksum = slave_buffer[3];
+            if (calc_checksum == checksum) {
+                ChangedKeyCoords coords = { slave_buffer[0], slave_buffer[1], slave_buffer[2] };
+                master_report.handle_changed_key(coords);
+            }
+
+            slave_buffer_index = 0;
+            slave_buffer[0] = 0;
+            slave_buffer[1] = 0;
+            slave_buffer[2] = 0;
+            slave_buffer[3] = 0;
         }
     }
 }
 
 void I2C_receive_event(int count) {
-    I2C_read_from_slave = 1;
-#if DEBUG
-    Serial.print("I2C_receive_event:");
-    Serial.print(count);
-    Serial.print("\n");
-#endif
+    read_from_slave = 1;
 }
 #endif

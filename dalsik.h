@@ -3,18 +3,14 @@
 
 #define DEBUG 0
 
-#define I2C_MASTER 1
-#if I2C_MASTER
-    #define I2C_SLAVE 0
-#else
-    #define I2C_SLAVE 1
-#endif
+#define IS_MASTER 1
 
 #define MASTER_SIDE_LEFT 0x00
 #define MASTER_SIDE_RIGHT 0x01
-
 #define MASTER_SIDE MASTER_SIDE_LEFT
 
+// If USE_I2C is 0, then Serial1 will be used
+#define USE_I2C 0
 #define I2C_MASTER_ADDRESS 0x01
 #define I2C_SLAVE_ADDRESS  0x02
 

@@ -79,10 +79,10 @@ uint8_t Keyboard::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
 // Essentially the right half should add ONE_SIDE_COL_PIN_COUNT to col, because column numbering
 // goes from left to right, no matter which side is the master (master is connected via USB)
 inline uint8_t get_normalized_col(uint8_t col) {
-#if I2C_MASTER && MASTER_SIDE == MASTER_SIDE_RIGHT
+#if IS_MASTER && MASTER_SIDE == MASTER_SIDE_RIGHT
     return col + ONE_SIDE_COL_PIN_COUNT;
 #endif
-#if I2C_SLAVE && MASTER_SIDE == MASTER_SIDE_LEFT
+#if !IS_MASTER && MASTER_SIDE == MASTER_SIDE_LEFT
     return col + ONE_SIDE_COL_PIN_COUNT;
 #endif
     return col;
