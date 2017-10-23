@@ -2,6 +2,7 @@
 #include "keymap.h"
 #include "master_report.h"
 #include "slave_report.h"
+#include "serial.h"
 #include <Wire.h>
 #include <avr/io.h>
 
@@ -9,8 +10,6 @@ Keyboard keyboard;
 KeyMap keymap;
 
 #if IS_MASTER
-uint8_t slave_buffer[2] = { 0 };
-uint8_t slave_buffer_index = 0;
 MasterReport master_report(&keymap);
 #else
 SlaveReport slave_report;
@@ -34,13 +33,16 @@ void setup() {
     #else
         Wire.begin(I2C_SLAVE_ADDRESS);
     #endif
-#else
-    Serial1.begin(57600);
-    while (!Serial1);
-#endif
     // Wire.setClock(400000);
+#else
+    #if IS_MASTER
+        serial_master_init();
+    #else
+        serial_slave_init();
+    #endif
+#endif
 
-#if IS_MASERT || DEBUG
+#if IS_MASTER || DEBUG
     Serial.begin(115200);
     while (!Serial);
 #endif
@@ -67,8 +69,9 @@ void loop() {
         read_changed_key_from_slave();
     }
     #else
-    if (Serial1.available() > 0) {
-        read_changed_key_from_slave();
+    if (slave_data != 0x00) {
+        handle_slave_data(slave_data);
+        slave_data = 0x00;
     }
     #endif
 #endif
@@ -91,30 +94,13 @@ void loop() {
     slave_report.handle_changed_key(coords);
 #endif
 
-    delayMicroseconds(100);
+    delayMicroseconds(50);
 }
 
-#if IS_MASTER
+#if IS_MASTER && USE_I2C
 void read_changed_key_from_slave() {
-
-    #if USE_I2C
-    Stream* slave_stream = &Wire;
-    #else
-    Stream* slave_stream = &Serial1;
-    #endif
-
-    while (slave_stream->available() > 0) {
-        slave_buffer[slave_buffer_index++] = slave_stream->read();
-
-        if (slave_buffer_index == 2) {
-            SlaveReportData data = { slave_buffer[0], slave_buffer[1] };
-            ChangedKeyCoords coords = decode_slave_report_data(data);
-            master_report.handle_changed_key(coords);
-
-            slave_buffer_index = 0;
-            slave_buffer[0] = 0;
-            slave_buffer[1] = 0;
-        }
+    while (Wire.available() > 0) {
+        handle_slave_data(Wire.read());
     }
 }
 
@@ -122,3 +108,8 @@ void I2C_receive_event(int count) {
     read_from_slave = 1;
 }
 #endif
+
+inline void handle_slave_data(uint8_t data) {
+    ChangedKeyCoords coords = decode_slave_report_data(data);
+    master_report.handle_changed_key(coords);
+}
