@@ -16,6 +16,7 @@ SlaveReport slave_report;
 #endif
 
 uint8_t read_from_slave = 0;
+unsigned long prev_millis = 0;
 
 void setup() {
     // Disable JTAG, so we can use PORTF
@@ -76,6 +77,14 @@ void loop() {
     #endif
 #endif
 
+    // By making keyboard scanning only once every millisecond, we can make
+    // the time-dependent debounce logic more predictable inside matrix_scan().
+    unsigned long millis_now = millis();
+    if (millis_now == prev_millis) {
+        return;
+    }
+    prev_millis = millis_now;
+
     ChangedKeyCoords coords = keyboard.matrix_scan();
 
 #if DEBUG
@@ -93,9 +102,6 @@ void loop() {
 #else
     slave_report.handle_changed_key(coords);
 #endif
-
-    // TODO make debounce time ~5msec!
-    delayMicroseconds(200);
 }
 
 #if IS_MASTER && USE_I2C

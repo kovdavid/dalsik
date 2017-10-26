@@ -3,6 +3,7 @@
 
 #include "dalsik.h"
 
+// Cherry claims bouncing to be <5ms
 #define DEBOUNCE_MAX 0x05
 #define DEBOUNCE_LOW 0x00
 #define DEBOUNCE_CHANGING 0xFF
