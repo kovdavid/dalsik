@@ -94,7 +94,8 @@ void loop() {
     slave_report.handle_changed_key(coords);
 #endif
 
-    delayMicroseconds(50);
+    // TODO make debounce time ~5msec!
+    delayMicroseconds(200);
 }
 
 #if IS_MASTER && USE_I2C

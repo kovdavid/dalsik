@@ -3,20 +3,16 @@
  * https://github.com/qmk/qmk_firmware/blob/master/keyboards/lets_split/serial.c
  */
 
-#ifndef F_CPU
-#define F_CPU 16000000
-#endif
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include "serial.h"
+#include "dalsik.h"
 
 volatile uint8_t slave_data = 0x00;
 
 void serial_master_init(void) {
     set_serial_pin_input_pullup();
-
     serial_set_interrupt();
 }
 
@@ -26,35 +22,27 @@ void serial_slave_init(void) {
 }
 
 inline static uint8_t serial_master_read() {
-    serial_delay();
     serial_half_delay();
-
-    // Sync to slave
+    // Sync to the end of slave LOW
     while (!serial_read_pin());
-
-    serial_half_delay();
+    // Wait till the HIGH signal
     serial_delay();
+    // Get to the middle of the data signal
+    serial_half_delay();
 
     uint8_t data = 0;
 
+    // Receive data - MSB
     for (uint8_t i = 0; i < 8; i++) {
         data = (data << 1) | serial_read_pin();
         serial_delay();
-        _delay_us(1);
     }
 
     return data;
 }
 
 void serial_slave_send(uint8_t data) {
-    // Trigger the interrupt on the master
-    serial_output_low();
-    _delay_us(5);
-
-    serial_output_high();
-    serial_delay();
-
-    // Master should sync on this LOW signal
+    // Trigger the interrupt on the master & send the init LOW/HIGH
     serial_output_low();
     serial_delay();
     serial_output_high();
@@ -70,14 +58,14 @@ void serial_slave_send(uint8_t data) {
         serial_delay();
     }
 
-    // Pull the line HIGH
+    // Pull the line HIGH - IDLE
     serial_output_high();
     serial_delay();
 }
 
-// // // // // // // // // //
-// // // // Utils // // // //
-// // // // // // // // // //
+//=========================//
+//=======// Utils //=======//
+//=========================//
 
 inline static void serial_set_interrupt() {
     // Enable INT0
