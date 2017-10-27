@@ -54,19 +54,18 @@ ChangedKeyCoords Keyboard::matrix_scan() {
 }
 
 uint8_t Keyboard::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
-    uint8_t debounce_state = this->debounce[row][col];
     if (input) {
-        if (debounce_state < DEBOUNCE_MAX) {
+        if (this->debounce[row][col] < DEBOUNCE_MAX) {
             this->debounce[row][col]++;
         }
-        if (debounce_state == DEBOUNCE_MAX) {
+        if (this->debounce[row][col] == DEBOUNCE_MAX) {
             return DEBOUNCE_MAX;
         }
     } else {
-        if (debounce_state > 0) {
+        if (this->debounce[row][col] > 0) {
             this->debounce[row][col]--;
         }
-        if (debounce_state == 0) {
+        if (this->debounce[row][col] == 0) {
             return DEBOUNCE_LOW;
         }
     }
