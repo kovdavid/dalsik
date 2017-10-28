@@ -33,11 +33,9 @@ if ($@) {
 }
 
 my $fh = Dalsik::open_serial($serial);
-
-my ($num_rows, $num_cols) = get_serial_num_rows_cols($fh);
-
 my $keys = $json_data->{keyboard}->{keys};
 
+my ($num_rows, $num_cols) = get_serial_num_rows_cols($fh);
 my ($json_num_rows, $json_num_cols) = get_json_num_rows_cols($keys);
 
 if ($json_num_rows != $num_rows || $json_num_cols != $num_cols) {
@@ -50,7 +48,7 @@ for my $key (@{ $keys }) {
 
     my $layer = 0;
     for my $keycode (@{ $key->{keycodes} }) {
-        my $type_and_key = Dalsik::get_type_and_key($keycode);
+        my $type_and_key = Dalsik::str_to_type_and_key($keycode);
 
         unless ($type_and_key) {
             die "Could not get type and key for layer:$layer row:$row col:$col keycode:".Dumper($keycode);
