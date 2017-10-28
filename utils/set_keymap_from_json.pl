@@ -265,11 +265,17 @@ my $keycodes = {
 `stty -F $serial 9600 raw -echo`;
 open my $fh, "+<:raw", $serial or die "Could not open serial($serial): $!";
 
-# open my $fh, ">:raw", "/tmp/keymap" or die "Could not open serial($serial): $!";
-
-my $cmd_prefix = "DALSIK-SET_KEY";
+my ($num_rows, $num_cols) = get_serial_num_rows_cols($fh);
 
 my $keys = $json_data->{keyboard}->{keys};
+my $cmd_prefix = "DALSIK-SET_KEY";
+
+my ($json_num_rows, $json_num_cols) = get_json_num_rows_cols($keys);
+
+if ($json_num_rows != $num_rows || $json_num_cols != $num_cols) {
+    die "Wrong JSON config! serial[num_rows:$num_rows num_cols:$num_cols] json[num_rows:$json_num_rows num_cols:$json_num_cols]";
+}
+
 for my $key (@{ $keys }) {
     my $row = $key->{row};
     my $col = $key->{col};
@@ -287,7 +293,14 @@ for my $key (@{ $keys }) {
             die "Could not set key for layer:$layer row:$row col:$col type_and_key:$type_and_key";
         }
 
-        # TODO read back response
+        my $hex_string = to_hex($cmd);
+
+        say STDERR to_hex($cmd)." ".to_hex(chr $layer)." ".to_hex(chr $row)." ".to_hex(chr $col)." ".$keycode->{id};
+
+        my $res = <$fh>;
+        if ($res !~ /^CMD_OK/) {
+            die "Could not set key for layer:$layer row:$row col:$col type_and_key:$type_and_key $res";
+        }
 
         $layer++;
         if ($layer == 6) {
@@ -371,6 +384,76 @@ sub get_type_and_key {
     }
 
     return;
+}
+
+sub get_serial_num_rows_cols {
+    my ($fh) = @_;
+
+    my $num_rows = 0;
+    my $num_cols = 0;
+
+    unless (print $fh "DALSIK-NUM_ROWS\n") {
+        die "Error DALSIK-NUM_ROWS: $!";
+    }
+
+    my $rows_res = <$fh>;
+    my $res = <$fh>;
+
+    if ($res !~ /^CMD_OK/) {
+        die "ERROR DALSIK-NUM_ROWS: $rows_res$res";
+    }
+
+    if ($rows_res =~ /^ROWS<(\d)>$/) {
+        $num_rows = $1;
+    } else {
+        die "ERROR DALSIK-NUM_ROWS: $rows_res$res";
+    }
+
+    unless (print $fh "DALSIK-NUM_COLS\n") {
+        die "Error DALSIK-NUM_COLS: $!";
+    }
+
+    my $cols_res = <$fh>;
+    $res = <$fh>;
+
+    if ($res !~ /^CMD_OK/) {
+        die "ERROR DALSIK-NUM_COLS: $cols_res$res";
+    }
+
+    if ($cols_res =~ /^COLS<(\d)>$/) {
+        $num_cols = $1;
+    } else {
+        die "ERROR DALSIK-NUM_COLS: $cols_res$res";
+    }
+
+    return ($num_rows, $num_cols);
+}
+
+sub get_json_num_rows_cols {
+    my ($keys) = @_;
+
+    my $max_col = 0;
+    my $max_row = 0;
+
+    for my $key (@{ $keys }) {
+        my $row = $key->{row}+1;
+        my $col = $key->{col}+1;
+
+        if ($row > $max_row) {
+            $max_row = $row;
+        }
+        if ($col > $max_col) {
+            $max_col = $col;
+        }
+    }
+
+    return ($max_row, $max_col);
+}
+
+sub to_hex {
+    my ($str) = @_;
+    my $hex = join("-", map { unpack "H*", $_ } split("", $str));
+    return $hex;
 }
 
 # KC_TAB, KC_U -keycode - KEY_NORMAL
