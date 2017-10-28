@@ -98,7 +98,7 @@ KeyInfo KeyMap::get_non_transparent_key(uint8_t row, uint8_t col) {
 }
 
 void KeyMap::set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key_info) {
-    int eeprom_address = this->get_eeprom_address(this->layer_index, row, col);
+    int eeprom_address = this->get_eeprom_address(layer, row, col);
 
     EEPROM.update(eeprom_address + 0x00, key_info.type);
     EEPROM.update(eeprom_address + 0x01, key_info.key);

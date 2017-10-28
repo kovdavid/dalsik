@@ -14,7 +14,7 @@ my $fh = Dalsik::open_serial($serial);
 
 my $layer = 0;
 my $row = 0;
-my $col = 1;
+my $col = 0;
 
 print "Sending:\n\tGET_KEY\n";
 my $cmd = Dalsik::get_cmd('GET_KEY', $layer, $row, $col);

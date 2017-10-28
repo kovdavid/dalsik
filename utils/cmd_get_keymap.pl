@@ -18,8 +18,9 @@ unless (print $fh $cmd) {
     die "Could not send GET_KEYMAP: $!";
 }
 
+print "Received:\n";
 while (my $line = <$fh>) {
-    print $line;
+    print "\t$line";
 
     if ($line =~ /^CMD/) {
         last;
