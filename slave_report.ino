@@ -20,7 +20,9 @@ void SlaveReport::handle_changed_key(ChangedKeyCoords coords) {
     Serial.print(coords.row, HEX);
     Serial.print("-c");
     Serial.print(coords.col, HEX);
-    Serial.print(">\n");
+    Serial.print("> slave_data:");
+    Serial.print(slave_data, HEX);
+    Serial.print("\n");
 #endif
 
 #if USE_I2C
@@ -32,13 +34,13 @@ void SlaveReport::handle_changed_key(ChangedKeyCoords coords) {
 #endif
 }
 
-// We use 1B to send type, row and col from ChangedKeyCoords + 2 parity
+// We use 1B to send type, row and col from ChangedKeyCoords + parity
 // ABBCCCDE
 // A - EVENT_KEY_PRESS:1 EVENT_KEY_RELEASE:0 (EVENT_NONE is not sent by slave)
 // B - row
 // C - column
 // D - parity of A+B+C (bitmask 1111_1100 - FC)
-// E - parity of B+C (bitmask 0111_1100 - 7C)
+// E - value 1 (value 0x00 means "no data" - it should no be sent; this bit prevents that)
 
 uint8_t encode_slave_report_data(ChangedKeyCoords coords) {
     uint8_t data = 0x00;
@@ -49,11 +51,10 @@ uint8_t encode_slave_report_data(ChangedKeyCoords coords) {
     data |= (coords.row << 5) & 0x60;
     data |= (coords.col << 2) & 0x1C;
 
-    uint8_t p1 = parity(data & 0xFC);
-    uint8_t p2 = parity(data & 0x7C);
+    uint8_t p = parity(data & 0xFC);
 
-    data |= (p1 << 1) & 0x02;
-    data |= (p2 << 0) & 0x01;
+    data |= (p << 1) & 0x02;
+    data |= 0x01;
 
     return data;
 }
@@ -65,13 +66,22 @@ ChangedKeyCoords decode_slave_report_data(uint8_t data) {
     coords.row  = (data >> 5) & 0x03;
     coords.col  = (data >> 2) & 0x07;
 
-    uint8_t p1 = (data >> 1) & 0x01;
-    uint8_t p2 = (data >> 0) & 0x01;
+    uint8_t p = (data >> 1) & 0x01;
+    uint8_t calc_p = parity(data & 0xFC);
 
-    uint8_t calc_p1 = parity(data & 0xFC);
-    uint8_t calc_p2 = parity(data & 0x7C);
+#if DEBUG
+    Serial.print("Slave report<t");
+    Serial.print(coords.type, HEX);
+    Serial.print("-r");
+    Serial.print(coords.row, HEX);
+    Serial.print("-c");
+    Serial.print(coords.col, HEX);
+    Serial.print("> slave_data:");
+    Serial.print(slave_data, HEX);
+    Serial.print("\n");
+#endif
 
-    if (p1 == calc_p1 && p2 == calc_p2) {
+    if (p == calc_p) {
         return coords;
     } else {
         return ChangedKeyCoords { EVENT_NONE, 0, 0 };

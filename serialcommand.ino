@@ -4,12 +4,12 @@
 #include "master_report.h"
 #include "serialcommand.h"
 
-uint8_t cmd_buffer[CMD_LENGTH] = {0};
+char cmd_buffer[CMD_LENGTH] = {0};
 uint8_t cmd_buffer_index = 0;
 
 void process_serial_command(Keyboard* keyboard, KeyMap* keymap) {
     while (Serial.available()) {
-        uint8_t c = Serial.read();
+        char c = Serial.read();
         cmd_buffer[cmd_buffer_index++] = c;
 
         if (cmd_buffer_index == CMD_LENGTH) {
@@ -21,7 +21,7 @@ void process_serial_command(Keyboard* keyboard, KeyMap* keymap) {
             } else {
                 Serial.println("CMD_OK");
             }
-            memset(&cmd_buffer, 0, sizeof(uint8_t)*CMD_LENGTH);
+            memset(&cmd_buffer, 0, sizeof(char)*CMD_LENGTH);
             cmd_buffer_index = 0;
         }
     }
@@ -32,7 +32,7 @@ uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
         return 1; // Invalid command
     }
 
-    uint8_t* buffer = &(cmd_buffer[sizeof(CMD_PREFIX)]);
+    char* buffer = &(cmd_buffer[sizeof(CMD_PREFIX)]);
 
 #if DEBUG
     Serial.print("BUFFER|");

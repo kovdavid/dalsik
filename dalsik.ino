@@ -89,15 +89,15 @@ void loop() {
 
 #if DEBUG
     if (coords.type != EVENT_NONE) {
-        unsigned long now = millis();
         Serial.print("keyevent:");
         Serial.print(coords.type, HEX);
         Serial.print(" now:");
-        Serial.println(now);
+        Serial.println(millis_now);
     }
 #endif
 
 #if IS_MASTER
+// The right side is represented in keymap as columns 6-11, not 0-5, so we use offset
     #if MASTER_SIDE == MASTER_SIDE_RIGHT
         coords.col += ONE_SIDE_COL_PIN_COUNT;
     #endif
@@ -107,28 +107,38 @@ void loop() {
 #endif
 }
 
-#if IS_MASTER && USE_I2C
-void read_changed_key_from_slave() {
-    while (Wire.available() > 0) {
-        handle_slave_data(Wire.read());
+#if IS_MASTER
+    #if USE_I2C
+    void read_changed_key_from_slave() {
+        while (Wire.available() > 0) {
+            handle_slave_data(Wire.read());
+        }
     }
-}
 
-void I2C_receive_event(int count) {
-    read_from_slave = 1;
-}
-#endif
+    void I2C_receive_event(int count) {
+        read_from_slave = 1;
+    }
+    #endif
 
-// The keymap is on the master, so the two splits should act as one keyboard
-// Therefore depending on the MASTER_SIDE we need to adjust the col value
-// Essentially the right half should add ONE_SIDE_COL_PIN_COUNT to col, because column numbering
-// goes from left to right, no matter which side is the master (master is connected via USB)
-inline void handle_slave_data(uint8_t data) {
-    ChangedKeyCoords coords = decode_slave_report_data(data);
+    inline void handle_slave_data(uint8_t data) {
+        ChangedKeyCoords coords = decode_slave_report_data(data);
 
+// The right side is represented in keymap as columns 6-11, not 0-5, so we use offset
 #if MASTER_SIDE == MASTER_SIDE_LEFT
-    coords.col += ONE_SIDE_COL_PIN_COUNT;
+        coords.col += ONE_SIDE_COL_PIN_COUNT;
 #endif
 
-    master_report.handle_changed_key(coords);
-}
+#if DEBUG
+        Serial.print("\n");
+        Serial.print("Handle_slave_data<T:");
+        Serial.print(coords.type);
+        Serial.print("|R:");
+        Serial.print(coords.row);
+        Serial.print("|C:");
+        Serial.print(coords.col);
+        Serial.print(">\n");
+#endif
+
+        master_report.handle_changed_key(coords);
+    }
+#endif
