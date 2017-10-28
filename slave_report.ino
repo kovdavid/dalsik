@@ -1,6 +1,6 @@
 #include "dalsik.h"
 #include "keyboard.h"
-#include "serial.h"
+#include "dalsik_serial.h"
 #include <Wire.h>
 #include <Arduino.h>
 
@@ -11,7 +11,7 @@ void SlaveReport::handle_changed_key(ChangedKeyCoords coords) {
         return;
     }
 
-    uint8_t slave_data = encode_slave_report_data(coords);
+    uint8_t slave_data = SlaveReport::encode_slave_report_data(coords);
 
 #if DEBUG
     Serial.print("Slave report<t");
@@ -30,7 +30,7 @@ void SlaveReport::handle_changed_key(ChangedKeyCoords coords) {
     Wire.write(slave_data);
     Wire.endTransmission();
 #else
-    serial_slave_send(slave_data);
+    DalsikSerial::slave_send(slave_data);
 #endif
 }
 
@@ -42,7 +42,7 @@ void SlaveReport::handle_changed_key(ChangedKeyCoords coords) {
 // D - parity of A+B+C (bitmask 1111_1100 - FC)
 // E - value 1 (value 0x00 means "no data" - it should no be sent; this bit prevents that)
 
-uint8_t encode_slave_report_data(ChangedKeyCoords coords) {
+uint8_t SlaveReport::encode_slave_report_data(ChangedKeyCoords coords) {
     uint8_t data = 0x00;
 
     if (coords.type == EVENT_KEY_PRESS) {
@@ -51,7 +51,7 @@ uint8_t encode_slave_report_data(ChangedKeyCoords coords) {
     data |= (coords.row << 5) & 0x60;
     data |= (coords.col << 2) & 0x1C;
 
-    uint8_t p = parity(data & 0xFC);
+    uint8_t p = SlaveReport::parity(data & 0xFC);
 
     data |= (p << 1) & 0x02;
     data |= 0x01;
@@ -59,7 +59,7 @@ uint8_t encode_slave_report_data(ChangedKeyCoords coords) {
     return data;
 }
 
-ChangedKeyCoords decode_slave_report_data(uint8_t data) {
+ChangedKeyCoords SlaveReport::decode_slave_report_data(uint8_t data) {
     ChangedKeyCoords coords;
 
     coords.type = (data & 0x80) ? EVENT_KEY_PRESS : EVENT_KEY_RELEASE;
@@ -67,7 +67,7 @@ ChangedKeyCoords decode_slave_report_data(uint8_t data) {
     coords.col  = (data >> 2) & 0x07;
 
     uint8_t p = (data >> 1) & 0x01;
-    uint8_t calc_p = parity(data & 0xFC);
+    uint8_t calc_p = SlaveReport::parity(data & 0xFC);
 
 #if DEBUG
     Serial.print("Slave report<t");
@@ -88,7 +88,7 @@ ChangedKeyCoords decode_slave_report_data(uint8_t data) {
     }
 }
 
-inline uint8_t parity(uint8_t d) {
+inline uint8_t SlaveReport::parity(uint8_t d) {
     d ^= (d >> 4);
     d ^= (d >> 2);
     d ^= (d >> 1);

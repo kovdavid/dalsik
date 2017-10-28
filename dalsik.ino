@@ -2,7 +2,8 @@
 #include "keymap.h"
 #include "master_report.h"
 #include "slave_report.h"
-#include "serial.h"
+#include "dalsik_serial.h"
+#include "serialcommand.h"
 #include <Wire.h>
 #include <avr/io.h>
 
@@ -37,9 +38,9 @@ void setup() {
     // Wire.setClock(400000);
 #else
     #if IS_MASTER
-        serial_master_init();
+        DalsikSerial::master_init();
     #else
-        serial_slave_init();
+        DalsikSerial::slave_init();
     #endif
 #endif
 
@@ -62,7 +63,7 @@ void loop() {
 
 #if IS_MASTER
     if (Serial.available() > 0) {
-        process_serial_command(&keyboard, &keymap);
+        SerialCommand::process_command(&keyboard, &keymap);
     }
     #if USE_I2C
     if (read_from_slave) {
@@ -70,9 +71,9 @@ void loop() {
         read_changed_key_from_slave();
     }
     #else
-    if (slave_data != 0x00) {
-        handle_slave_data(slave_data);
-        slave_data = 0x00;
+    if (DalsikSerial::slave_data != 0x00) {
+        handle_slave_data(DalsikSerial::slave_data);
+        DalsikSerial::slave_data = 0x00;
     }
     #endif
 #endif
@@ -121,7 +122,7 @@ void loop() {
     #endif
 
     inline void handle_slave_data(uint8_t data) {
-        ChangedKeyCoords coords = decode_slave_report_data(data);
+        ChangedKeyCoords coords = SlaveReport::decode_slave_report_data(data);
 
 // The right side is represented in keymap as columns 6-11, not 0-5, so we use offset
 #if MASTER_SIDE == MASTER_SIDE_LEFT

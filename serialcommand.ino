@@ -7,7 +7,7 @@
 char cmd_buffer[CMD_LENGTH] = {0};
 uint8_t cmd_buffer_index = 0;
 
-void process_serial_command(Keyboard* keyboard, KeyMap* keymap) {
+void SerialCommand::process_command(Keyboard* keyboard, KeyMap* keymap) {
     while (Serial.available()) {
         char c = Serial.read();
         cmd_buffer[cmd_buffer_index++] = c;
@@ -116,7 +116,7 @@ void serial_print_key(KeyMap* keymap, uint8_t layer, uint8_t row, uint8_t col) {
     Serial.print("-C");
     Serial.print(col);
     Serial.print("|");
-    Serial.print(key_type_to_string(key_info));
+    Serial.print(KeyMap::key_type_to_string(key_info));
     Serial.print("|");
     Serial.print(key_info.key, HEX);
     Serial.print(">\n");

@@ -37,13 +37,6 @@ typedef struct {
     uint8_t key;
 } KeyInfo;
 
-inline int key_info_compare(KeyInfo key_info1, KeyInfo key_info2);
-inline uint8_t get_dual_key_modifier(KeyInfo key_info);
-inline uint8_t get_key_with_mod_modifier(KeyInfo key_info);
-inline uint8_t is_dual_key(KeyInfo key_info);
-inline uint8_t is_key_with_mod(KeyInfo key_info);
-const inline char* key_type_to_string(KeyInfo key_info);
-
 class KeyMap {
     private:
         uint8_t layer_index;
@@ -65,6 +58,13 @@ class KeyMap {
         void toggle_layer(uint8_t layer);
         void eeprom_clear();
         void clear();
+
+        inline static uint8_t is_key_with_mod(KeyInfo key_info);
+        inline static const char* key_type_to_string(KeyInfo key_info);
+        inline static uint8_t is_dual_key(KeyInfo key_info);
+        inline static int key_info_compare(KeyInfo key_info1, KeyInfo key_info2);
+        inline static uint8_t get_dual_key_modifier(KeyInfo key_info);
+        inline static uint8_t get_key_with_mod_modifier(KeyInfo key_info);
 };
 
 #endif

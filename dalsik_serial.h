@@ -16,11 +16,13 @@
 // Serial pulse period in microseconds.
 #define SERIAL_DELAY 50
 
-// Buffers for master - slave communication
-extern volatile uint8_t slave_data;
+namespace DalsikSerial {
+    // Buffers for master - slave communication
+    extern volatile uint8_t slave_data;
 
-void serial_master_init();
-void serial_slave_init();
-void serial_slave_send(uint8_t data);
+    void master_init();
+    void slave_init();
+    void slave_send(uint8_t data);
+};
 
 #endif

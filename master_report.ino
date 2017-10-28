@@ -46,7 +46,7 @@ void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
 void MasterReport::press(KeyInfo key_info) {
 #if DEBUG
     Serial.print("Pressed key:");
-    Serial.print(key_type_to_string(key_info));
+    Serial.print(KeyMap::key_type_to_string(key_info));
     Serial.print("|");
     Serial.print(key_info.key, HEX);
     Serial.print("\n");
@@ -63,9 +63,9 @@ void MasterReport::press(KeyInfo key_info) {
         this->press_toggle_layer_key(key_info);
     } else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) {
         this->press_layer_hold_or_toggle(key_info);
-    } else if (is_dual_key(key_info)) {
+    } else if (KeyMap::is_dual_key(key_info)) {
         this->press_dual_key(key_info);
-    } else if (is_key_with_mod(key_info)) {
+    } else if (KeyMap::is_key_with_mod(key_info)) {
         this->press_key_with_mod(key_info);
     }
 }
@@ -73,7 +73,7 @@ void MasterReport::press(KeyInfo key_info) {
 void MasterReport::release(KeyInfo key_info) {
 #if DEBUG
     Serial.print("Released key:");
-    Serial.print(key_type_to_string(key_info));
+    Serial.print(KeyMap::key_type_to_string(key_info));
     Serial.print("|");
     Serial.print(key_info.key, HEX);
     Serial.print("\n");
@@ -87,9 +87,9 @@ void MasterReport::release(KeyInfo key_info) {
         this->release_toggle_layer_key(key_info);
     } else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) {
         this->release_layer_hold_or_toggle(key_info);
-    } else if (is_dual_key(key_info)) {
+    } else if (KeyMap::is_dual_key(key_info)) {
         this->release_dual_key(key_info);
-    } else if (is_key_with_mod(key_info)) {
+    } else if (KeyMap::is_key_with_mod(key_info)) {
         this->release_key_with_mod(key_info);
     }
 
@@ -143,19 +143,22 @@ inline void MasterReport::press_dual_key(KeyInfo key_info) {
         this->dual_key_state.key_info = key_info;
         if (this->num_keys_pressed > 1) {
             this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
-            this->press_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
+            uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
+            this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
         } else {
             this->dual_key_state.mode = DUAL_MODE_PENDING;
         }
     } else {
-        this->press_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
+        uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
+        this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
     }
 }
 
 inline void MasterReport::release_dual_key(KeyInfo key_info) {
-    if (key_info_compare(key_info, this->dual_key_state.key_info) == 0) {
+    if (KeyMap::key_info_compare(key_info, this->dual_key_state.key_info) == 0) {
         if (this->dual_key_state.mode == DUAL_MODE_HOLD_MODIFIER) {
-            this->release_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
+            uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
+            this->release_normal_key(KeyInfo { KEY_NORMAL, modifier });
         } else {
             KeyInfo key_info_tap = { KEY_NORMAL, key_info.key };
 
@@ -167,14 +170,15 @@ inline void MasterReport::release_dual_key(KeyInfo key_info) {
         memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
     } else {
         // There were more dual_keys pressed, this one is not the first
-        this->release_normal_key(KeyInfo { KEY_NORMAL, get_dual_key_modifier(key_info) });
+        uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
+        this->release_normal_key(KeyInfo { KEY_NORMAL, modifier });
     }
 }
 
 inline void MasterReport::press_hook_for_dual_keys() {
     if (this->dual_key_state.mode == DUAL_MODE_PENDING) {
         this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
-        uint8_t modifier = get_dual_key_modifier(this->dual_key_state.key_info);
+        uint8_t modifier = KeyMap::get_dual_key_modifier(this->dual_key_state.key_info);
         this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
     }
 }
@@ -194,7 +198,7 @@ inline void MasterReport::press_layer_hold_or_toggle(KeyInfo key_info) {
 }
 
 inline void MasterReport::release_layer_hold_or_toggle(KeyInfo key_info) {
-    if (key_info_compare(key_info, this->hold_or_toggle_state.key_info) == 0) {
+    if (KeyMap::key_info_compare(key_info, this->hold_or_toggle_state.key_info) == 0) {
         if (this->hold_or_toggle_state.mode == HOLD_OR_TOGGLE_HOLD_LAYER) {
             this->keymap->remove_layer(key_info.key);
         } else {
@@ -215,13 +219,13 @@ inline void MasterReport::press_hook_for_layer_hold_or_toggle() {
 }
 
 inline void MasterReport::press_key_with_mod(KeyInfo key_info) {
-    uint8_t modifier = get_key_with_mod_modifier(key_info);
+    uint8_t modifier = KeyMap::get_key_with_mod_modifier(key_info);
     this->press(KeyInfo { KEY_NORMAL, modifier });
     this->press(KeyInfo { KEY_NORMAL, key_info.key });
 }
 
 inline void MasterReport::release_key_with_mod(KeyInfo key_info) {
-    uint8_t modifier = get_key_with_mod_modifier(key_info);
+    uint8_t modifier = KeyMap::get_key_with_mod_modifier(key_info);
     this->release(KeyInfo { KEY_NORMAL, modifier });
     this->release(KeyInfo { KEY_NORMAL, key_info.key });
 }

@@ -21,6 +21,8 @@ static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 // the HID code for KC_G, so I made every command fixed-length
 #define CMD_LENGTH sizeof(CMD_PREFIX)+1+5
 
-void process_serial_command(Keyboard* keyboard, KeyMap* keymap);
+namespace SerialCommand {
+    void process_command(Keyboard* keyboard, KeyMap* keymap);
+}
 
 #endif

@@ -6,19 +6,41 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include "serial.h"
+#include "dalsik_serial.h"
 #include "dalsik.h"
 
-volatile uint8_t slave_data = 0x00;
+volatile uint8_t DalsikSerial::slave_data = 0x00;
 
-void serial_master_init(void) {
+void DalsikSerial::master_init(void) {
     set_serial_pin_input_pullup();
     serial_set_interrupt();
 }
 
-void serial_slave_init(void) {
+void DalsikSerial::slave_init(void) {
     set_serial_pin_output();
     serial_output_high();
+}
+
+void DalsikSerial::slave_send(uint8_t data) {
+    // Trigger the interrupt on the master & send the init LOW/HIGH
+    serial_output_low();
+    serial_delay();
+    serial_output_high();
+    serial_delay();
+
+    // Send data - MSB
+    for (int8_t i = 7; i >= 0; i--) {
+        if (data & (1 << i)) {
+            serial_output_high();
+        } else {
+            serial_output_low();
+        }
+        serial_delay();
+    }
+
+    // Pull the line HIGH - IDLE
+    serial_output_high();
+    serial_delay();
 }
 
 inline static uint8_t serial_master_read() {
@@ -39,28 +61,6 @@ inline static uint8_t serial_master_read() {
     }
 
     return data;
-}
-
-void serial_slave_send(uint8_t data) {
-    // Trigger the interrupt on the master & send the init LOW/HIGH
-    serial_output_low();
-    serial_delay();
-    serial_output_high();
-    serial_delay();
-
-    // Send data - MSB
-    for (int8_t i = 7; i >= 0; i--) {
-        if (data & (1 << i)) {
-            serial_output_high();
-        } else {
-            serial_output_low();
-        }
-        serial_delay();
-    }
-
-    // Pull the line HIGH - IDLE
-    serial_output_high();
-    serial_delay();
 }
 
 //=========================//
@@ -106,7 +106,7 @@ inline void set_serial_pin_output() {
 
 #if IS_MASTER
 ISR(SERIAL_PIN_INTERRUPT) {
-    slave_data = serial_master_read();
+    DalsikSerial::slave_data = serial_master_read();
     // Clear pending interrupts for INTF0 (which were registered during serial_master_read)
     EIFR |= (1 << SERIAL_PIN_INTERRUPT_FLAG);
 }
