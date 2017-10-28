@@ -98,6 +98,9 @@ void loop() {
 #endif
 
 #if IS_MASTER
+    #if MASTER_SIDE == MASTER_SIDE_RIGHT
+        coords.col += ONE_SIDE_COL_PIN_COUNT;
+    #endif
     master_report.handle_changed_key(coords);
 #else
     slave_report.handle_changed_key(coords);
@@ -116,7 +119,16 @@ void I2C_receive_event(int count) {
 }
 #endif
 
+// The keymap is on the master, so the two splits should act as one keyboard
+// Therefore depending on the MASTER_SIDE we need to adjust the col value
+// Essentially the right half should add ONE_SIDE_COL_PIN_COUNT to col, because column numbering
+// goes from left to right, no matter which side is the master (master is connected via USB)
 inline void handle_slave_data(uint8_t data) {
     ChangedKeyCoords coords = decode_slave_report_data(data);
+
+#if MASTER_SIDE == MASTER_SIDE_LEFT
+    coords.col += ONE_SIDE_COL_PIN_COUNT;
+#endif
+
     master_report.handle_changed_key(coords);
 }

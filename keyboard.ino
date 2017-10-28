@@ -37,12 +37,10 @@ ChangedKeyCoords Keyboard::matrix_scan() {
                 this->keystate[row][col] = debounced_input;
                 pinMode(ROW_PINS[row], INPUT_PULLUP);
 
-                uint8_t normalized_col = get_normalized_col(col);
-
                 if (debounced_input == DEBOUNCE_MAX) {
-                    return ChangedKeyCoords { EVENT_KEY_PRESS, row, normalized_col };
+                    return ChangedKeyCoords { EVENT_KEY_PRESS, row, col };
                 } else {
-                    return ChangedKeyCoords { EVENT_KEY_RELEASE, row, normalized_col };
+                    return ChangedKeyCoords { EVENT_KEY_RELEASE, row, col };
                 }
             }
         }
@@ -69,20 +67,5 @@ uint8_t Keyboard::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
             return DEBOUNCE_LOW;
         }
     }
-
     return DEBOUNCE_CHANGING;
-}
-
-// The keymap is on the master, so the two splits should act as one keyboard
-// Therefore depending on the MASTER_SIDE we need to adjust the col value
-// Essentially the right half should add ONE_SIDE_COL_PIN_COUNT to col, because column numbering
-// goes from left to right, no matter which side is the master (master is connected via USB)
-inline uint8_t get_normalized_col(uint8_t col) {
-#if IS_MASTER && MASTER_SIDE == MASTER_SIDE_RIGHT
-    return col + ONE_SIDE_COL_PIN_COUNT;
-#endif
-#if !IS_MASTER && MASTER_SIDE == MASTER_SIDE_LEFT
-    return col + ONE_SIDE_COL_PIN_COUNT;
-#endif
-    return col;
 }
