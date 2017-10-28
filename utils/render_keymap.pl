@@ -13,7 +13,7 @@ my $fh;
 
 my $file = shift;
 if ($file) {
-    open my $fh, "<", $file or die "Unable to open file($file): $!";
+    open $fh, "<", $file or die "Unable to open file($file): $!";
 } else {
     $fh = *STDIN;
 }
@@ -31,9 +31,9 @@ while (my $line = <$fh>) {
         my $row = $2;
         my $col = $3;
         my $type_str = $4;
-        my $key_hex = $5;
+        my $key_dec = $5;
 
-        my $str = Dalsik::type_and_key_to_str($type_str, $key_hex);
+        my $str = Dalsik::type_and_key_to_str($type_str, $key_dec);
         if ($str ne 'KC_NO' && $str ne 'KC_TRNS') {
             $num_keys_on_layers->{$layer}++;
         }

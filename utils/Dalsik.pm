@@ -7,16 +7,14 @@ use FindBin qw[ $Bin ];
 our $keycode_str_to_dec = {};
 our $dec_to_keycode_str = {};
 
-BEGIN {
-    my $file = "$Bin/keycode_str_to_dec.txt";
-    open my $fh, "<", $file or die "Could not open $file: $!";
-    while (my $line = <$fh>) {
-        my ($str, $dec) = split(/\s+/, $line);
-        $keycode_str_to_dec->{$str} = $dec;
-        $dec_to_keycode_str->{$dec} = $str;
-    }
-    close $fh;
+my $file = "$Bin/keycode_str_to_dec.txt";
+open my $fh, "<", $file or die "Could not open $file: $!";
+while (my $line = <$fh>) {
+    my ($str, $dec) = split(/\s+/, $line);
+    $keycode_str_to_dec->{$str} = $dec;
+    $dec_to_keycode_str->{$dec} = $str;
 }
+close $fh;
 
 sub open_serial {
     my ($serial) = @_;
