@@ -118,6 +118,6 @@ void serial_print_key(KeyMap* keymap, uint8_t layer, uint8_t row, uint8_t col) {
     Serial.print("|");
     Serial.print(KeyMap::key_type_to_string(key_info));
     Serial.print("|");
-    Serial.print(key_info.key, HEX);
+    Serial.print(key_info.key, DEC);
     Serial.print(">\n");
 }
