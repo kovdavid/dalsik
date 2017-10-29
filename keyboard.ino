@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "HID.h"
 #include "dalsik.h"
-#include "keyboard_hid_desc.h"
+#include "dalsik_hid_desc.h"
 
 extern const uint8_t KEYBOARD_HID_DESC[] PROGMEM;
 

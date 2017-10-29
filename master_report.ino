@@ -1,6 +1,6 @@
 #include "keyboard.h"
 #include "HID.h"
-#include "keyboard_hid_desc.h"
+#include "dalsik_hid_desc.h"
 #include "keymap.h"
 #include "array_utils.h"
 
