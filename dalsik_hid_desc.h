@@ -1,14 +1,17 @@
 #ifndef KEYBOARD_HID_DESC_H
 #define KEYBOARD_HID_DESC_H
 
-#define KEYBOARD_REPORT_ID 0x02
+#define BASE_KEYBOARD_REPORT_ID       0x02
+#define MOUSE_REPORT_ID               0x03
+#define MULTIMEDIA_KEYBOARD_REPORT_ID 0x04
+#define SYSTEM_KEYBOARD_REPORT_ID     0x04
 
 const uint8_t KEYBOARD_HID_DESC[] PROGMEM = {
-    //  Keyboard
+    //  Base Keyboard
     0x05, 0x01, // USAGE_PAGE (Generic Desktop)
     0x09, 0x06, // USAGE (Keyboard)
     0xa1, 0x01, // COLLECTION (Application)
-    0x85, KEYBOARD_REPORT_ID, //   REPORT_ID
+    0x85, BASE_KEYBOARD_REPORT_ID, //   REPORT_ID
     0x05, 0x07, //   USAGE_PAGE (Keyboard)
 
     0x19, 0xe0, //   USAGE_MINIMUM (Keyboard LeftControl)

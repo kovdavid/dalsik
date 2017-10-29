@@ -6,7 +6,7 @@
 class SlaveReport {
     public:
         SlaveReport();
-        void handle_changed_key(ChangedKeyCoords coords);
+        void send_changed_key(ChangedKeyCoords coords);
 
         static uint8_t encode_slave_report_data(ChangedKeyCoords coords);
         static ChangedKeyCoords decode_slave_report_data(uint8_t data);

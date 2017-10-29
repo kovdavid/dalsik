@@ -98,13 +98,9 @@ void loop() {
 #endif
 
 #if IS_MASTER
-// The right side is represented in keymap as columns 6-11, not 0-5, so we use offset
-    #if MASTER_SIDE == MASTER_SIDE_RIGHT
-        coords.col += ONE_SIDE_COL_PIN_COUNT;
-    #endif
-    master_report.handle_changed_key(coords);
+    master_report.handle_master_changed_key(coords);
 #else
-    slave_report.handle_changed_key(coords);
+    slave_report.send_changed_key(coords);
 #endif
 }
 
@@ -124,11 +120,6 @@ void loop() {
     inline void handle_slave_data(uint8_t data) {
         ChangedKeyCoords coords = SlaveReport::decode_slave_report_data(data);
 
-// The right side is represented in keymap as columns 6-11, not 0-5, so we use offset
-#if MASTER_SIDE == MASTER_SIDE_LEFT
-        coords.col += ONE_SIDE_COL_PIN_COUNT;
-#endif
-
 #if DEBUG
         Serial.print("\n");
         Serial.print("Handle_slave_data<T:");
@@ -140,6 +131,6 @@ void loop() {
         Serial.print(">\n");
 #endif
 
-        master_report.handle_changed_key(coords);
+        master_report.handle_slave_changed_key(coords);
     }
 #endif

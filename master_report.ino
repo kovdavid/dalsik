@@ -3,6 +3,7 @@
 #include "dalsik_hid_desc.h"
 #include "keymap.h"
 #include "array_utils.h"
+#include "dalsik.h"
 
 MasterReport::MasterReport(KeyMap* keymap) {
     this->keymap = keymap;
@@ -19,6 +20,22 @@ void MasterReport::clear() {
     this->num_keys_pressed = 0;
 
     this->keymap->clear();
+}
+
+// The right side sends columns 0-5, while in the keymap/eeprom it is at 6-11, so we need
+// to offset the column reported
+void MasterReport::handle_master_changed_key(ChangedKeyCoords coords) {
+#if MASTER_SIDE == MASTER_SIDE_RIGHT
+    coords.col += ONE_SIDE_COL_PIN_COUNT;
+#endif
+    this->handle_changed_key(coords);
+}
+
+void MasterReport::handle_slave_changed_key(ChangedKeyCoords coords) {
+#if MASTER_SIDE == MASTER_SIDE_LEFT
+    coords.col += ONE_SIDE_COL_PIN_COUNT;
+#endif
+    this->handle_changed_key(coords);
 }
 
 void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
@@ -254,5 +271,5 @@ void MasterReport::send_report() {
 #if DEBUG
     this->print_to_serial();
 #endif
-    HID().SendReport(KEYBOARD_REPORT_ID, &(this->hid_report), sizeof(HIDKeyboardReport));
+    HID().SendReport(BASE_KEYBOARD_REPORT_ID, &(this->hid_report), sizeof(HIDKeyboardReport));
 }

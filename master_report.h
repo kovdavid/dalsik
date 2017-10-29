@@ -41,6 +41,8 @@ class MasterReport {
         inline void press_hook_for_dual_keys();
         inline void press_hook_for_layer_hold_or_toggle();
 
+        void handle_master_changed_key(ChangedKeyCoords coords);
+        void handle_slave_changed_key(ChangedKeyCoords coords);
         void handle_changed_key(ChangedKeyCoords coords);
         void press(KeyInfo key_info);
         void release(KeyInfo key_info);

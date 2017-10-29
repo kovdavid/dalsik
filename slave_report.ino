@@ -6,7 +6,7 @@
 
 SlaveReport::SlaveReport() {}
 
-void SlaveReport::handle_changed_key(ChangedKeyCoords coords) {
+void SlaveReport::send_changed_key(ChangedKeyCoords coords) {
     if (coords.type == EVENT_NONE) {
         return;
     }
