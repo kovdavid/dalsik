@@ -1,4 +1,4 @@
-#include "keyboard.h"
+#include "matrix.h"
 #include "keymap.h"
 #include "master_report.h"
 #include "slave_report.h"
@@ -7,7 +7,7 @@
 #include <Wire.h>
 #include <avr/io.h>
 
-Keyboard keyboard;
+Matrix matrix;
 KeyMap keymap;
 
 #if IS_MASTER
@@ -63,11 +63,11 @@ void loop() {
 
 #if IS_MASTER
     if (Serial.available() > 0) {
-        SerialCommand::process_command(&keyboard, &keymap);
+        SerialCommand::process_command(&keymap);
     }
     #if USE_I2C
-    if (read_from_slave) {
-        read_from_slave = 0;
+    if (read_from_slave != 0x00) {
+        read_from_slave = 0x00;
         read_changed_key_from_slave();
     }
     #else
@@ -78,15 +78,15 @@ void loop() {
     #endif
 #endif
 
-    // By making keyboard scanning only once every millisecond, we can make
-    // the time-dependent debounce logic more predictable inside matrix_scan().
+    // By making matrix scanning only once every millisecond, we can make
+    // the time-dependent debounce logic more predictable
     unsigned long millis_now = millis();
     if (millis_now == prev_millis) {
         return;
     }
     prev_millis = millis_now;
 
-    ChangedKeyCoords coords = keyboard.matrix_scan();
+    ChangedKeyCoords coords = matrix.scan();
 
 #if DEBUG
     if (coords.type != EVENT_NONE) {

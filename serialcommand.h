@@ -2,7 +2,6 @@
 #define SERIALCOMMAND_H
 
 #include "keymap.h"
-#include "keyboard.h"
 
 static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 
@@ -22,7 +21,7 @@ static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 #define CMD_LENGTH sizeof(CMD_PREFIX)+1+5
 
 namespace SerialCommand {
-    void process_command(Keyboard* keyboard, KeyMap* keymap);
+    void process_command(KeyMap* keymap);
 }
 
 #endif

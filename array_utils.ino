@@ -1,6 +1,6 @@
 // From: [0x01, 0x00, 0x03, 0x04, 0x00]
 // To:   [0x01, 0x03, 0x04, 0x00, 0x00]
-// Shift all the values to the left
+// Shift all non-zero values to the left
 void normalize_uint8_array(uint8_t* array, uint8_t array_size) {
     uint8_t last_nonzero_index = 0;
     for (uint8_t i = 0; i < array_size-1; i++) {

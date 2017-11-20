@@ -26,7 +26,13 @@
 #define KEY_WITH_MOD_RGUI        0x12
 #define KEY_WITH_MOD_LALT        0x13
 #define KEY_WITH_MOD_RALT        0x14
+#define KEY_SYSTEM               0x15
+#define KEY_MULTIMEDIA           0x16
 #define KEY_TRANSPARENT          0xFF
+
+// KEY_SYSTEM_POWER_OFF = 0x81
+// KEY_SYSTEM_SLEEP     = 0x82
+// KEY_SYSTEM_WAKE_UP   = 0x83
 
 // EEPROM - 2B/key; 48keys; 8layers; 2*48*8 = 768B
 

@@ -1,5 +1,5 @@
-#ifndef KEYBOARD_H
-#define KEYBOARD_H
+#ifndef MATRIX_H
+#define MATRIX_H
 
 #include "dalsik.h"
 
@@ -18,14 +18,14 @@ typedef struct {
     uint8_t col;
 } ChangedKeyCoords;
 
-class Keyboard {
+class Matrix {
     private:
         uint8_t debounce_input(uint8_t row, uint8_t col, uint8_t input);
 
         uint8_t keystate[ROW_PIN_COUNT][ONE_SIDE_COL_PIN_COUNT];
         uint8_t debounce[ROW_PIN_COUNT][ONE_SIDE_COL_PIN_COUNT];
     public:
-        Keyboard();
+        Matrix();
         ChangedKeyCoords matrix_scan();
 };
 

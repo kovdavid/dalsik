@@ -1,7 +1,7 @@
 #ifndef MASTER_REPORT_H
 #define MASTER_REPORT_H
 
-#include "keyboard.h"
+#include "matrix.h"
 #include "keymap.h"
 
 #define HID_KEYS_COUNT 6

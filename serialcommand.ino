@@ -1,19 +1,18 @@
 #include "dalsik.h"
 #include "keymap.h"
-#include "keyboard.h"
 #include "master_report.h"
 #include "serialcommand.h"
 
 char cmd_buffer[CMD_LENGTH] = {0};
 uint8_t cmd_buffer_index = 0;
 
-void SerialCommand::process_command(Keyboard* keyboard, KeyMap* keymap) {
+void SerialCommand::process_command(KeyMap* keymap) {
     while (Serial.available()) {
         char c = Serial.read();
         cmd_buffer[cmd_buffer_index++] = c;
 
         if (cmd_buffer_index == CMD_LENGTH) {
-            uint8_t res = execute_command(keyboard, keymap);
+            uint8_t res = execute_command(keymap);
             if (res) {
                 Serial.print("CMD_ERROR ");
                 Serial.print(res);
@@ -27,7 +26,7 @@ void SerialCommand::process_command(Keyboard* keyboard, KeyMap* keymap) {
     }
 }
 
-uint8_t execute_command(Keyboard* keyboard, KeyMap* keymap) {
+uint8_t execute_command(KeyMap* keymap) {
     if (memcmp(cmd_buffer, CMD_PREFIX, sizeof(CMD_PREFIX)) != 0) {
         return 1; // Invalid command
     }

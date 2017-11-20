@@ -1,14 +1,7 @@
 #include "Arduino.h"
-#include "HID.h"
 #include "dalsik.h"
-#include "dalsik_hid_desc.h"
 
-extern const uint8_t KEYBOARD_HID_DESC[] PROGMEM;
-
-Keyboard::Keyboard() {
-    static HIDSubDescriptor node(KEYBOARD_HID_DESC, sizeof(KEYBOARD_HID_DESC));
-    HID().AppendDescriptor(&node);
-
+Matrix::Matrix() {
     memset(this->keystate, 0, sizeof(uint8_t)*ROW_PIN_COUNT*ONE_SIDE_COL_PIN_COUNT);
     memset(this->debounce, 0, sizeof(uint8_t)*ROW_PIN_COUNT*ONE_SIDE_COL_PIN_COUNT);
 
@@ -20,7 +13,7 @@ Keyboard::Keyboard() {
     }
 }
 
-ChangedKeyCoords Keyboard::matrix_scan() {
+ChangedKeyCoords Matrix::scan() {
     for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
         pinMode(ROW_PINS[row], OUTPUT);
         digitalWrite(ROW_PINS[row], LOW);
@@ -51,7 +44,7 @@ ChangedKeyCoords Keyboard::matrix_scan() {
     return ChangedKeyCoords { EVENT_NONE, 0x00, 0x00 };
 }
 
-uint8_t Keyboard::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
+uint8_t Matrix::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
     if (input) {
         if (this->debounce[row][col] < DEBOUNCE_MAX) {
             this->debounce[row][col]++;

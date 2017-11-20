@@ -1,5 +1,5 @@
 #include "dalsik.h"
-#include "keyboard.h"
+#include "matrix.h"
 #include "dalsik_serial.h"
 #include <Wire.h>
 #include <Arduino.h>

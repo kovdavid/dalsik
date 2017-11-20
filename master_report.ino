@@ -1,11 +1,16 @@
-#include "keyboard.h"
+#include "matrix.h"
 #include "HID.h"
 #include "dalsik_hid_desc.h"
 #include "keymap.h"
 #include "array_utils.h"
 #include "dalsik.h"
 
+extern const uint8_t KEYBOARD_HID_DESC[] PROGMEM;
+
 MasterReport::MasterReport(KeyMap* keymap) {
+    static HIDSubDescriptor node(KEYBOARD_HID_DESC, sizeof(KEYBOARD_HID_DESC));
+    HID().AppendDescriptor(&node);
+
     this->keymap = keymap;
     this->clear();
 }
