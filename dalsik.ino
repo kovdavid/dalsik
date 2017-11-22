@@ -71,9 +71,9 @@ void loop() {
         read_changed_key_from_slave();
     }
     #else
-    if (DalsikSerial::slave_data != 0x00) {
+    if (DalsikSerial::slave_data_available != 0) {
         handle_slave_data(DalsikSerial::slave_data);
-        DalsikSerial::slave_data = 0x00;
+        DalsikSerial::slave_data_available = 0;
     }
     #endif
 #endif

@@ -16,13 +16,16 @@ MasterReport::MasterReport(KeyMap* keymap) {
 }
 
 void MasterReport::clear() {
-    this->hid_report.modifiers = 0;
-    this->hid_report.reserved = 0;
-    memset(this->hid_report.keys, 0, HID_KEYS_COUNT);
+    memset(&(this->base_hid_report), 0, sizeof(BaseHIDReport));
+    memset(&(this->system_hid_report), 0, sizeof(SystemHIDReport));
+    memset(&(this->multimedia_hid_report), 0, sizeof(MultimediaHIDReport));
     memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
     memset(&(this->hold_or_toggle_state), 0, sizeof(LayerHoldOrToggleState));
 
     this->num_keys_pressed = 0;
+    this->base_hid_report_changed = 0;
+    this->system_hid_report_changed = 0;
+    this->multimedia_hid_report_changed = 0;
 
     this->keymap->clear();
 }
@@ -56,12 +59,15 @@ void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
     if (coords.type == EVENT_KEY_PRESS) {
         this->num_keys_pressed++;
         this->press(key_info);
-        this->send_report();
     }
     if (coords.type == EVENT_KEY_RELEASE) {
         this->num_keys_pressed--;
         this->release(key_info);
+    }
+
+    if (this->base_hid_report_changed == 1) {
         this->send_report();
+        this->base_hid_report_changed = 0;
     }
 }
 
@@ -122,26 +128,32 @@ void MasterReport::release(KeyInfo key_info) {
 
 inline void MasterReport::press_normal_key(KeyInfo key_info) {
     uint8_t key = key_info.key;
+
     if (key >= 0xE0 && key <= 0xE7) { // modifier
         // For 'Left Shift' 0xE1 bitmask is 0x0000_0010
         uint8_t modifier_bit = key & 0x0F;
         uint8_t bitmask = 1 << modifier_bit;
-        this->hid_report.modifiers |= bitmask;
+        this->base_hid_report.modifiers |= bitmask;
     } else { // key
-        append_uniq_to_uint8_array(this->hid_report.keys, HID_KEYS_COUNT, key);
+        append_uniq_to_uint8_array(this->base_hid_report.keys, BASE_HID_REPORT_KEYS, key);
     }
+
+    this->base_hid_report_changed = 1;
 }
 
 inline void MasterReport::release_normal_key(KeyInfo key_info) {
     uint8_t key = key_info.key;
+
     if (key >= 0xE0 && key <= 0xE7) { // modifier
         // For 'Left Shift' 0xE1 bitmask is 0x1111_1101
         uint8_t modifier_bit = key & 0x0F;
         uint8_t bitmask = (1 << modifier_bit) ^ 0xFF;
-        this->hid_report.modifiers &= bitmask;
+        this->base_hid_report.modifiers &= bitmask;
     } else { // key
-        remove_uniq_from_uint8_array(this->hid_report.keys, HID_KEYS_COUNT, key);
+        remove_uniq_from_uint8_array(this->base_hid_report.keys, BASE_HID_REPORT_KEYS, key);
     }
+
+    this->base_hid_report_changed = 1;
 }
 
 inline void MasterReport::press_layer_key(KeyInfo key_info) {
@@ -254,21 +266,21 @@ inline void MasterReport::release_key_with_mod(KeyInfo key_info) {
 
 void MasterReport::print_to_serial() {
     Serial.print("MasterReport:");
-    Serial.print(this->hid_report.modifiers, HEX);
+    Serial.print(this->base_hid_report.modifiers, HEX);
     Serial.print("|");
-    Serial.print(this->hid_report.reserved, HEX);
+    Serial.print(this->base_hid_report.reserved, HEX);
     Serial.print("|");
-    Serial.print(this->hid_report.keys[0], HEX);
+    Serial.print(this->base_hid_report.keys[0], HEX);
     Serial.print("|");
-    Serial.print(this->hid_report.keys[1], HEX);
+    Serial.print(this->base_hid_report.keys[1], HEX);
     Serial.print("|");
-    Serial.print(this->hid_report.keys[2], HEX);
+    Serial.print(this->base_hid_report.keys[2], HEX);
     Serial.print("|");
-    Serial.print(this->hid_report.keys[3], HEX);
+    Serial.print(this->base_hid_report.keys[3], HEX);
     Serial.print("|");
-    Serial.print(this->hid_report.keys[4], HEX);
+    Serial.print(this->base_hid_report.keys[4], HEX);
     Serial.print("|");
-    Serial.print(this->hid_report.keys[5], HEX);
+    Serial.print(this->base_hid_report.keys[5], HEX);
     Serial.print("\n");
 }
 
@@ -276,5 +288,5 @@ void MasterReport::send_report() {
 #if DEBUG
     this->print_to_serial();
 #endif
-    HID().SendReport(BASE_KEYBOARD_REPORT_ID, &(this->hid_report), sizeof(HIDKeyboardReport));
+    HID().SendReport(BASE_KEYBOARD_REPORT_ID, &(this->base_hid_report), sizeof(BaseHIDReport));
 }

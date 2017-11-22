@@ -34,13 +34,13 @@ void SlaveReport::send_changed_key(ChangedKeyCoords coords) {
 #endif
 }
 
-// We use 1B to send type, row and col from ChangedKeyCoords + parity
+// We use 1B to send type, row and col from ChangedKeyCoords + 2 parity
 // ABBCCCDE
 // A - EVENT_KEY_PRESS:1 EVENT_KEY_RELEASE:0 (EVENT_NONE is not sent by slave)
 // B - row
 // C - column
 // D - parity of A+B+C (bitmask 1111_1100 - FC)
-// E - value 1 (value 0x00 means "no data" - it should no be sent; this bit prevents that)
+// E - parity of B+C (bitmask 0111_1100 - 7C)
 
 uint8_t SlaveReport::encode_slave_report_data(ChangedKeyCoords coords) {
     uint8_t data = 0x00;
@@ -51,10 +51,11 @@ uint8_t SlaveReport::encode_slave_report_data(ChangedKeyCoords coords) {
     data |= (coords.row << 5) & 0x60;
     data |= (coords.col << 2) & 0x1C;
 
-    uint8_t p = SlaveReport::parity(data & 0xFC);
+    uint8_t p1 = SlaveReport::parity(data & 0xFC);
+    uint8_t p2 = SlaveReport::parity(data & 0x7C);
 
-    data |= (p << 1) & 0x02;
-    data |= 0x01;
+    data |= (p1 << 1) & 0x02;
+    data |= (p2 << 0) & 0x01;
 
     return data;
 }
@@ -66,8 +67,11 @@ ChangedKeyCoords SlaveReport::decode_slave_report_data(uint8_t data) {
     coords.row  = (data >> 5) & 0x03;
     coords.col  = (data >> 2) & 0x07;
 
-    uint8_t p = (data >> 1) & 0x01;
-    uint8_t calc_p = SlaveReport::parity(data & 0xFC);
+    uint8_t p1 = (data >> 1) & 0x01;
+    uint8_t p2 = (data >> 0) & 0x01;
+
+    uint8_t calc_p1 = SlaveReport::parity(data & 0xFC);
+    uint8_t calc_p2 = SlaveReport::parity(data & 0x7C);
 
 #if DEBUG
     Serial.print("Slave report<t");
@@ -81,7 +85,7 @@ ChangedKeyCoords SlaveReport::decode_slave_report_data(uint8_t data) {
     Serial.print("\n");
 #endif
 
-    if (p == calc_p) {
+    if (p1 == calc_p1 && p2 == calc_p2) {
         return coords;
     } else {
         return ChangedKeyCoords { EVENT_NONE, 0, 0 };

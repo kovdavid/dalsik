@@ -160,27 +160,32 @@ inline uint8_t KeyMap::is_key_with_mod(KeyInfo key_info) {
 
 inline const char* KeyMap::key_type_to_string(KeyInfo key_info) {
     switch (key_info.type) {
-        case KEY_UNSET:           return "KEY_UNSET";
-        case KEY_NORMAL:          return "KEY_NORMAL";
-        case KEY_DUAL_LCTRL:      return "KEY_DUAL_LCTRL";
-        case KEY_DUAL_RCTRL:      return "KEY_DUAL_RCTRL";
-        case KEY_DUAL_LSHIFT:     return "KEY_DUAL_LSHIFT";
-        case KEY_DUAL_RSHIFT:     return "KEY_DUAL_RSHIFT";
-        case KEY_DUAL_LGUI:       return "KEY_DUAL_LGUI";
-        case KEY_DUAL_RGUI:       return "KEY_DUAL_RGUI";
-        case KEY_DUAL_LALT:       return "KEY_DUAL_LALT";
-        case KEY_DUAL_RALT:       return "KEY_DUAL_RALT";
-        case KEY_WITH_MOD_LCTRL:  return "KEY_DUAL_LCTRL";
-        case KEY_WITH_MOD_RCTRL:  return "KEY_DUAL_RCTRL";
-        case KEY_WITH_MOD_LSHIFT: return "KEY_DUAL_LSHIFT";
-        case KEY_WITH_MOD_RSHIFT: return "KEY_DUAL_RSHIFT";
-        case KEY_WITH_MOD_LGUI:   return "KEY_DUAL_LGUI";
-        case KEY_WITH_MOD_RGUI:   return "KEY_DUAL_RGUI";
-        case KEY_WITH_MOD_LALT:   return "KEY_DUAL_LALT";
-        case KEY_WITH_MOD_RALT:   return "KEY_DUAL_RALT";
-        case KEY_LAYER_PRESS:     return "KEY_LAYER_PRESS";
-        case KEY_LAYER_TOGGLE:    return "KEY_LAYER_TOGGLE";
-        case KEY_TRANSPARENT:     return "KEY_TRANSPARENT";
-        default:                  return "KEY_TYPE_UNKNOWN";
+        case KEY_UNSET:                return "KEY_UNSET";
+        case KEY_NORMAL:               return "KEY_NORMAL";
+        case KEY_DUAL_LCTRL:           return "KEY_DUAL_LCTRL";
+        case KEY_DUAL_RCTRL:           return "KEY_DUAL_RCTRL";
+        case KEY_DUAL_LSHIFT:          return "KEY_DUAL_LSHIFT";
+        case KEY_DUAL_RSHIFT:          return "KEY_DUAL_RSHIFT";
+        case KEY_DUAL_LGUI:            return "KEY_DUAL_LGUI";
+        case KEY_DUAL_RGUI:            return "KEY_DUAL_RGUI";
+        case KEY_DUAL_LALT:            return "KEY_DUAL_LALT";
+        case KEY_DUAL_RALT:            return "KEY_DUAL_RALT";
+        case KEY_LAYER_PRESS:          return "KEY_LAYER_PRESS";
+        case KEY_LAYER_TOGGLE:         return "KEY_LAYER_TOGGLE";
+        case KEY_LAYER_HOLD_OR_TOGGLE: return "KEY_LAYER_HOLD_OR_TOGGLE";
+        case KEY_WITH_MOD_LCTRL:       return "KEY_WITH_MOD_LCTRL";
+        case KEY_WITH_MOD_RCTRL:       return "KEY_WITH_MOD_RCTRL";
+        case KEY_WITH_MOD_LSHIFT:      return "KEY_WITH_MOD_LSHIFT";
+        case KEY_WITH_MOD_RSHIFT:      return "KEY_WITH_MOD_RSHIFT";
+        case KEY_WITH_MOD_LGUI:        return "KEY_WITH_MOD_LGUI";
+        case KEY_WITH_MOD_RGUI:        return "KEY_WITH_MOD_RGUI";
+        case KEY_WITH_MOD_LALT:        return "KEY_WITH_MOD_LALT";
+        case KEY_WITH_MOD_RALT:        return "KEY_WITH_MOD_RALT";
+        case KEY_SYSTEM:               return "KEY_SYSTEM";
+        case KEY_MULTIMEDIA_0:         return "KEY_MULTIMEDIA_0";
+        case KEY_MULTIMEDIA_1:         return "KEY_MULTIMEDIA_1";
+        case KEY_MULTIMEDIA_2:         return "KEY_MULTIMEDIA_2";
+        case KEY_TRANSPARENT:          return "KEY_TRANSPARENT";
+        default:                       return "KEY_TYPE_UNKNOWN";
     }
 }

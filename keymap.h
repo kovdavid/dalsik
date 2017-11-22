@@ -27,12 +27,35 @@
 #define KEY_WITH_MOD_LALT        0x13
 #define KEY_WITH_MOD_RALT        0x14
 #define KEY_SYSTEM               0x15
-#define KEY_MULTIMEDIA           0x16
+#define KEY_MULTIMEDIA_0         0x16
+#define KEY_MULTIMEDIA_1         0x17
+#define KEY_MULTIMEDIA_2         0x18
 #define KEY_TRANSPARENT          0xFF
 
+// E0 Left control
+// E1 Left shift
+// E2 Left alt
+// E3 Left gui
+// E4 Right control
+// E5 Right shift
+// E6 Right alt
+// E7 Right gui
+
+// KEY_SYSTEM
 // KEY_SYSTEM_POWER_OFF = 0x81
 // KEY_SYSTEM_SLEEP     = 0x82
 // KEY_SYSTEM_WAKE_UP   = 0x83
+
+// KEY_MULTIMEDIA_0 - report[1] = 0x00
+// KEY_MULTIMEDIA_MUTE        -> report[0] = 0xE2
+// KEY_MULTIMEDIA_VOLUME_UP   -> report[0] = 0xE9
+// KEY_MULTIMEDIA_VOLUME_DOWN -> report[0] = 0xEA
+
+// KEY_MULTIMEDIA_1 - report[1] = 0x01
+// KEY_LAUNCH_CALCULATOR       -> report[0] = 0x92 (0x0192)
+// KEY_LAUNCH_LOCAL_BROWSER    -> report[0] = 0x94 (0x0194)
+// KEY_LAUNCH_INTERNET_BROWSER -> report[0] = 0x96 (0x0196)
+// KEY_LAUNCH_SCREEN_SAVER     -> report[0] = 0x9E (0x019E)
 
 // EEPROM - 2B/key; 48keys; 8layers; 2*48*8 = 768B
 

@@ -10,6 +10,7 @@
 #include "dalsik.h"
 
 volatile uint8_t DalsikSerial::slave_data = 0x00;
+volatile uint8_t DalsikSerial::slave_data_available = 0;
 
 void DalsikSerial::master_init(void) {
     set_serial_pin_input_pullup();
@@ -107,6 +108,7 @@ inline void set_serial_pin_output() {
 #if IS_MASTER
 ISR(SERIAL_PIN_INTERRUPT) {
     DalsikSerial::slave_data = serial_master_read();
+    DalsikSerial::slave_data_available = 1;
     // Clear pending interrupts for INTF0 (which were registered during serial_master_read)
     EIFR |= (1 << SERIAL_PIN_INTERRUPT_FLAG);
 }

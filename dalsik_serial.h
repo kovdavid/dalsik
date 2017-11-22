@@ -17,7 +17,7 @@
 #define SERIAL_DELAY 50
 
 namespace DalsikSerial {
-    // Buffers for master - slave communication
+    extern volatile uint8_t slave_data_available;
     extern volatile uint8_t slave_data;
 
     void master_init();

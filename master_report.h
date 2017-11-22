@@ -3,14 +3,7 @@
 
 #include "matrix.h"
 #include "keymap.h"
-
-#define HID_KEYS_COUNT 6
-
-typedef struct {
-    uint8_t modifiers;
-    uint8_t reserved;
-    uint8_t keys[HID_KEYS_COUNT];
-} HIDKeyboardReport;
+#include "dalsik_hid_desc.h"
 
 #define DUAL_MODE_NOT_PRESSED   0x00
 #define DUAL_MODE_PENDING       0x01
@@ -65,7 +58,14 @@ class MasterReport {
         inline void press_layer_hold_or_toggle(KeyInfo key_info);
         inline void release_layer_hold_or_toggle(KeyInfo key_info);
 
-        HIDKeyboardReport hid_report;
+        BaseHIDReport base_hid_report;
+        SystemHIDReport system_hid_report;
+        MultimediaHIDReport multimedia_hid_report;
+
+        uint8_t base_hid_report_changed;
+        uint8_t system_hid_report_changed;
+        uint8_t multimedia_hid_report_changed;
+
         KeyMap* keymap;
         DualKeyState dual_key_state;
         LayerHoldOrToggleState hold_or_toggle_state;
@@ -73,25 +73,3 @@ class MasterReport {
 };
 
 #endif
-
-// bit number
-// 76543210
-// DEADBEEF
-
-// bit 0: left control
-// bit 1: left shift
-// bit 2: left alt
-// bit 3: left GUI (Win/Apple/Meta key)
-// bit 4: right control
-// bit 5: right shift
-// bit 6: right alt
-// bit 7: right GUI
-//
-// E0 Left control
-// E1 Left shift
-// E2 Left alt
-// E3 Left GUI
-// E4 Right control
-// E5 Right shift
-// E6 Right alt
-// E7 Right GUI

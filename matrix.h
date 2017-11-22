@@ -26,7 +26,7 @@ class Matrix {
         uint8_t debounce[ROW_PIN_COUNT][ONE_SIDE_COL_PIN_COUNT];
     public:
         Matrix();
-        ChangedKeyCoords matrix_scan();
+        ChangedKeyCoords scan();
 };
 
 #endif
