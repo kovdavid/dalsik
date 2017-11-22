@@ -23,9 +23,9 @@ void MasterReport::clear() {
     memset(&(this->hold_or_toggle_state), 0, sizeof(LayerHoldOrToggleState));
 
     this->num_keys_pressed = 0;
-    this->base_hid_report_changed = 0;
-    this->system_hid_report_changed = 0;
-    this->multimedia_hid_report_changed = 0;
+    this->base_hid_report_changed = 1;
+    this->system_hid_report_changed = 1;
+    this->multimedia_hid_report_changed = 1;
 
     this->keymap->clear();
 }
@@ -63,11 +63,23 @@ void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
     if (coords.type == EVENT_KEY_RELEASE) {
         this->num_keys_pressed--;
         this->release(key_info);
+
+        if (this->num_keys_pressed == 0) {
+            this->clear();
+        }
     }
 
     if (this->base_hid_report_changed == 1) {
-        this->send_report();
+        this->send_base_hid_report();
         this->base_hid_report_changed = 0;
+    }
+    if (this->system_hid_report_changed == 1) {
+        this->send_system_hid_report();
+        this->system_hid_report_changed = 0;
+    }
+    if (this->multimedia_hid_report_changed == 1) {
+        this->send_multimedia_hid_report();
+        this->multimedia_hid_report_changed = 0;
     }
 }
 
@@ -91,8 +103,12 @@ void MasterReport::press(KeyInfo key_info) {
         this->press_toggle_layer_key(key_info);
     } else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) {
         this->press_layer_hold_or_toggle(key_info);
+    } else if (key_info.type == KEY_SYSTEM)  {
+        this->press_system_key(key_info);
     } else if (KeyMap::is_dual_key(key_info)) {
         this->press_dual_key(key_info);
+    } else if (KeyMap::is_multimedia_key(key_info)) {
+        this->press_multimedia_key(key_info);
     } else if (KeyMap::is_key_with_mod(key_info)) {
         this->press_key_with_mod(key_info);
     }
@@ -115,14 +131,14 @@ void MasterReport::release(KeyInfo key_info) {
         this->release_toggle_layer_key(key_info);
     } else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) {
         this->release_layer_hold_or_toggle(key_info);
+    } else if (key_info.type == KEY_SYSTEM)  {
+        this->release_system_key(key_info);
     } else if (KeyMap::is_dual_key(key_info)) {
         this->release_dual_key(key_info);
+    } else if (KeyMap::is_multimedia_key(key_info)) {
+        this->release_multimedia_key(key_info);
     } else if (KeyMap::is_key_with_mod(key_info)) {
         this->release_key_with_mod(key_info);
-    }
-
-    if (this->num_keys_pressed == 0) {
-        this->clear();
     }
 }
 
@@ -197,7 +213,7 @@ inline void MasterReport::release_dual_key(KeyInfo key_info) {
             KeyInfo key_info_tap = { KEY_NORMAL, key_info.key };
 
             this->press_normal_key(key_info_tap);
-            this->send_report();
+            this->send_base_hid_report();
             this->release_normal_key(key_info_tap);
         }
 
@@ -206,6 +222,37 @@ inline void MasterReport::release_dual_key(KeyInfo key_info) {
         // There were more dual_keys pressed, this one is not the first
         uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
         this->release_normal_key(KeyInfo { KEY_NORMAL, modifier });
+    }
+}
+
+inline void MasterReport::press_multimedia_key(KeyInfo key_info) {
+    this->multimedia_hid_report.key = key_info.key;
+    if (key_info.type == KEY_MULTIMEDIA_2) {
+        this->multimedia_hid_report.prefix = 0x02;
+    } else if (key_info.type == KEY_MULTIMEDIA_1) {
+        this->multimedia_hid_report.prefix = 0x01;
+    } else {
+        this->multimedia_hid_report.prefix = 0x00;
+    }
+    this->multimedia_hid_report_changed = 1;
+}
+
+inline void MasterReport::release_multimedia_key(KeyInfo key_info) {
+    uint8_t key = key_info.key;
+    uint8_t prefix = 0x00;
+    if (key_info.type == KEY_MULTIMEDIA_2) {
+        prefix = 0x02;
+    } else if (key_info.type == KEY_MULTIMEDIA_1) {
+        prefix = 0x01;
+    }
+
+    if (
+        this->multimedia_hid_report.key == key
+        && this->multimedia_hid_report.prefix == prefix
+    ) {
+        this->multimedia_hid_report.key = 0x00;
+        this->multimedia_hid_report.prefix = 0x00;
+        this->multimedia_hid_report_changed = 1;
     }
 }
 
@@ -245,6 +292,18 @@ inline void MasterReport::release_layer_hold_or_toggle(KeyInfo key_info) {
     }
 }
 
+inline void MasterReport::press_system_key(KeyInfo key_info) {
+    this->system_hid_report.key = key_info.key;
+    this->system_hid_report_changed = 1;
+}
+
+inline void MasterReport::release_system_key(KeyInfo key_info) {
+    if (this->system_hid_report.key == key_info.key) {
+        this->system_hid_report.key = 0x00;
+        this->system_hid_report_changed = 1;
+    }
+}
+
 inline void MasterReport::press_hook_for_layer_hold_or_toggle() {
     if (this->hold_or_toggle_state.mode == HOLD_OR_TOGGLE_PENDING) {
         this->hold_or_toggle_state.mode = HOLD_OR_TOGGLE_HOLD_LAYER;
@@ -264,8 +323,8 @@ inline void MasterReport::release_key_with_mod(KeyInfo key_info) {
     this->release(KeyInfo { KEY_NORMAL, key_info.key });
 }
 
-void MasterReport::print_to_serial() {
-    Serial.print("MasterReport:");
+void MasterReport::print_base_report_to_serial() {
+    Serial.print("MasterReport[BASE]:");
     Serial.print(this->base_hid_report.modifiers, HEX);
     Serial.print("|");
     Serial.print(this->base_hid_report.reserved, HEX);
@@ -284,9 +343,40 @@ void MasterReport::print_to_serial() {
     Serial.print("\n");
 }
 
-void MasterReport::send_report() {
+void MasterReport::print_system_report_to_serial() {
+    Serial.print("MasterReport[SYSTEM]:");
+    Serial.print(this->system_hid_report.key, HEX);
+    Serial.print("\n");
+}
+
+void MasterReport::print_multimedia_report_to_serial() {
+    Serial.print("MasterReport[MULTIMEDIA]:");
+    Serial.print(this->multimedia_hid_report.prefix, HEX);
+    Serial.print("|");
+    Serial.print(this->multimedia_hid_report.key, HEX);
+    Serial.print("\n");
+}
+
+void MasterReport::send_base_hid_report() {
 #if DEBUG
-    this->print_to_serial();
+    this->print_base_report_to_serial();
 #endif
-    HID().SendReport(BASE_KEYBOARD_REPORT_ID, &(this->base_hid_report), sizeof(BaseHIDReport));
+    void *report = &(this->base_hid_report);
+    HID().SendReport(BASE_KEYBOARD_REPORT_ID, report, sizeof(BaseHIDReport));
+}
+
+void MasterReport::send_system_hid_report() {
+#if DEBUG
+    this->print_system_report_to_serial();
+#endif
+    void *report = &(this->system_hid_report);
+    HID().SendReport(SYSTEM_KEYBOARD_REPORT_ID, report, sizeof(SystemHIDReport));
+}
+
+void MasterReport::send_multimedia_hid_report() {
+#if DEBUG
+    this->print_multimedia_report_to_serial();
+#endif
+    void *report = &(this->multimedia_hid_report);
+    HID().SendReport(MULTIMEDIA_KEYBOARD_REPORT_ID, report, sizeof(MultimediaHIDReport));
 }

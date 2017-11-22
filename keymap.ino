@@ -150,6 +150,14 @@ inline uint8_t KeyMap::is_dual_key(KeyInfo key_info) {
     return 0;
 }
 
+inline uint8_t KeyMap::is_multimedia_key(KeyInfo key_info) {
+    uint8_t type = key_info.type;
+    if (type >= KEY_MULTIMEDIA_0 && type <= KEY_MULTIMEDIA_2) {
+        return 1;
+    }
+    return 0;
+}
+
 inline uint8_t KeyMap::is_key_with_mod(KeyInfo key_info) {
     uint8_t type = key_info.type;
     if (type >= KEY_WITH_MOD_LCTRL && type <= KEY_WITH_MOD_RALT) {

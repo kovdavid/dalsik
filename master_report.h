@@ -25,12 +25,16 @@ typedef struct {
 
 class MasterReport {
     private:
-        void print_to_serial();
+        void print_base_report_to_serial();
+        void print_system_report_to_serial();
+        void print_multimedia_report_to_serial();
     public:
         MasterReport(KeyMap* keymap);
 
         void clear();
-        void send_report();
+        void send_base_hid_report();
+        void send_system_hid_report();
+        void send_multimedia_hid_report();
         inline void press_hook_for_dual_keys();
         inline void press_hook_for_layer_hold_or_toggle();
 
@@ -49,8 +53,14 @@ class MasterReport {
         inline void press_toggle_layer_key(KeyInfo key_info);
         inline void release_toggle_layer_key(KeyInfo key_info);
 
+        inline void press_system_key(KeyInfo key_info);
+        inline void release_system_key(KeyInfo key_info);
+
         inline void press_dual_key(KeyInfo key_info);
         inline void release_dual_key(KeyInfo key_info);
+
+        inline void press_multimedia_key(KeyInfo key_info);
+        inline void release_multimedia_key(KeyInfo key_info);
 
         inline void press_key_with_mod(KeyInfo key_info);
         inline void release_key_with_mod(KeyInfo key_info);

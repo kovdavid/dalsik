@@ -91,6 +91,7 @@ class KeyMap {
         inline static uint8_t is_key_with_mod(KeyInfo key_info);
         inline static const char* key_type_to_string(KeyInfo key_info);
         inline static uint8_t is_dual_key(KeyInfo key_info);
+        inline static uint8_t is_multimedia_key(KeyInfo key_info);
         inline static int key_info_compare(KeyInfo key_info1, KeyInfo key_info2);
         inline static uint8_t get_dual_key_modifier(KeyInfo key_info);
         inline static uint8_t get_key_with_mod_modifier(KeyInfo key_info);
