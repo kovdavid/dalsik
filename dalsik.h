@@ -17,11 +17,10 @@
 
 #define MAX_LAYER_COUNT 8
 #define ROW_PIN_COUNT 4
-#define ONE_SIDE_COL_PIN_COUNT 4
+#define ONE_SIDE_COL_PIN_COUNT 6
 #define BOTH_SIDE_COL_PIN_COUNT 2*ONE_SIDE_COL_PIN_COUNT
 #define _ROW_PINS 6, 7, 8, 9
-#define _COL_PINS A1, A0, 15, 14
-// FULL _COL_PINS A1, A0, 15, 14, 16, 10
+#define _COL_PINS A1, A0, 15, 14, 16, 10
 
 // Turn off the keyboard with this PIN
 #define ON_OFF_PIN 4
