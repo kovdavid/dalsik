@@ -8,8 +8,6 @@
     #include <Wire.h>
 #endif
 
-SlaveReport::SlaveReport() {}
-
 void SlaveReport::send_changed_key(ChangedKeyCoords coords) {
     if (coords.type == EVENT_NONE) {
         return;
@@ -55,8 +53,8 @@ uint8_t SlaveReport::encode_slave_report_data(ChangedKeyCoords coords) {
     data |= (coords.row << 5) & 0x60;
     data |= (coords.col << 2) & 0x1C;
 
-    uint8_t p1 = SlaveReport::parity(data & 0xFC);
-    uint8_t p2 = SlaveReport::parity(data & 0x7C);
+    uint8_t p1 = parity(data & 0xFC);
+    uint8_t p2 = parity(data & 0x7C);
 
     data |= (p1 << 1) & 0x02;
     data |= (p2 << 0) & 0x01;
@@ -74,8 +72,8 @@ ChangedKeyCoords SlaveReport::decode_slave_report_data(uint8_t data) {
     uint8_t p1 = (data >> 1) & 0x01;
     uint8_t p2 = (data >> 0) & 0x01;
 
-    uint8_t calc_p1 = SlaveReport::parity(data & 0xFC);
-    uint8_t calc_p2 = SlaveReport::parity(data & 0x7C);
+    uint8_t calc_p1 = parity(data & 0xFC);
+    uint8_t calc_p2 = parity(data & 0x7C);
 
 #if DEBUG
     Serial.print("Slave report<t");
@@ -96,7 +94,7 @@ ChangedKeyCoords SlaveReport::decode_slave_report_data(uint8_t data) {
     }
 }
 
-inline uint8_t SlaveReport::parity(uint8_t d) {
+inline static uint8_t parity(uint8_t d) {
     d ^= (d >> 4);
     d ^= (d >> 2);
     d ^= (d >> 1);

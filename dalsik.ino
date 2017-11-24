@@ -14,8 +14,6 @@ KeyMap keymap;
 
 #if IS_MASTER
 MasterReport master_report(&keymap);
-#else
-SlaveReport slave_report;
 #endif
 
 uint8_t read_from_slave = 0;
@@ -102,7 +100,7 @@ void loop() {
 #if IS_MASTER
     master_report.handle_master_changed_key(coords);
 #else
-    slave_report.send_changed_key(coords);
+    SlaveReport::send_changed_key(coords);
 #endif
 }
 
