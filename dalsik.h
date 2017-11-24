@@ -19,13 +19,11 @@
 #define ROW_PIN_COUNT 4
 #define ONE_SIDE_COL_PIN_COUNT 6
 #define BOTH_SIDE_COL_PIN_COUNT 2*ONE_SIDE_COL_PIN_COUNT
-#define _ROW_PINS 6, 7, 8, 9
-#define _COL_PINS A1, A0, 15, 14, 16, 10
 
 // Turn off the keyboard with this PIN
 #define ON_OFF_PIN 4
 
-const uint8_t ROW_PINS[ROW_PIN_COUNT] = { _ROW_PINS };
-const uint8_t COL_PINS[ONE_SIDE_COL_PIN_COUNT] = { _COL_PINS };
+const uint8_t ROW_PINS[ROW_PIN_COUNT] = { 0xD7, 0xE6, 0xB4, 0xB5 };
+const uint8_t COL_PINS[ONE_SIDE_COL_PIN_COUNT] = { 0xF6, 0xF7, 0xB1, 0xB3, 0xB2, 0xB6 };
 
 #endif

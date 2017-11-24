@@ -50,23 +50,23 @@ void KeyMap::clear() {
     }
 }
 
-inline int KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col) {
+inline uint32_t KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col) {
     return sizeof(KeyInfo)*( layer*KEY_COUNT + row*BOTH_SIDE_COL_PIN_COUNT + col );
 }
 
 KeyInfo KeyMap::get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col) {
-    int eeprom_address = this->get_eeprom_address(layer, row, col);
+    uint32_t eeprom_address = this->get_eeprom_address(layer, row, col);
 
-    uint8_t type = EEPROM.read(eeprom_address + 0x00);
+    uint8_t type = EEPROM.read(eeprom_address);
     uint8_t key = EEPROM.read(eeprom_address + 0x01);
 
     return KeyInfo { type, key };
 }
 
 KeyInfo KeyMap::get_key(uint8_t row, uint8_t col) {
-    int eeprom_address = this->get_eeprom_address(this->layer_index, row, col);
+    uint32_t eeprom_address = this->get_eeprom_address(this->layer_index, row, col);
 
-    uint8_t type = EEPROM.read(eeprom_address + 0x00);
+    uint8_t type = EEPROM.read(eeprom_address);
     uint8_t key = EEPROM.read(eeprom_address + 0x01);
 
     return KeyInfo { type, key };

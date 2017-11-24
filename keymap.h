@@ -72,7 +72,7 @@ class KeyMap {
         uint8_t toggled_layer_index;
         uint8_t layer_history[LAYER_HISTORY_CAPACITY];
 
-        int get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col);
+        uint32_t get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col);
     public:
         KeyMap(void);
 

@@ -1,8 +1,12 @@
 #include "dalsik.h"
 #include "matrix.h"
 #include "dalsik_serial.h"
-#include <Wire.h>
-#include <Arduino.h>
+#if DEBUG
+    #include <Arduino.h>
+#endif
+#if USE_I2C
+    #include <Wire.h>
+#endif
 
 SlaveReport::SlaveReport() {}
 

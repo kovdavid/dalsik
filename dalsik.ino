@@ -4,8 +4,10 @@
 #include "slave_report.h"
 #include "dalsik_serial.h"
 #include "serialcommand.h"
-#include <Wire.h>
 #include <avr/io.h>
+#if USE_I2C
+    #include <Wire.h>
+#endif
 
 Matrix matrix;
 KeyMap keymap;
@@ -66,8 +68,8 @@ void loop() {
         SerialCommand::process_command(&keymap);
     }
     #if USE_I2C
-    if (read_from_slave != 0x00) {
-        read_from_slave = 0x00;
+    if (read_from_slave != 0) {
+        read_from_slave = 0;
         read_changed_key_from_slave();
     }
     #else
