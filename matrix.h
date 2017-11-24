@@ -18,6 +18,10 @@ typedef struct {
     uint8_t col;
 } ChangedKeyCoords;
 
+inline static void pinmode_input_pullup(uint8_t pin);
+inline static void pinmode_output_low(uint8_t pin);
+inline static uint8_t read_pin(uint8_t pin);
+
 class Matrix {
     private:
         uint8_t debounce_input(uint8_t row, uint8_t col, uint8_t input);

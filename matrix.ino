@@ -1,20 +1,6 @@
 #include "dalsik.h"
 #include "avr/io.h"
 
-inline static void pinmode_input_pullup(uint8_t pin) {
-    _SFR_IO8((pin >> 4) + 1) &= ~_BV(pin & 0x0F); // INPUT
-    _SFR_IO8((pin >> 4) + 2) |=  _BV(pin & 0x0F); // HIGH
-}
-
-inline static void pinmode_output_low(uint8_t pin) {
-    _SFR_IO8((pin >> 4) + 1) |=  _BV(pin & 0x0F); // OUTPUT
-    _SFR_IO8((pin >> 4) + 2) &= ~_BV(pin & 0x0F); // LOW
-}
-
-inline static uint8_t read_pin(uint8_t pin) {
-    return (_SFR_IO8(pin >> 4) & _BV(pin & 0x0F));
-}
-
 Matrix::Matrix() {
     memset(this->keystate, 0, sizeof(uint8_t)*ROW_PIN_COUNT*ONE_SIDE_COL_PIN_COUNT);
     memset(this->debounce, 0, sizeof(uint8_t)*ROW_PIN_COUNT*ONE_SIDE_COL_PIN_COUNT);
@@ -74,4 +60,18 @@ uint8_t Matrix::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
         }
     }
     return DEBOUNCE_CHANGING;
+}
+
+inline static void pinmode_input_pullup(uint8_t pin) {
+    _SFR_IO8((pin >> 4) + 1) &= ~_BV(pin & 0x0F); // INPUT
+    _SFR_IO8((pin >> 4) + 2) |=  _BV(pin & 0x0F); // HIGH
+}
+
+inline static void pinmode_output_low(uint8_t pin) {
+    _SFR_IO8((pin >> 4) + 1) |=  _BV(pin & 0x0F); // OUTPUT
+    _SFR_IO8((pin >> 4) + 2) &= ~_BV(pin & 0x0F); // LOW
+}
+
+inline static uint8_t read_pin(uint8_t pin) {
+    return (_SFR_IO8(pin >> 4) & _BV(pin & 0x0F));
 }
