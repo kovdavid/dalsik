@@ -100,6 +100,18 @@ void loop() {
 #if IS_MASTER
     master_report.handle_master_changed_key(coords);
 #else
+    #if DEBUG
+    Serial.print("Slave report<t");
+    Serial.print(coords.type, HEX);
+    Serial.print("-r");
+    Serial.print(coords.row, HEX);
+    Serial.print("-c");
+    Serial.print(coords.col, HEX);
+    Serial.print("> slave_data:");
+    Serial.print(slave_data, HEX);
+    Serial.print("\n");
+    #endif
+
     SlaveReport::send_changed_key(coords);
 #endif
 }

@@ -1,9 +1,6 @@
 #include "dalsik.h"
 #include "matrix.h"
 #include "dalsik_serial.h"
-#if DEBUG
-    #include <Arduino.h>
-#endif
 #if USE_I2C
     #include <Wire.h>
 #endif
@@ -14,18 +11,6 @@ void SlaveReport::send_changed_key(ChangedKeyCoords coords) {
     }
 
     uint8_t slave_data = SlaveReport::encode_slave_report_data(coords);
-
-#if DEBUG
-    Serial.print("Slave report<t");
-    Serial.print(coords.type, HEX);
-    Serial.print("-r");
-    Serial.print(coords.row, HEX);
-    Serial.print("-c");
-    Serial.print(coords.col, HEX);
-    Serial.print("> slave_data:");
-    Serial.print(slave_data, HEX);
-    Serial.print("\n");
-#endif
 
 #if USE_I2C
     Wire.beginTransmission(I2C_MASTER_ADDRESS);
@@ -74,18 +59,6 @@ ChangedKeyCoords SlaveReport::decode_slave_report_data(uint8_t data) {
 
     uint8_t calc_p1 = parity(data & 0xFC);
     uint8_t calc_p2 = parity(data & 0x7C);
-
-#if DEBUG
-    Serial.print("Slave report<t");
-    Serial.print(coords.type, HEX);
-    Serial.print("-r");
-    Serial.print(coords.row, HEX);
-    Serial.print("-c");
-    Serial.print(coords.col, HEX);
-    Serial.print("> slave_data:");
-    Serial.print(slave_data, HEX);
-    Serial.print("\n");
-#endif
 
     if (p1 == calc_p1 && p2 == calc_p2) {
         return coords;
