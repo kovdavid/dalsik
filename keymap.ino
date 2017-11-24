@@ -60,9 +60,7 @@ KeyInfo KeyMap::get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col) {
     uint8_t type = EEPROM.read(eeprom_address + 0x00);
     uint8_t key = EEPROM.read(eeprom_address + 0x01);
 
-    KeyInfo key_info = { type, key };
-
-    return key_info;
+    return KeyInfo { type, key };
 }
 
 KeyInfo KeyMap::get_key(uint8_t row, uint8_t col) {
@@ -71,9 +69,7 @@ KeyInfo KeyMap::get_key(uint8_t row, uint8_t col) {
     uint8_t type = EEPROM.read(eeprom_address + 0x00);
     uint8_t key = EEPROM.read(eeprom_address + 0x01);
 
-    KeyInfo key_info = { type, key };
-
-    return key_info;
+    return KeyInfo { type, key };
 }
 
 KeyInfo KeyMap::get_non_transparent_key(uint8_t row, uint8_t col) {
