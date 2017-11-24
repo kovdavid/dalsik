@@ -73,7 +73,7 @@ KeyInfo KeyMap::get_key(uint8_t row, uint8_t col) {
 }
 
 KeyInfo KeyMap::get_non_transparent_key(uint8_t row, uint8_t col) {
-    for (uint8_t i = LAYER_HISTORY_CAPACITY-1; i >= 0; i--) {
+    for (int8_t i = LAYER_HISTORY_CAPACITY-1; i >= 0; i--) {
         uint8_t layer = this->layer_history[i];
         if (layer == 0x00) {
             continue;
