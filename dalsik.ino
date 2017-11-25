@@ -17,7 +17,7 @@ MasterReport master_report(&keymap);
 #endif
 
 uint8_t read_from_slave = 0;
-unsigned long prev_millis = 0;
+unsigned long prev_millis = millis();
 
 void setup() {
     // Disable JTAG, so we can use PORTF
@@ -55,10 +55,7 @@ void setup() {
 void loop() {
 #if ON_OFF_PIN
     // Turn off the whole keyboard with a switch
-    while (digitalRead(ON_OFF_PIN) == LOW) {
-        delayMicroseconds(500);
-        Serial.println("ON_OFF_PIN OFF");
-    }
+    while (digitalRead(ON_OFF_PIN) == LOW);
 #endif
 
 #if IS_MASTER
@@ -67,8 +64,8 @@ void loop() {
     }
     #if USE_I2C
     if (read_from_slave != 0) {
-        read_from_slave = 0;
         read_changed_key_from_slave();
+        read_from_slave = 0;
     }
     #else
     if (DalsikSerial::slave_data_available != 0) {
@@ -80,11 +77,10 @@ void loop() {
 
     // By making matrix scanning only once every millisecond, we can make
     // the time-dependent debounce logic more predictable
-    unsigned long millis_now = millis();
-    if (millis_now == prev_millis) {
+    if (prev_millis == millis()) {
         return;
     }
-    prev_millis = millis_now;
+    prev_millis++;
 
     ChangedKeyCoords coords = matrix.scan();
 
@@ -93,7 +89,7 @@ void loop() {
         Serial.print("keyevent:");
         Serial.print(coords.type, HEX);
         Serial.print(" now:");
-        Serial.println(millis_now);
+        Serial.println(prev_millis);
     }
 #endif
 

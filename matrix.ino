@@ -13,6 +13,7 @@ Matrix::Matrix() {
     }
 }
 
+// duration: 168us when no change is detected
 ChangedKeyCoords Matrix::scan() {
     for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
         pinmode_output_low(ROW_PINS[row]);

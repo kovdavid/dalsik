@@ -33,7 +33,7 @@ sub get_cmd {
     } elsif ($cmd eq 'GET_KEYMAP') {
         return "DALSIK-\x02".join("", ("\x00")x5);
     } elsif ($cmd eq 'SET_KEY') {
-        return "DALSIK-\x03".chr($args[0]).chr($args[1]).chr($args[2]).$args[3].$args[4];
+        return "DALSIK-\x03".chr($args[0]).chr($args[1]).chr($args[2]).chr($args[3]).chr($args[4]);
     } elsif ($cmd eq 'CLEAR_KEYMAP') {
         return "DALSIK-\x04".join("", ("\x00")x5);
     } elsif ($cmd eq 'NUM_ROWS') {

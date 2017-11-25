@@ -20,6 +20,7 @@ my $key = 4;
 
 print "Sending:\n\tSET_KEY\n";
 my $cmd = Dalsik::get_cmd('SET_KEY', $layer, $row, $col, $key_type, $key);
+
 unless (print $fh $cmd) {
     die "Could not send SET_KEY: $!";
 }

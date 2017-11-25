@@ -7,22 +7,20 @@ char cmd_buffer[CMD_LENGTH] = {0};
 uint8_t cmd_buffer_index = 0;
 
 void SerialCommand::process_command(KeyMap* keymap) {
-    while (Serial.available()) {
-        char c = Serial.read();
-        cmd_buffer[cmd_buffer_index++] = c;
+    char c = Serial.read();
+    cmd_buffer[cmd_buffer_index++] = c;
 
-        if (cmd_buffer_index == CMD_LENGTH) {
-            uint8_t res = execute_command(keymap);
-            if (res) {
-                Serial.print("CMD_ERROR ");
-                Serial.print(res);
-                Serial.print("\n");
-            } else {
-                Serial.println("CMD_OK");
-            }
-            memset(&cmd_buffer, 0, sizeof(char)*CMD_LENGTH);
-            cmd_buffer_index = 0;
+    if (cmd_buffer_index == CMD_LENGTH) {
+        uint8_t res = execute_command(keymap);
+        if (res) {
+            Serial.print("CMD_ERROR ");
+            Serial.print(res);
+            Serial.print("\n");
+        } else {
+            Serial.println("CMD_OK");
         }
+        memset(&cmd_buffer, 0, sizeof(char)*CMD_LENGTH);
+        cmd_buffer_index = 0;
     }
 }
 
@@ -32,15 +30,6 @@ uint8_t execute_command(KeyMap* keymap) {
     }
 
     char* buffer = &(cmd_buffer[sizeof(CMD_PREFIX)]);
-
-#if DEBUG
-    Serial.print("BUFFER|");
-    Serial.print(cmd_buffer);
-    Serial.print("|");
-    Serial.print(buffer);
-    Serial.print("|");
-    Serial.println(cmd_buffer_index);
-#endif
 
     if (buffer[0] == CMD_GET_KEY) {
         uint8_t layer = buffer[1];
