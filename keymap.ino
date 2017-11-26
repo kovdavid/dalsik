@@ -54,6 +54,10 @@ inline uint32_t KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t c
     return sizeof(KeyInfo)*( layer*KEY_COUNT + row*BOTH_SIDE_COL_PIN_COUNT + col );
 }
 
+inline uint32_t KeyMap::get_tapdance_eeprom_address(uint8_t index, uint8_t tap) {
+    return TAPDANCE_EEPROM_OFFSET + sizeof(KeyInfo)*( index*MAX_TAPDANCE_TAPS + tap-1 );
+}
+
 KeyInfo KeyMap::get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col) {
     uint32_t eeprom_address = this->get_eeprom_address(layer, row, col);
 
@@ -93,6 +97,15 @@ KeyInfo KeyMap::get_non_transparent_key(uint8_t row, uint8_t col) {
     }
 }
 
+KeyInfo KeyMap::get_tapdance_key(uint8_t index, uint8_t tap) {
+    uint32_t eeprom_address = this->get_tapdance_eeprom_address(index, tap);
+
+    uint8_t type = EEPROM.read(eeprom_address);
+    uint8_t key = EEPROM.read(eeprom_address + 0x01);
+
+    return KeyInfo { type, key };
+}
+
 void KeyMap::set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key_info) {
     int eeprom_address = this->get_eeprom_address(layer, row, col);
 
@@ -100,9 +113,34 @@ void KeyMap::set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key_info) 
     EEPROM.update(eeprom_address + 0x01, key_info.key);
 }
 
-void KeyMap::eeprom_clear() {
+void KeyMap::set_tapdance_key(uint8_t index, uint8_t tap, KeyInfo key_info)  {
+    uint32_t eeprom_address = this->get_tapdance_eeprom_address(index, tap);
+
+    EEPROM.update(eeprom_address + 0x00, key_info.type);
+    EEPROM.update(eeprom_address + 0x01, key_info.key);
+}
+
+void KeyMap::eeprom_clear_all() {
     for (uint32_t i = 0; i < EEPROM.length(); i++) {
         EEPROM.update(i, 0x00);
+    }
+}
+
+void KeyMap::eeprom_clear_keymap() {
+    for (uint8_t layer = 0; layer < MAX_LAYER_COUNT; layer++) {
+        for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
+            for (uint8_t col = 0; col < BOTH_SIDE_COL_PIN_COUNT; col++) {
+                this->set_key(layer, row, col, KeyInfo { KEY_UNSET, 0x00 });
+            }
+        }
+    }
+}
+
+void KeyMap::eeprom_clear_tapdance() {
+    for (uint8_t index = 0; index < MAX_TAPDANCE_KEYS; index++) {
+        for (uint8_t tap = 1; tap <= MAX_TAPDANCE_TAPS; tap++) {
+            this->set_tapdance_key(index, tap, KeyInfo { KEY_UNSET, 0x00 });
+        }
     }
 }
 
@@ -162,34 +200,35 @@ inline uint8_t KeyMap::is_key_with_mod(KeyInfo key_info) {
     return 0;
 }
 
-inline const char* KeyMap::key_type_to_string(KeyInfo key_info) {
+inline const __FlashStringHelper* KeyMap::key_type_to_string(KeyInfo key_info) {
     switch (key_info.type) {
-        case KEY_UNSET:                return "KEY_UNSET";
-        case KEY_NORMAL:               return "KEY_NORMAL";
-        case KEY_DUAL_LCTRL:           return "KEY_DUAL_LCTRL";
-        case KEY_DUAL_RCTRL:           return "KEY_DUAL_RCTRL";
-        case KEY_DUAL_LSHIFT:          return "KEY_DUAL_LSHIFT";
-        case KEY_DUAL_RSHIFT:          return "KEY_DUAL_RSHIFT";
-        case KEY_DUAL_LGUI:            return "KEY_DUAL_LGUI";
-        case KEY_DUAL_RGUI:            return "KEY_DUAL_RGUI";
-        case KEY_DUAL_LALT:            return "KEY_DUAL_LALT";
-        case KEY_DUAL_RALT:            return "KEY_DUAL_RALT";
-        case KEY_LAYER_PRESS:          return "KEY_LAYER_PRESS";
-        case KEY_LAYER_TOGGLE:         return "KEY_LAYER_TOGGLE";
-        case KEY_LAYER_HOLD_OR_TOGGLE: return "KEY_LAYER_HOLD_OR_TOGGLE";
-        case KEY_WITH_MOD_LCTRL:       return "KEY_WITH_MOD_LCTRL";
-        case KEY_WITH_MOD_RCTRL:       return "KEY_WITH_MOD_RCTRL";
-        case KEY_WITH_MOD_LSHIFT:      return "KEY_WITH_MOD_LSHIFT";
-        case KEY_WITH_MOD_RSHIFT:      return "KEY_WITH_MOD_RSHIFT";
-        case KEY_WITH_MOD_LGUI:        return "KEY_WITH_MOD_LGUI";
-        case KEY_WITH_MOD_RGUI:        return "KEY_WITH_MOD_RGUI";
-        case KEY_WITH_MOD_LALT:        return "KEY_WITH_MOD_LALT";
-        case KEY_WITH_MOD_RALT:        return "KEY_WITH_MOD_RALT";
-        case KEY_SYSTEM:               return "KEY_SYSTEM";
-        case KEY_MULTIMEDIA_0:         return "KEY_MULTIMEDIA_0";
-        case KEY_MULTIMEDIA_1:         return "KEY_MULTIMEDIA_1";
-        case KEY_MULTIMEDIA_2:         return "KEY_MULTIMEDIA_2";
-        case KEY_TRANSPARENT:          return "KEY_TRANSPARENT";
-        default:                       return "KEY_TYPE_UNKNOWN";
+        case KEY_UNSET:                return F("KEY_UNSET");
+        case KEY_NORMAL:               return F("KEY_NORMAL");
+        case KEY_DUAL_LCTRL:           return F("KEY_DUAL_LCTRL");
+        case KEY_DUAL_RCTRL:           return F("KEY_DUAL_RCTRL");
+        case KEY_DUAL_LSHIFT:          return F("KEY_DUAL_LSHIFT");
+        case KEY_DUAL_RSHIFT:          return F("KEY_DUAL_RSHIFT");
+        case KEY_DUAL_LGUI:            return F("KEY_DUAL_LGUI");
+        case KEY_DUAL_RGUI:            return F("KEY_DUAL_RGUI");
+        case KEY_DUAL_LALT:            return F("KEY_DUAL_LALT");
+        case KEY_DUAL_RALT:            return F("KEY_DUAL_RALT");
+        case KEY_LAYER_PRESS:          return F("KEY_LAYER_PRESS");
+        case KEY_LAYER_TOGGLE:         return F("KEY_LAYER_TOGGLE");
+        case KEY_LAYER_HOLD_OR_TOGGLE: return F("KEY_LAYER_HOLD_OR_TOGGLE");
+        case KEY_WITH_MOD_LCTRL:       return F("KEY_WITH_MOD_LCTRL");
+        case KEY_WITH_MOD_RCTRL:       return F("KEY_WITH_MOD_RCTRL");
+        case KEY_WITH_MOD_LSHIFT:      return F("KEY_WITH_MOD_LSHIFT");
+        case KEY_WITH_MOD_RSHIFT:      return F("KEY_WITH_MOD_RSHIFT");
+        case KEY_WITH_MOD_LGUI:        return F("KEY_WITH_MOD_LGUI");
+        case KEY_WITH_MOD_RGUI:        return F("KEY_WITH_MOD_RGUI");
+        case KEY_WITH_MOD_LALT:        return F("KEY_WITH_MOD_LALT");
+        case KEY_WITH_MOD_RALT:        return F("KEY_WITH_MOD_RALT");
+        case KEY_SYSTEM:               return F("KEY_SYSTEM");
+        case KEY_MULTIMEDIA_0:         return F("KEY_MULTIMEDIA_0");
+        case KEY_MULTIMEDIA_1:         return F("KEY_MULTIMEDIA_1");
+        case KEY_MULTIMEDIA_2:         return F("KEY_MULTIMEDIA_2");
+        case KEY_TAPDANCE:             return F("KEY_TAPDANCE");
+        case KEY_TRANSPARENT:          return F("KEY_TRANSPARENT");
+        default:                       return F("KEY_TYPE_UNKNOWN");
     }
 }
