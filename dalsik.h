@@ -18,6 +18,9 @@
 // Turn off the keyboard with this PIN
 #define ON_OFF_PIN 4
 
+// Trigger key press after holding a key for X ms
+#define DUAL_MODE_TIMEOUT_MS 1000
+
 #define ROW_PIN_COUNT 4
 #define ONE_SIDE_COL_PIN_COUNT 6
 #define BOTH_SIDE_COL_PIN_COUNT 2*ONE_SIDE_COL_PIN_COUNT

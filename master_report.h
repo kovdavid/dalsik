@@ -5,14 +5,16 @@
 #include "keymap.h"
 #include "dalsik_hid_desc.h"
 
-#define DUAL_MODE_NOT_PRESSED   0x00
-#define DUAL_MODE_PENDING       0x01
-#define DUAL_MODE_HOLD_MODIFIER 0x02
-#define DUAL_MODE_HOLD_LAYER    0x03
+#define DUAL_MODE_NOT_PRESSED     0x00
+#define DUAL_MODE_PENDING         0x01
+#define DUAL_MODE_PRESS_KEY       0x02
+#define DUAL_MODE_HOLD_MODIFIER   0x03
+#define DUAL_MODE_HOLD_LAYER      0x04
 
 typedef struct {
     uint8_t mode;
     KeyInfo key_info;
+    unsigned long last_tap_ts;
 } DualKeyState;
 
 #define HOLD_OR_TOGGLE_NOT_PRESSED 0x00
@@ -50,6 +52,7 @@ class MasterReport {
         void handle_changed_key(ChangedKeyCoords coords);
         void press(KeyInfo key_info);
         void release(KeyInfo key_info);
+        inline void key_timeout_check();
 
         inline void press_normal_key(KeyInfo key_info);
         inline void release_normal_key(KeyInfo key_info);
@@ -80,7 +83,6 @@ class MasterReport {
 
         inline void press_tapdance_key(KeyInfo key_info);
         inline void release_tapdance_key(KeyInfo key_info);
-        inline void tapdance_timeout_check();
 
         BaseHIDReport base_hid_report;
         SystemHIDReport system_hid_report;
