@@ -5,14 +5,19 @@
 
 static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 
-#define CMD_GET_KEY      0x01
-#define CMD_GET_KEYMAP   0x02
-#define CMD_SET_KEY      0x03
-#define CMD_CLEAR_KEYMAP 0x04
-#define CMD_NUM_ROWS     0x05
-#define CMD_NUM_COLS     0x06
-#define CMD_PING         0x07
-#define CMD_GET_LAYER    0x08
+#define CMD_GET_KEY             0x01
+#define CMD_GET_KEYMAP          0x02
+#define CMD_SET_KEY             0x03
+#define CMD_CLEAR_KEYMAP        0x04
+#define CMD_NUM_ROWS            0x05
+#define CMD_NUM_COLS            0x06
+#define CMD_PING                0x07
+#define CMD_GET_LAYER           0x08
+#define CMD_CLEAR_TAPDANCE      0x09
+#define CMD_SET_TAPDANCE        0x0A
+#define CMD_GET_TAPDANCE_KEY    0x0B
+#define CMD_GET_TAPDANCE_KEYMAP 0x0C
+#define CMD_CLEAR_EEPROM        0x0D
 
 // +1 for the command type
 // +5 is the max size of arguments (for SET_KEY)

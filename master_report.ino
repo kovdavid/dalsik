@@ -22,7 +22,12 @@ void MasterReport::clear() {
     memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
     memset(&(this->hold_or_toggle_state), 0, sizeof(LayerHoldOrToggleState));
 
+    for (uint8_t i = 0; i < MAX_TAPDANCE_KEYS; i++) {
+        memset(&(this->tapdance_state[i]), 0, sizeof(TapDanceState));
+    }
+
     this->num_keys_pressed = 0;
+    this->active_tapdance_key_count = 0;
     this->base_hid_report_changed = 1;
     this->system_hid_report_changed = 1;
     this->multimedia_hid_report_changed = 1;
@@ -47,6 +52,8 @@ void MasterReport::handle_slave_changed_key(ChangedKeyCoords coords) {
 }
 
 void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
+    this->tapdance_timeout_check();
+
     if (coords.type == EVENT_NONE) {
         return;
     }
@@ -58,6 +65,7 @@ void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
 
     if (coords.type == EVENT_KEY_PRESS) {
         this->num_keys_pressed++;
+
         this->press(key_info);
     }
     if (coords.type == EVENT_KEY_RELEASE) {
@@ -69,18 +77,7 @@ void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
         }
     }
 
-    if (this->base_hid_report_changed == 1) {
-        this->send_base_hid_report();
-        this->base_hid_report_changed = 0;
-    }
-    if (this->system_hid_report_changed == 1) {
-        this->send_system_hid_report();
-        this->system_hid_report_changed = 0;
-    }
-    if (this->multimedia_hid_report_changed == 1) {
-        this->send_multimedia_hid_report();
-        this->multimedia_hid_report_changed = 0;
-    }
+    this->send_hid_report();
 }
 
 void MasterReport::press(KeyInfo key_info) {
@@ -103,6 +100,8 @@ void MasterReport::press(KeyInfo key_info) {
         this->press_toggle_layer_key(key_info);
     } else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) {
         this->press_layer_hold_or_toggle(key_info);
+    } else if (key_info.type == KEY_TAPDANCE) {
+        this->press_tapdance_key(key_info);
     } else if (key_info.type == KEY_SYSTEM)  {
         this->press_system_key(key_info);
     } else if (KeyMap::is_dual_key(key_info)) {
@@ -128,9 +127,11 @@ void MasterReport::release(KeyInfo key_info) {
     } else if (key_info.type == KEY_LAYER_PRESS) {
         this->release_layer_key(key_info);
     } else if (key_info.type == KEY_LAYER_TOGGLE) {
-        this->release_toggle_layer_key(key_info);
+        // do nothing; toggle_layer key has only effect on press
     } else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) {
         this->release_layer_hold_or_toggle(key_info);
+    } else if (key_info.type == KEY_TAPDANCE) {
+        this->release_tapdance_key(key_info);
     } else if (key_info.type == KEY_SYSTEM)  {
         this->release_system_key(key_info);
     } else if (KeyMap::is_dual_key(key_info)) {
@@ -182,10 +183,6 @@ inline void MasterReport::release_layer_key(KeyInfo key_info) {
 
 inline void MasterReport::press_toggle_layer_key(KeyInfo key_info) {
     this->keymap->toggle_layer(key_info.key);
-}
-
-inline void MasterReport::release_toggle_layer_key(KeyInfo key_info) {
-    // do nothing; toggle_layer key has only effect on press
 }
 
 inline void MasterReport::press_dual_key(KeyInfo key_info) {
@@ -250,8 +247,7 @@ inline void MasterReport::release_multimedia_key(KeyInfo key_info) {
         this->multimedia_hid_report.key == key
         && this->multimedia_hid_report.prefix == prefix
     ) {
-        this->multimedia_hid_report.key = 0x00;
-        this->multimedia_hid_report.prefix = 0x00;
+        memset(&(this->multimedia_hid_report), 0, sizeof(MultimediaHIDReport));
         this->multimedia_hid_report_changed = 1;
     }
 }
@@ -323,38 +319,123 @@ inline void MasterReport::release_key_with_mod(KeyInfo key_info) {
     this->release(KeyInfo { KEY_NORMAL, key_info.key });
 }
 
+inline void MasterReport::press_tapdance_key(KeyInfo key_info) {
+    uint8_t index = key_info.key;
+
+    if (this->tapdance_state[index].tap_count == 0) {
+        this->tapdance_state[index] = TapDanceState {
+            .key_reported = 0,
+            .key_pressed = 1,
+            .tap_count = 1,
+            .last_tap_ts = millis()
+        };
+        this->active_tapdance_key_count++;
+        return;
+    }
+
+    this->tapdance_state[index].tap_count++;
+    this->tapdance_state[index].key_pressed = 1;
+    this->tapdance_state[index].last_tap_ts = millis();
+
+    if (this->tapdance_state[index].tap_count == MAX_TAPDANCE_TAPS) {
+        KeyInfo key_info = this->keymap->get_tapdance_key(index, MAX_TAPDANCE_TAPS);
+        this->tapdance_state[index].key_reported = 1;
+        this->press(key_info);
+    }
+}
+
+inline void MasterReport::release_tapdance_key(KeyInfo key_info) {
+    uint8_t index = key_info.key;
+
+    this->tapdance_state[index].key_pressed = 0;
+
+    if (this->tapdance_state[index].key_reported) {
+        KeyInfo key_info = this->keymap->get_tapdance_key(
+            index, this->tapdance_state[index].tap_count
+        );
+        memset(&(this->tapdance_state[index]), 0, sizeof(TapDanceState));
+        this->active_tapdance_key_count--;
+        this->release(key_info);
+    }
+}
+
+inline void MasterReport::tapdance_timeout_check() {
+    if (this->active_tapdance_key_count == 0) {
+        return;
+    }
+
+    unsigned long now_ms = millis();
+
+    for (uint8_t i = 0; i < MAX_TAPDANCE_KEYS; i++) {
+        if (this->tapdance_state[i].tap_count == 0) {
+            continue;
+        }
+        if (this->tapdance_state[i].last_tap_ts + TAPDANCE_TIMEOUT_MS >= now_ms) {
+            KeyInfo key_info = this->keymap->get_tapdance_key(
+                i, this->tapdance_state[i].tap_count
+            );
+
+            this->tapdance_state[i].key_reported = 1;
+            this->press(key_info);
+            this->send_hid_report();
+
+            if (this->tapdance_state[i].key_pressed == 0) {
+                memset(&(this->tapdance_state[i]), 0, sizeof(TapDanceState));
+                this->active_tapdance_key_count--;
+                this->release(key_info);
+                this->send_hid_report();
+            }
+        }
+    }
+}
+
 void MasterReport::print_base_report_to_serial() {
-    Serial.print("MasterReport[BASE]:");
+    Serial.print(F("MasterReport[BASE]:"));
     Serial.print(this->base_hid_report.modifiers, HEX);
-    Serial.print("|");
+    Serial.print(F("|"));
     Serial.print(this->base_hid_report.reserved, HEX);
-    Serial.print("|");
+    Serial.print(F("|"));
     Serial.print(this->base_hid_report.keys[0], HEX);
-    Serial.print("|");
+    Serial.print(F("|"));
     Serial.print(this->base_hid_report.keys[1], HEX);
-    Serial.print("|");
+    Serial.print(F("|"));
     Serial.print(this->base_hid_report.keys[2], HEX);
-    Serial.print("|");
+    Serial.print(F("|"));
     Serial.print(this->base_hid_report.keys[3], HEX);
-    Serial.print("|");
+    Serial.print(F("|"));
     Serial.print(this->base_hid_report.keys[4], HEX);
-    Serial.print("|");
+    Serial.print(F("|"));
     Serial.print(this->base_hid_report.keys[5], HEX);
-    Serial.print("\n");
+    Serial.print(F("\n"));
 }
 
 void MasterReport::print_system_report_to_serial() {
-    Serial.print("MasterReport[SYSTEM]:");
+    Serial.print(F("MasterReport[SYSTEM]:"));
     Serial.print(this->system_hid_report.key, HEX);
-    Serial.print("\n");
+    Serial.print(F("\n"));
 }
 
 void MasterReport::print_multimedia_report_to_serial() {
-    Serial.print("MasterReport[MULTIMEDIA]:");
+    Serial.print(F("MasterReport[MULTIMEDIA]:"));
     Serial.print(this->multimedia_hid_report.prefix, HEX);
-    Serial.print("|");
+    Serial.print(F("|"));
     Serial.print(this->multimedia_hid_report.key, HEX);
-    Serial.print("\n");
+    Serial.print(F("\n"));
+}
+
+void MasterReport::send_hid_report() {
+    if (this->base_hid_report_changed == 1) {
+        this->send_base_hid_report();
+        this->base_hid_report_changed = 0;
+    }
+    if (this->system_hid_report_changed == 1) {
+        this->send_system_hid_report();
+        this->system_hid_report_changed = 0;
+    }
+    if (this->multimedia_hid_report_changed == 1) {
+        this->send_multimedia_hid_report();
+        this->multimedia_hid_report_changed = 0;
+    }
 }
 
 void MasterReport::send_base_hid_report() {

@@ -18,10 +18,10 @@
 // Turn off the keyboard with this PIN
 #define ON_OFF_PIN 4
 
-#define MAX_LAYER_COUNT 8
 #define ROW_PIN_COUNT 4
 #define ONE_SIDE_COL_PIN_COUNT 6
 #define BOTH_SIDE_COL_PIN_COUNT 2*ONE_SIDE_COL_PIN_COUNT
+#define KEY_COUNT ROW_PIN_COUNT * BOTH_SIDE_COL_PIN_COUNT
 
 #define PIN_B(x) (0x30+x)
 #define PIN_C(x) (0x60+x)

@@ -3,8 +3,6 @@
 
 #include "dalsik.h"
 
-#define KEY_COUNT ROW_PIN_COUNT * BOTH_SIDE_COL_PIN_COUNT
-
 #define KEY_UNSET                0x00
 #define KEY_NORMAL               0x01
 #define KEY_DUAL_LCTRL           0x02
@@ -30,16 +28,8 @@
 #define KEY_MULTIMEDIA_0         0x16
 #define KEY_MULTIMEDIA_1         0x17
 #define KEY_MULTIMEDIA_2         0x18
+#define KEY_TAPDANCE             0x19
 #define KEY_TRANSPARENT          0xFF
-
-// E0 Left control
-// E1 Left shift
-// E2 Left alt
-// E3 Left gui
-// E4 Right control
-// E5 Right shift
-// E6 Right alt
-// E7 Right gui
 
 // KEY_SYSTEM
 // KEY_SYSTEM_POWER_OFF = 0x81
@@ -58,13 +48,20 @@
 // KEY_LAUNCH_SCREEN_SAVER     -> report[0] = 0x9E (0x019E)
 
 // EEPROM - 2B/key; 48keys; 8layers; 2*48*8 = 768B
-
-#define LAYER_HISTORY_CAPACITY 5
+// keymap : 0-767
+// tapdance keys : 800-899
 
 typedef struct {
     uint8_t type;
     uint8_t key;
 } KeyInfo;
+
+#define MAX_LAYER_COUNT 8
+#define LAYER_HISTORY_CAPACITY 5
+#define MAX_TAPDANCE_KEYS 16
+#define MAX_TAPDANCE_TAPS 3
+#define TAPDANCE_TIMEOUT_MS 100
+#define TAPDANCE_EEPROM_OFFSET (sizeof(KeyInfo)*MAX_LAYER_COUNT*KEY_COUNT)
 
 class KeyMap {
     private:
@@ -72,29 +69,36 @@ class KeyMap {
         uint8_t toggled_layer_index;
         uint8_t layer_history[LAYER_HISTORY_CAPACITY];
 
-        uint32_t get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col);
+        inline uint32_t get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col);
+        inline uint32_t get_tapdance_eeprom_address(uint8_t index, uint8_t tap);
     public:
         KeyMap(void);
 
         KeyInfo get_key(uint8_t row, uint8_t col);
         KeyInfo get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col);
         KeyInfo get_non_transparent_key(uint8_t row, uint8_t col);
+        KeyInfo get_tapdance_key(uint8_t index, uint8_t tap);
 
         void set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key);
+        void set_tapdance_key(uint8_t index, uint8_t tap, KeyInfo key_info);
         uint8_t get_layer();
         void set_layer(uint8_t layer);
         void remove_layer(uint8_t layer);
         void toggle_layer(uint8_t layer);
-        void eeprom_clear();
+        void eeprom_clear_all();
+        void eeprom_clear_keymap();
+        void eeprom_clear_tapdance();
         void clear();
 
         inline static uint8_t is_key_with_mod(KeyInfo key_info);
-        inline static const char* key_type_to_string(KeyInfo key_info);
         inline static uint8_t is_dual_key(KeyInfo key_info);
         inline static uint8_t is_multimedia_key(KeyInfo key_info);
         inline static int key_info_compare(KeyInfo key_info1, KeyInfo key_info2);
         inline static uint8_t get_dual_key_modifier(KeyInfo key_info);
         inline static uint8_t get_key_with_mod_modifier(KeyInfo key_info);
+
+        // For Serial.print() usage only
+        inline static const __FlashStringHelper* key_type_to_string(KeyInfo key_info);
 };
 
 #endif

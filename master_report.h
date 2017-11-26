@@ -23,6 +23,13 @@ typedef struct {
     KeyInfo key_info;
 } LayerHoldOrToggleState;
 
+typedef struct {
+    uint8_t key_reported;
+    uint8_t key_pressed;
+    uint8_t tap_count;
+    unsigned long last_tap_ts;
+} TapDanceState;
+
 class MasterReport {
     private:
         void print_base_report_to_serial();
@@ -32,11 +39,10 @@ class MasterReport {
         MasterReport(KeyMap* keymap);
 
         void clear();
+        void send_hid_report();
         void send_base_hid_report();
         void send_system_hid_report();
         void send_multimedia_hid_report();
-        inline void press_hook_for_dual_keys();
-        inline void press_hook_for_layer_hold_or_toggle();
 
         void handle_master_changed_key(ChangedKeyCoords coords);
         void handle_slave_changed_key(ChangedKeyCoords coords);
@@ -51,11 +57,11 @@ class MasterReport {
         inline void release_layer_key(KeyInfo key_info);
 
         inline void press_toggle_layer_key(KeyInfo key_info);
-        inline void release_toggle_layer_key(KeyInfo key_info);
 
         inline void press_system_key(KeyInfo key_info);
         inline void release_system_key(KeyInfo key_info);
 
+        inline void press_hook_for_dual_keys();
         inline void press_dual_key(KeyInfo key_info);
         inline void release_dual_key(KeyInfo key_info);
 
@@ -65,8 +71,13 @@ class MasterReport {
         inline void press_key_with_mod(KeyInfo key_info);
         inline void release_key_with_mod(KeyInfo key_info);
 
+        inline void press_hook_for_layer_hold_or_toggle();
         inline void press_layer_hold_or_toggle(KeyInfo key_info);
         inline void release_layer_hold_or_toggle(KeyInfo key_info);
+
+        inline void press_tapdance_key(KeyInfo key_info);
+        inline void release_tapdance_key(KeyInfo key_info);
+        inline void tapdance_timeout_check();
 
         BaseHIDReport base_hid_report;
         SystemHIDReport system_hid_report;
@@ -79,6 +90,9 @@ class MasterReport {
         KeyMap* keymap;
         DualKeyState dual_key_state;
         LayerHoldOrToggleState hold_or_toggle_state;
+        TapDanceState tapdance_state[MAX_TAPDANCE_KEYS];
+
+        uint8_t active_tapdance_key_count;
         uint8_t num_keys_pressed;
 };
 
