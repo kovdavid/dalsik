@@ -8,6 +8,7 @@
 #define DUAL_MODE_NOT_PRESSED   0x00
 #define DUAL_MODE_PENDING       0x01
 #define DUAL_MODE_HOLD_MODIFIER 0x02
+#define DUAL_MODE_HOLD_LAYER    0x03
 
 typedef struct {
     uint8_t mode;
@@ -64,6 +65,8 @@ class MasterReport {
         inline void press_hook_for_dual_keys();
         inline void press_dual_key(KeyInfo key_info);
         inline void release_dual_key(KeyInfo key_info);
+        inline void press_dual_layer_key(KeyInfo key_info);
+        inline void release_dual_layer_key(KeyInfo key_info);
 
         inline void press_multimedia_key(KeyInfo key_info);
         inline void release_multimedia_key(KeyInfo key_info);
@@ -89,6 +92,7 @@ class MasterReport {
 
         KeyMap* keymap;
         DualKeyState dual_key_state;
+        DualKeyState dual_layer_key_state;
         LayerHoldOrToggleState hold_or_toggle_state;
         TapDanceState tapdance_state[MAX_TAPDANCE_KEYS];
 

@@ -20,6 +20,7 @@ void MasterReport::clear() {
     memset(&(this->system_hid_report), 0, sizeof(SystemHIDReport));
     memset(&(this->multimedia_hid_report), 0, sizeof(MultimediaHIDReport));
     memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
+    memset(&(this->dual_layer_key_state), 0, sizeof(DualKeyState));
     memset(&(this->hold_or_toggle_state), 0, sizeof(LayerHoldOrToggleState));
 
     for (uint8_t i = 0; i < MAX_TAPDANCE_KEYS; i++) {
@@ -65,7 +66,6 @@ void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
 
     if (coords.type == EVENT_KEY_PRESS) {
         this->num_keys_pressed++;
-
         this->press(key_info);
     }
     if (coords.type == EVENT_KEY_RELEASE) {
@@ -106,6 +106,8 @@ void MasterReport::press(KeyInfo key_info) {
         this->press_system_key(key_info);
     } else if (KeyMap::is_dual_key(key_info)) {
         this->press_dual_key(key_info);
+    } else if (KeyMap::is_dual_layer_key(key_info)) {
+        this->press_dual_layer_key(key_info);
     } else if (KeyMap::is_multimedia_key(key_info)) {
         this->press_multimedia_key(key_info);
     } else if (KeyMap::is_key_with_mod(key_info)) {
@@ -136,6 +138,8 @@ void MasterReport::release(KeyInfo key_info) {
         this->release_system_key(key_info);
     } else if (KeyMap::is_dual_key(key_info)) {
         this->release_dual_key(key_info);
+    } else if (KeyMap::is_dual_layer_key(key_info)) {
+        this->release_dual_layer_key(key_info);
     } else if (KeyMap::is_multimedia_key(key_info)) {
         this->release_multimedia_key(key_info);
     } else if (KeyMap::is_key_with_mod(key_info)) {
@@ -222,6 +226,43 @@ inline void MasterReport::release_dual_key(KeyInfo key_info) {
     }
 }
 
+inline void MasterReport::press_dual_layer_key(KeyInfo key_info) {
+    if (this->dual_layer_key_state.mode == DUAL_MODE_NOT_PRESSED) {
+        this->dual_layer_key_state.key_info = key_info;
+        if (this->num_keys_pressed > 1) {
+            this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
+            uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
+            this->press_layer_key(KeyInfo { KEY_LAYER_PRESS, layer });
+        } else {
+            this->dual_layer_key_state.mode = DUAL_MODE_PENDING;
+        }
+    } else {
+        uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
+        this->press_layer_key(KeyInfo { KEY_LAYER_PRESS, layer });
+    }
+}
+
+inline void MasterReport::release_dual_layer_key(KeyInfo key_info) {
+    if (KeyMap::key_info_compare(key_info, this->dual_layer_key_state.key_info) == 0) {
+        if (this->dual_layer_key_state.mode == DUAL_MODE_HOLD_LAYER) {
+            uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
+            this->release_layer_key(KeyInfo { KEY_LAYER_PRESS, layer });
+        } else {
+            KeyInfo key_info_tap = { KEY_NORMAL, key_info.key };
+
+            this->press_normal_key(key_info_tap);
+            this->send_base_hid_report();
+            this->release_normal_key(key_info_tap);
+        }
+
+        memset(&(this->dual_layer_key_state), 0, sizeof(DualKeyState));
+    } else {
+        // There were more dual_layer_keys pressed, this one is not the first
+        uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
+        this->release_layer_key(KeyInfo { KEY_LAYER_PRESS, layer });
+    }
+}
+
 inline void MasterReport::press_multimedia_key(KeyInfo key_info) {
     this->multimedia_hid_report.key = key_info.key;
     if (key_info.type == KEY_MULTIMEDIA_2) {
@@ -257,6 +298,11 @@ inline void MasterReport::press_hook_for_dual_keys() {
         this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
         uint8_t modifier = KeyMap::get_dual_key_modifier(this->dual_key_state.key_info);
         this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
+    }
+    if (this->dual_layer_key_state.mode == DUAL_MODE_PENDING) {
+        this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
+        uint8_t layer = KeyMap::get_dual_layer_key_layer(this->dual_layer_key_state.key_info);
+        this->press_layer_key(KeyInfo { KEY_LAYER_PRESS, layer });
     }
 }
 

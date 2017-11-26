@@ -29,6 +29,13 @@
 #define KEY_MULTIMEDIA_1         0x17
 #define KEY_MULTIMEDIA_2         0x18
 #define KEY_TAPDANCE             0x19
+#define KEY_DUAL_LAYER_1         0x1A
+#define KEY_DUAL_LAYER_2         0x1B
+#define KEY_DUAL_LAYER_3         0x1C
+#define KEY_DUAL_LAYER_4         0x1D
+#define KEY_DUAL_LAYER_5         0x1E
+#define KEY_DUAL_LAYER_6         0x1F
+#define KEY_DUAL_LAYER_7         0x20
 #define KEY_TRANSPARENT          0xFF
 
 // KEY_SYSTEM
@@ -90,11 +97,14 @@ class KeyMap {
         void eeprom_clear_tapdance();
         void clear();
 
+        inline static uint8_t is_type_between(KeyInfo key_info, uint8_t type1, uint8_t type2);
         inline static uint8_t is_key_with_mod(KeyInfo key_info);
         inline static uint8_t is_dual_key(KeyInfo key_info);
+        inline static uint8_t is_dual_layer_key(KeyInfo key_info);
         inline static uint8_t is_multimedia_key(KeyInfo key_info);
         inline static int key_info_compare(KeyInfo key_info1, KeyInfo key_info2);
         inline static uint8_t get_dual_key_modifier(KeyInfo key_info);
+        inline static uint8_t get_dual_layer_key_layer(KeyInfo key_info);
         inline static uint8_t get_key_with_mod_modifier(KeyInfo key_info);
 
         // For Serial.print() usage only

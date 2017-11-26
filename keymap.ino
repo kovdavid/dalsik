@@ -162,6 +162,19 @@ inline uint8_t KeyMap::get_dual_key_modifier(KeyInfo key_info) {
     return 0x00;
 }
 
+inline uint8_t KeyMap::get_dual_layer_key_layer(KeyInfo key_info) {
+    switch (key_info.type) {
+        case KEY_DUAL_LAYER_1: return 1;
+        case KEY_DUAL_LAYER_2: return 2;
+        case KEY_DUAL_LAYER_3: return 3;
+        case KEY_DUAL_LAYER_4: return 4;
+        case KEY_DUAL_LAYER_5: return 5;
+        case KEY_DUAL_LAYER_6: return 6;
+        case KEY_DUAL_LAYER_7: return 7;
+    }
+    return 0;
+}
+
 inline uint8_t KeyMap::get_key_with_mod_modifier(KeyInfo key_info) {
     switch (key_info.type) {
         case KEY_WITH_MOD_LCTRL:  return 0xE0;
@@ -176,28 +189,28 @@ inline uint8_t KeyMap::get_key_with_mod_modifier(KeyInfo key_info) {
     return 0x00;
 }
 
-inline uint8_t KeyMap::is_dual_key(KeyInfo key_info) {
+inline uint8_t KeyMap::is_type_between(KeyInfo key_info, uint8_t type1, uint8_t type2) {
     uint8_t type = key_info.type;
-    if (type >= KEY_DUAL_LCTRL && type <= KEY_DUAL_RALT) {
+    if (type >= type1 && type <= type2) {
         return 1;
     }
     return 0;
+}
+
+inline uint8_t KeyMap::is_dual_key(KeyInfo key_info) {
+    return KeyMap::is_type_between(key_info, KEY_DUAL_LCTRL, KEY_DUAL_RALT);
 }
 
 inline uint8_t KeyMap::is_multimedia_key(KeyInfo key_info) {
-    uint8_t type = key_info.type;
-    if (type >= KEY_MULTIMEDIA_0 && type <= KEY_MULTIMEDIA_2) {
-        return 1;
-    }
-    return 0;
+    return KeyMap::is_type_between(key_info, KEY_MULTIMEDIA_0, KEY_MULTIMEDIA_2);
+}
+
+inline uint8_t KeyMap::is_dual_layer_key(KeyInfo key_info) {
+    return KeyMap::is_type_between(key_info, KEY_DUAL_LAYER_1, KEY_DUAL_LAYER_7);
 }
 
 inline uint8_t KeyMap::is_key_with_mod(KeyInfo key_info) {
-    uint8_t type = key_info.type;
-    if (type >= KEY_WITH_MOD_LCTRL && type <= KEY_WITH_MOD_RALT) {
-        return 1;
-    }
-    return 0;
+    return KeyMap::is_type_between(key_info, KEY_WITH_MOD_LCTRL, KEY_WITH_MOD_RALT);
 }
 
 inline const __FlashStringHelper* KeyMap::key_type_to_string(KeyInfo key_info) {
@@ -228,6 +241,13 @@ inline const __FlashStringHelper* KeyMap::key_type_to_string(KeyInfo key_info) {
         case KEY_MULTIMEDIA_1:         return F("KEY_MULTIMEDIA_1");
         case KEY_MULTIMEDIA_2:         return F("KEY_MULTIMEDIA_2");
         case KEY_TAPDANCE:             return F("KEY_TAPDANCE");
+        case KEY_DUAL_LAYER_1:         return F("KEY_DUAL_LAYER_1");
+        case KEY_DUAL_LAYER_2:         return F("KEY_DUAL_LAYER_2");
+        case KEY_DUAL_LAYER_3:         return F("KEY_DUAL_LAYER_3");
+        case KEY_DUAL_LAYER_4:         return F("KEY_DUAL_LAYER_4");
+        case KEY_DUAL_LAYER_5:         return F("KEY_DUAL_LAYER_5");
+        case KEY_DUAL_LAYER_6:         return F("KEY_DUAL_LAYER_6");
+        case KEY_DUAL_LAYER_7:         return F("KEY_DUAL_LAYER_7");
         case KEY_TRANSPARENT:          return F("KEY_TRANSPARENT");
         default:                       return F("KEY_TYPE_UNKNOWN");
     }
