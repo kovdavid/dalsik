@@ -201,12 +201,12 @@ inline uint8_t KeyMap::is_dual_key(KeyInfo key_info) {
     return KeyMap::is_type_between(key_info, KEY_DUAL_LCTRL, KEY_DUAL_RALT);
 }
 
-inline uint8_t KeyMap::is_multimedia_key(KeyInfo key_info) {
-    return KeyMap::is_type_between(key_info, KEY_MULTIMEDIA_0, KEY_MULTIMEDIA_2);
-}
-
 inline uint8_t KeyMap::is_dual_layer_key(KeyInfo key_info) {
     return KeyMap::is_type_between(key_info, KEY_DUAL_LAYER_1, KEY_DUAL_LAYER_7);
+}
+
+inline uint8_t KeyMap::is_multimedia_key(KeyInfo key_info) {
+    return KeyMap::is_type_between(key_info, KEY_MULTIMEDIA_0, KEY_MULTIMEDIA_2);
 }
 
 inline uint8_t KeyMap::is_key_with_mod(KeyInfo key_info) {
