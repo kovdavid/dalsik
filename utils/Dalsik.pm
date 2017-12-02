@@ -123,6 +123,16 @@ sub get_cmd {
         return "DALSIK-\x07".join("", ("\x00")x5);
     } elsif ($cmd eq 'GET_LAYER') {
         return "DALSIK-\x08".join("", ("\x00")x5);
+    } elsif ($cmd eq 'CLEAR_TAPDANCE') {
+        return "DALSIK-\x09".join("", ("\x00")x5);
+    } elsif ($cmd eq 'SET_TAPDANCE_KEY') {
+        return "DALSIK-\x0A".chr($args[0]).chr($args[1]).chr($args[2]).chr($args[3])."\x00";
+    } elsif ($cmd eq 'GET_TAPDANCE_KEY') {
+        return "DALSIK-\x0B".chr($args[0]).chr($args[1])."\x00\x00\x00";
+    } elsif ($cmd eq 'GET_TAPDANCE_KEYMAP') {
+        return "DALSIK-\x0C".join("", ("\x00")x5);
+    } elsif ($cmd eq 'CLEAR_EEPROM') {
+        return "DALSIK-\x0D".join("", ("\x00")x5);
     }
 }
 

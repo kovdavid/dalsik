@@ -14,7 +14,7 @@ static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 #define CMD_PING                0x07
 #define CMD_GET_LAYER           0x08
 #define CMD_CLEAR_TAPDANCE      0x09
-#define CMD_SET_TAPDANCE        0x0A
+#define CMD_SET_TAPDANCE_KEY    0x0A
 #define CMD_GET_TAPDANCE_KEY    0x0B
 #define CMD_GET_TAPDANCE_KEYMAP 0x0C
 #define CMD_CLEAR_EEPROM        0x0D

@@ -94,7 +94,7 @@ static uint8_t execute_command(KeyMap* keymap) {
         keymap->eeprom_clear_tapdance();
         Serial.println(F("Tapdance cleared"));
         return 0;
-    } else if (buffer[0] == CMD_SET_TAPDANCE) {
+    } else if (buffer[0] == CMD_SET_TAPDANCE_KEY) {
         uint8_t index    = buffer[1];
         uint8_t tap      = buffer[2];
         uint8_t key_type = buffer[3];
