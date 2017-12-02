@@ -8,6 +8,7 @@ Just for fun :) I made this to see if I can do it and to learn. The list of feat
 * Update the keymap without reflashing the atmega32u4 (keymap is kept in EEPROM)
 * Layers
 * DualKey - tap for standard key, hold with other key for modifier (like CTRL+ESC on a single key)
+* TapDance - registers as different key based on the number of taps within short time
 * Designed for the [Let's Split](https://github.com/nicinabox/lets-split-guide) keyboard by [wootpatoot](https://www.reddit.com/user/wootpatoot)
 * Split keyboard support via I2C or single-wire serial
 
