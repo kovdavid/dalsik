@@ -228,9 +228,9 @@
 #define KC_PASTE            0x7D
 #define KC_PSTE             0x7D
 #define KC_FIND             0x7E
-#define KC__MUTE            0x7F
-#define KC__VOLUP           0x80
-#define KC__VOLDOWN         0x81
+#define KC_MUTE             0x7F
+#define KC_VOLUP            0x80
+#define KC_VOLDOWN          0x81
 #define KC_LCAP             0x82
 #define KC_LOCKING_CAPS     0x82
 #define KC_LNUM             0x83
