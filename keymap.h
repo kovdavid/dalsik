@@ -67,7 +67,6 @@ typedef struct {
 #define LAYER_HISTORY_CAPACITY 5
 #define MAX_TAPDANCE_KEYS 16
 #define MAX_TAPDANCE_TAPS 3
-#define TAPDANCE_TIMEOUT_MS 100
 #define TAPDANCE_EEPROM_OFFSET (sizeof(KeyInfo)*MAX_LAYER_COUNT*KEY_COUNT)
 
 class KeyMap {
