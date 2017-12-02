@@ -150,14 +150,14 @@ inline int KeyMap::key_info_compare(KeyInfo key_info1, KeyInfo key_info2) {
 
 inline uint8_t KeyMap::get_dual_key_modifier(KeyInfo key_info) {
     switch (key_info.type) {
-        case KEY_DUAL_LCTRL:  return 0xE0;
-        case KEY_DUAL_LSHIFT: return 0xE1;
-        case KEY_DUAL_LALT:   return 0xE2;
-        case KEY_DUAL_LGUI:   return 0xE3;
-        case KEY_DUAL_RCTRL:  return 0xE4;
-        case KEY_DUAL_RSHIFT: return 0xE5;
-        case KEY_DUAL_RALT:   return 0xE6;
-        case KEY_DUAL_RGUI:   return 0xE7;
+        case KEY_DUAL_LCTRL:  return KC_LCTRL;
+        case KEY_DUAL_LSHIFT: return KC_LSHIFT;
+        case KEY_DUAL_LALT:   return KC_LALT;
+        case KEY_DUAL_LGUI:   return KC_LGUI;
+        case KEY_DUAL_RCTRL:  return KC_RCTRL;
+        case KEY_DUAL_RSHIFT: return KC_RSHIFT;
+        case KEY_DUAL_RALT:   return KC_RALT;
+        case KEY_DUAL_RGUI:   return KC_RGUI;
     }
     return 0x00;
 }
@@ -177,14 +177,14 @@ inline uint8_t KeyMap::get_dual_layer_key_layer(KeyInfo key_info) {
 
 inline uint8_t KeyMap::get_key_with_mod_modifier(KeyInfo key_info) {
     switch (key_info.type) {
-        case KEY_WITH_MOD_LCTRL:  return 0xE0;
-        case KEY_WITH_MOD_LSHIFT: return 0xE1;
-        case KEY_WITH_MOD_LALT:   return 0xE2;
-        case KEY_WITH_MOD_LGUI:   return 0xE3;
-        case KEY_WITH_MOD_RCTRL:  return 0xE4;
-        case KEY_WITH_MOD_RSHIFT: return 0xE5;
-        case KEY_WITH_MOD_RALT:   return 0xE6;
-        case KEY_WITH_MOD_RGUI:   return 0xE7;
+        case KEY_WITH_MOD_LCTRL:  return KC_LCTRL;
+        case KEY_WITH_MOD_LSHIFT: return KC_LSHIFT;
+        case KEY_WITH_MOD_LALT:   return KC_LALT;
+        case KEY_WITH_MOD_LGUI:   return KC_LGUI;
+        case KEY_WITH_MOD_RCTRL:  return KC_RCTRL;
+        case KEY_WITH_MOD_RSHIFT: return KC_RSHIFT;
+        case KEY_WITH_MOD_RALT:   return KC_RALT;
+        case KEY_WITH_MOD_RGUI:   return KC_RGUI;
     }
     return 0x00;
 }
