@@ -26,15 +26,15 @@ my $num_rows = 0;
 my $num_cols = 0;
 
 while (my $line = <$fh>) {
-    if ($line =~ /KEY<L(\d)-R(\d)-C(\d)\|(\w+)\|(\w+)>/) {
-        my $layer = $1;
-        my $row = $2;
-        my $col = $3;
+    if ($line =~ /KEY<L(\d+)-R(\d+)-C(\d+)\|(\w+)\|(\w+)>/) {
+        my $layer = $1+0;
+        my $row = $2+0;
+        my $col = $3+0;
         my $type_str = $4;
         my $key_dec = $5;
 
         my $str = Dalsik::type_and_key_to_str($type_str, $key_dec);
-        if ($str ne 'KC_NO' && $str ne 'KC_TRNS') {
+        if ($str ne 'UNSET' && $str ne 'TRANS' && $str ne 'KC_NO') {
             $num_keys_on_layers->{$layer}++;
         }
 
@@ -70,10 +70,10 @@ sub render_layer {
 
     say "Layer:$layer";
     say (('-')x($col_length_sum+4+($num_cols-1)*3));
-    for my $row (sort keys %{ $rows }) {
-        print "| ";
 
-        for my $col (sort keys %{ $rows->{$row} }) {
+    for my $row (sort { $a <=> $b } keys %{ $rows }) {
+        print "| ";
+        for my $col (sort { $a <=> $b } keys %{ $rows->{$row} }) {
             if ($col+1 == $num_cols) {
                 my $len = $col_lengths->{$col};
                 printf "%-${len}s |", $rows->{$row}->{$col};

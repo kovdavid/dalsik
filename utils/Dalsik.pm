@@ -1,20 +1,99 @@
 package Dalsik;
 
+use v5.10;
 use strict;
 use warnings;
 use FindBin qw[ $Bin ];
 
-our $keycode_str_to_dec = {};
-our $dec_to_keycode_str = {};
+our $modifier_to_byte = {};
+our $byte_to_modifier = {};
+our $key_types_array = [];
+our $type_to_alias = {};
+our $type_to_byte = {};
+our $byte_to_type = {};
+our $key_to_byte = {};
+our $byte_to_key = {};
+our $aliases      = {};
 
-my $file = "$Bin/keycode_str_to_dec.txt";
+my $file = "$Bin/../key_definitions.h";
 open my $fh, "<", $file or die "Could not open $file: $!";
 while (my $line = <$fh>) {
-    my ($str, $dec) = split(/\s+/, $line);
-    $keycode_str_to_dec->{$str} = $dec;
-    $dec_to_keycode_str->{$dec} = $str;
+    chomp $line;
+
+    if ($line =~ m/^#define MODIFIER_(\w+)\s+(\S+)/) {
+        my $modifier = $1;
+        my $byte = hex($2);
+        $modifier_to_byte->{$modifier} = $byte;
+        $byte_to_modifier->{$byte} = $modifier;
+    } elsif ($line =~ m/^#define KEY_/) {
+        my (undef, $key_type, $byte_str, undef, $alias, undef) = split(/\s+/, $line);
+        my $byte = hex($byte_str);
+        push @{ $key_types_array }, $alias;
+        $type_to_byte->{$key_type} = $byte;
+        $type_to_byte->{$alias} = $byte;
+        $byte_to_type->{$byte} = $alias;
+        $type_to_alias->{$key_type} = $alias;
+    } elsif ($line =~ m/^#define KC_(\S+)\s+(\S+)/) {
+        my $key = $1;
+        my $byte = hex($2);
+        $key_to_byte->{$key} = $byte;
+        $byte_to_key->{$byte} = $key;
+    } elsif ($line =~ m/^#define ALIAS_(\S+)\s+(\S+)/) {
+        my $name = $1;
+        my $alias = $2;
+        $aliases->{$name} = $alias;
+    }
 }
 close $fh;
+
+sub set_key_command {
+    my ($layer, $row, $col, $key_str) = @_;
+
+    $key_str = $aliases->{$key_str} || $key_str;
+
+    for my $type (@{ $key_types_array }) {
+        if ($key_str !~ m/^\Q$type\E/) {
+            next;
+        }
+        if ($type =~ m/\(|\,$/) {
+            if ($key_str =~ m/^\Q$type\E(.*?)\)$/) {
+                my $arg = $1;
+                if (defined($key_to_byte->{$arg})) {
+                    return get_cmd('SET_KEY', $layer, $row, $col, $type_to_byte->{$type}, $key_to_byte->{$arg});
+                } elsif ($arg =~ m/^0x\d\d$/) {
+                    return get_cmd('SET_KEY', $layer, $row, $col, $type_to_byte->{$type}, hex($arg));
+                } else {
+                    die "Could not parse $key_str - invalid argument\n";
+                }
+            } else {
+                die "Could not parse $key_str - invalid argument\n";
+            }
+        } else {
+            return get_cmd('SET_KEY', $layer, $row, $col, $type_to_byte->{$type}, 0);
+        }
+    }
+
+    die "Could not parse $key_str";
+}
+
+sub type_and_key_to_str {
+    my ($type, $key) = @_;
+
+    my $type_alias = $type_to_alias->{$type};
+    if (!defined($type_alias)) {
+        die "Could not get type alias for type $type";
+    }
+
+    my $key_byte = hex("0x$key");
+    my $key_str = $byte_to_key->{$key_byte};
+
+    if ($type_alias =~ m/\(|\,$/) {
+        return "${type_alias}$key_str)";
+    } else {
+        return "$type_alias";
+    }
+
+}
 
 sub open_serial {
     my ($serial) = @_;
@@ -52,170 +131,5 @@ sub to_hex {
     my $hex = join("-", map { unpack "H*", $_ } split("", $str));
     return $hex;
 }
-
-sub type_and_key_to_str {
-    my ($type, $key) = @_;
-
-    if ($type eq 'KEY_UNSET') {
-        return 'KC_NO';
-    } elsif ($type eq 'KEY_NORMAL') {
-        return $dec_to_keycode_str->{$key} // '';
-    } elsif ($type eq 'KEY_DUAL_LCTRL') {
-        return "MT(LCTL,". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_DUAL_RCTRL') {
-        return "MT(RCTL,". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_DUAL_LSHIFT') {
-        return "MT(LSFT,". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_DUAL_RSHIFT') {
-        return "MT(RSFT,". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_DUAL_LGUI') {
-        return "MT(LGUI,". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_DUAL_RGUI') {
-        return "MT(RGUI,". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_DUAL_LALT') {
-        return "MT(LALT,". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_DUAL_RALT') {
-        return "MT(RALT,". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_LAYER_PRESS') {
-        return "MO($key)";
-    } elsif ($type eq 'KEY_LAYER_TOGGLE') {
-        return "TG($key)";
-    } elsif ($type eq 'KEY_LAYER_HOLD_OR_TOGGLE') {
-        return "TT($key)";
-    } elsif ($type eq 'KEY_WITH_MOD_LCTRL') {
-        return "LCTL(". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_WITH_MOD_RCTRL') {
-        return "RCTL(". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_WITH_MOD_LSHIFT') {
-        return "LSFT(". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_WITH_MOD_RSHIFT') {
-        return "RSFT(". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_WITH_MOD_LGUI') {
-        return "LGUI(". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_WITH_MOD_RGUI') {
-        return "RGUI(". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_WITH_MOD_LALT') {
-        return "LALT(". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_WITH_MOD_RALT') {
-        return "RALT(". type_and_key_to_str('KEY_NORMAL', $key) .")";
-    } elsif ($type eq 'KEY_TRANSPARENT') {
-        return 'KC_TRNS';
-    }
-
-    return "";
-}
-
-sub str_to_type_and_key {
-    my ($keycode) = @_;
-
-    my $id = $keycode->{id};
-    my $fields = $keycode->{fields};
-
-    if ($id eq 'KC_TRNS') {
-        return "\xFF\x00";
-    } elsif ($id eq 'KC_NO') {
-        return "\x00\x00";
-    } elsif ($id eq 'MO()') {
-        return "\x0A".chr($fields->[0]);
-    } elsif ($id eq 'TO()') {
-        return "\x0A".chr($fields->[0]);
-    } elsif ($id eq 'TG()') {
-        return "\x0B".chr($fields->[0]);
-    } elsif ($id eq 'TT()') {
-        return "\x0C".chr($fields->[0]);
-    } elsif ($id eq 'MT()') {
-        if ($fields->[0] == 1) { # CTRL
-            my $dec = $keycode_str_to_dec->{$fields->[1]->{id}};
-            if (defined $dec) {
-                return "\x02".chr($dec);
-            }
-        } elsif ($fields->[0] == 2) { # "SHIFT"
-            my $dec = $keycode_str_to_dec->{$fields->[1]->{id}};
-            if (defined $dec) {
-                return "\x04".chr($dec);
-            }
-        } elsif ($fields->[0] == 4) { # "ALT"
-            my $dec = $keycode_str_to_dec->{$fields->[1]->{id}};
-            if (defined $dec) {
-                return "\x08".chr($dec);
-            }
-        } elsif ($fields->[0] == 8) { # "GUI"
-            my $dec = $keycode_str_to_dec->{$fields->[1]->{id}};
-            if (defined $dec) {
-                return "\x06".chr($dec);
-            }
-        }
-    } elsif ($id eq 'LCTL()') {
-        my $dec = $keycode_str_to_dec->{$fields->[0]->{id}};
-        if (defined $dec) {
-            return "\x0D".chr($dec);
-        }
-    } elsif ($id eq 'RCTL()') {
-        my $dec = $keycode_str_to_dec->{$fields->[0]->{id}};
-        if (defined $dec) {
-            return "\x0E".chr($dec);
-        }
-    } elsif ($id eq 'LSFT()') {
-        my $dec = $keycode_str_to_dec->{$fields->[0]->{id}};
-        if (defined $dec) {
-            return "\x0F".chr($dec);
-        }
-    } elsif ($id eq 'RSFT()') {
-        my $dec = $keycode_str_to_dec->{$fields->[0]->{id}};
-        if (defined $dec) {
-            return "\x10".chr($dec);
-        }
-    } elsif ($id eq 'LGUI()') {
-        my $dec = $keycode_str_to_dec->{$fields->[0]->{id}};
-        if (defined $dec) {
-            return "\x11".chr($dec);
-        }
-    } elsif ($id eq 'RGUI()') {
-        my $dec = $keycode_str_to_dec->{$fields->[0]->{id}};
-        if (defined $dec) {
-            return "\x12".chr($dec);
-        }
-    } elsif ($id eq 'LALT()') {
-        my $dec = $keycode_str_to_dec->{$fields->[0]->{id}};
-        if (defined $dec) {
-            return "\x13".chr($dec);
-        }
-    } elsif ($id eq 'RALT()') {
-        my $dec = $keycode_str_to_dec->{$fields->[0]->{id}};
-        if (defined $dec) {
-            return "\x14".chr($dec);
-        }
-    } elsif (exists ($keycode_str_to_dec->{$id})) {
-        my $dec = $keycode_str_to_dec->{$id};
-        return "\x01".chr($dec);
-    }
-
-    return;
-}
-
-# KC_TAB, KC_U -keycode - KEY_NORMAL
-# KC_TRNS - KEY_TRANSPARENT
-# KC_NO - KEY_UNSET
-# MO(1) - KEY_LAYER_PRESS
-# TG(1) - KEY_LAYER_TOGGLE
-# TT(1) - KEY_LAYER_TAP_TOGGLE
-
-# MT(LCTL, kc) - KEY_DUAL_LCTRL
-# MT(RCTL, kc) - KEY_DUAL_RCTRL
-# MT(LSFT, kc) - KEY_DUAL_LSHIFT
-# MT(RSFT, kc) - KEY_DUAL_RSHIFT
-# MT(LGUI, kc) - KEY_DUAL_LGUI
-# MT(RGUI, kc) - KEY_DUAL_RGUI
-# MT(LALT, kc) - KEY_DUAL_LALT
-# MT(RALT, kc) - KEY_DUAL_RALT
-
-# LCTL(kc) - KEY_WITH_MOD_LCTRL
-# RCTL(kc) - KEY_WITH_MOD_RCTRL
-# LSFT(kc) - KEY_WITH_MOD_LSHIFT
-# RSFT(kc) - KEY_WITH_MOD_RSHIFT
-# LGUI(kc) - KEY_WITH_MOD_LGUI
-# RGUI(kc) - KEY_WITH_MOD_RGUI
-# LALT(kc) - KEY_WITH_MOD_LALT
-# RALT(kc) - KEY_WITH_MOD_RALT
 
 1;

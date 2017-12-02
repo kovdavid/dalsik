@@ -146,7 +146,7 @@ static void serial_print_key(KeyMap* keymap, uint8_t layer, uint8_t row, uint8_t
     Serial.print(F("|"));
     Serial.print(KeyMap::key_type_to_string(key_info));
     Serial.print(F("|"));
-    Serial.print(key_info.key, DEC);
+    Serial.print(key_info.key, HEX);
     Serial.print(F(">\n"));
 }
 
@@ -160,6 +160,6 @@ static void serial_print_tapdance_key(KeyMap* keymap, uint8_t index, uint8_t tap
     Serial.print(F("|"));
     Serial.print(KeyMap::key_type_to_string(key_info));
     Serial.print(F("|"));
-    Serial.print(key_info.key, DEC);
+    Serial.print(key_info.key, HEX);
     Serial.print(F(">\n"));
 }
