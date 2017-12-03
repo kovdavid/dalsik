@@ -2,6 +2,7 @@
 #define DALSIK_H
 
 #define DEBUG 0
+#define DEBUG_KEYREPORT 0
 
 #define IS_MASTER 1
 
@@ -21,7 +22,7 @@
 // Trigger key press after holding a key for X ms
 #define DUAL_MODE_TIMEOUT_MS 1000
 // Trigger the current tap_count if no tap occurs for this time
-#define TAPDANCE_TIMEOUT_MS 200
+#define TAPDANCE_TIMEOUT_MS 300
 
 #define ROW_PIN_COUNT 4
 #define ONE_SIDE_COL_PIN_COUNT 6
