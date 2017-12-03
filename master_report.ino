@@ -423,6 +423,12 @@ inline void MasterReport::key_timeout_check() {
             if (this->tapdance_state[i].tap_count == 0) {
                 continue;
             }
+            // Stuck tapdance key (for example on some layer)
+            if (this->tapdance_state[i].key_pressed == 1 && this->num_keys_pressed > 0) {
+                this->release(KeyInfo { KEY_TAPDANCE, i });
+                this->send_hid_report();
+                continue;
+            }
             if (this->tapdance_state[i].key_reported == 1) {
                 continue;
             }
