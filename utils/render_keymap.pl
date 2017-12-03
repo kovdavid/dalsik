@@ -72,6 +72,8 @@ for my $layer (sort keys %{ $data }) {
     render_layer($layer, $data->{$layer});
     say "\n";
 }
+
+say "TapDacne:";
 for my $tapdance (sort keys %{ $tapdances }) {
     render_tapdance($tapdance, $tapdances->{$tapdance});
 }
@@ -104,5 +106,5 @@ sub render_layer {
 
 sub render_tapdance {
     my ($tapdance, $taps) = @_;
-    say "TapDance $tapdance [$taps->{1} - $taps->{2} - $taps->{3}]";
+    say "TD($tapdance) [$taps->{1} - $taps->{2} - $taps->{3}]";
 }
