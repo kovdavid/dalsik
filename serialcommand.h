@@ -18,6 +18,7 @@ static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 #define CMD_GET_TAPDANCE_KEY    0x0B
 #define CMD_GET_TAPDANCE_KEYMAP 0x0C
 #define CMD_CLEAR_EEPROM        0x0D
+#define CMD_GET_FULL_KEYMAP     0x0E
 
 // +1 for the command type
 // +5 is the max size of arguments (for SET_KEY)

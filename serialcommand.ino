@@ -129,6 +129,20 @@ static uint8_t execute_command(KeyMap* keymap) {
         keymap->eeprom_clear_all();
         Serial.println(F("EEPROM cleared"));
         return 0;
+    } else if (buffer[0] == CMD_GET_FULL_KEYMAP) {
+        for (uint8_t layer = 0; layer < MAX_LAYER_COUNT; layer++) {
+            for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
+                for (uint8_t col = 0; col < BOTH_SIDE_COL_PIN_COUNT; col++) {
+                    serial_print_key(keymap, layer, row, col);
+                }
+            }
+        }
+        for (uint8_t index = 0; index < MAX_TAPDANCE_KEYS; index++) {
+            for (uint8_t tap = 1; tap <= MAX_TAPDANCE_TAPS; tap++) {
+                serial_print_tapdance_key(keymap, index, tap);
+            }
+        }
+        return 0;
     }
 
     return 1;

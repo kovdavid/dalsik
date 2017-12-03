@@ -163,6 +163,8 @@ sub get_cmd {
         return "DALSIK-\x0C".join("", ("\x00")x5);
     } elsif ($cmd eq 'CLEAR_EEPROM') {
         return "DALSIK-\x0D".join("", ("\x00")x5);
+    } elsif ($cmd eq 'GET_FULL_KEYMAP') {
+        return "DALSIK-\x0E".join("", ("\x00")x5);
     }
 }
 
