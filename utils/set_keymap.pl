@@ -38,7 +38,8 @@ if ($@) {
     die "Could not decode json($json_file): $@";
 }
 
-for my $location (sort keys %{ $json_data->{keys} }) {
+my $json_keys = $json_data->{keys};
+for my $location (sort keys %{ $json_keys }) {
     my ($layer, $row, $col);
     if ($location =~ /L(\d+)R(\d+)C(\d+)$/) {
         $layer = $1;
@@ -51,11 +52,21 @@ for my $location (sort keys %{ $json_data->{keys} }) {
     if ($row >= $max_rows || $col >= $max_cols) {
         die "Exceeded max row/col numbers! row:$row max_row:$max_rows col:$col max_col:$max_cols\n";
     }
-    my $cmd = Dalsik::set_key_command($layer, $row, $col, $json_data->{keys}->{$location});
+    my $cmd = Dalsik::set_key_command($layer, $row, $col, $json_keys->{$location});
     if ($serial eq 'STDOUT') {
         print $serial_fh Dalsik::to_hex($cmd)."\n";
     } else {
         print $serial_fh $cmd;
+    }
+}
+
+my $json_tapdances = $json_data->{tapdances};
+for my $tapdance (sort keys %{ $json_tapdances }) {
+    my @commands = Dalsik::set_tapdance_command($tapdance, $json_tapdances->{$tapdance});
+    if ($serial eq 'STDOUT') {
+        print $serial_fh Dalsik::to_hex($_)."\n" for @commands;
+    } else {
+        print $serial_fh $_ for @commands;
     }
 }
 

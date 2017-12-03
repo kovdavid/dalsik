@@ -51,6 +51,34 @@ sub set_key_command {
 
     $key_str = $aliases->{$key_str} || $key_str;
 
+    my ($type, $key) = _keystr_to_type_and_arg($key_str);
+    return get_cmd('SET_KEY', $layer, $row, $col, $type, $key);
+}
+
+sub set_tapdance_command {
+    my ($tapdance, $tap_keys) = @_;
+
+    if ($tapdance =~ m/^T(\d+)$/) {
+        my $tapdance_index = $1;
+        my @result;
+
+        for my $i (0..2) {
+            if (!defined($tap_keys->[$i])) {
+                next;
+            }
+            my ($type, $key) = _keystr_to_type_and_arg($tap_keys->[$i]);
+            push @result, get_cmd('SET_TAPDANCE_KEY', $tapdance_index, $i+1, $type, $key);
+        }
+
+        return @result;
+    }
+
+    die "Invalid tapdance $tapdance";
+}
+
+sub _keystr_to_type_and_arg {
+    my ($key_str) = @_;
+
     for my $type (@{ $key_types_array }) {
         if ($key_str !~ m/^\Q$type\E/) {
             next;
@@ -59,9 +87,11 @@ sub set_key_command {
             if ($key_str =~ m/^\Q$type\E(.*?)\)$/) {
                 my $arg = $1;
                 if (defined($key_to_byte->{$arg})) {
-                    return get_cmd('SET_KEY', $layer, $row, $col, $type_to_byte->{$type}, $key_to_byte->{$arg});
-                } elsif ($arg =~ m/^0x\d\d$/) {
-                    return get_cmd('SET_KEY', $layer, $row, $col, $type_to_byte->{$type}, hex($arg));
+                    return ($type_to_byte->{$type}, $key_to_byte->{$arg});
+                } elsif ($arg =~ m/^0x\d+$/ || $arg =~ m/^\d+$/) {
+                    return ($type_to_byte->{$type}, hex($arg));
+                } elsif ($arg =~ m/^T(\d+)$/) {
+                    return ($type_to_byte->{$type}, hex($1));
                 } else {
                     die "Could not parse $key_str - invalid argument\n";
                 }
@@ -69,7 +99,7 @@ sub set_key_command {
                 die "Could not parse $key_str - invalid argument\n";
             }
         } else {
-            return get_cmd('SET_KEY', $layer, $row, $col, $type_to_byte->{$type}, 0);
+            return ($type_to_byte->{$type}, 0);
         }
     }
 
