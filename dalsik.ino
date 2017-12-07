@@ -86,8 +86,13 @@ void loop() {
 
 #if DEBUG
     if (coords.type != EVENT_NONE) {
-        Serial.print("keyevent:");
-        Serial.print(coords.type, HEX);
+        Serial.print("Handle_master_data<T:");
+        Serial.print(coords.type);
+        Serial.print("|R:");
+        Serial.print(coords.row);
+        Serial.print("|C:");
+        Serial.print(coords.col);
+        Serial.print(">");
         Serial.print(" now:");
         Serial.println(prev_millis);
     }
@@ -96,18 +101,6 @@ void loop() {
 #if IS_MASTER
     master_report.handle_master_changed_key(coords);
 #else
-    #if DEBUG
-    Serial.print("Slave report<t");
-    Serial.print(coords.type, HEX);
-    Serial.print("-r");
-    Serial.print(coords.row, HEX);
-    Serial.print("-c");
-    Serial.print(coords.col, HEX);
-    Serial.print("> slave_data:");
-    Serial.print(slave_data, HEX);
-    Serial.print("\n");
-    #endif
-
     SlaveReport::send_changed_key(coords);
 #endif
 }
@@ -129,14 +122,15 @@ void loop() {
         ChangedKeyCoords coords = SlaveReport::decode_slave_report_data(data);
 
 #if DEBUG
-        Serial.print("\n");
         Serial.print("Handle_slave_data<T:");
         Serial.print(coords.type);
         Serial.print("|R:");
         Serial.print(coords.row);
         Serial.print("|C:");
         Serial.print(coords.col);
-        Serial.print(">\n");
+        Serial.print(">");
+        Serial.print(" now:");
+        Serial.println(prev_millis);
 #endif
 
         master_report.handle_slave_changed_key(coords);
