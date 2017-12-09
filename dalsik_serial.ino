@@ -6,6 +6,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include "pin_utils.h"
 #include "dalsik_serial.h"
 #include "dalsik.h"
 
@@ -13,41 +14,40 @@ volatile uint8_t DalsikSerial::slave_data = 0x00;
 volatile uint8_t DalsikSerial::slave_data_available = 0;
 
 void DalsikSerial::master_init(void) {
-    set_serial_pin_input_pullup();
+    PinUtils::pinmode_input_pullup(SERIAL_PIN);
     serial_set_interrupt();
 }
 
 void DalsikSerial::slave_init(void) {
-    set_serial_pin_output();
-    serial_output_high();
+    PinUtils::pinmode_output_high(SERIAL_PIN);
 }
 
 void DalsikSerial::slave_send(uint8_t data) {
     // Trigger the interrupt on the master & send the init LOW/HIGH
-    serial_output_low();
+    PinUtils::set_output_low(SERIAL_PIN);
     serial_delay();
-    serial_output_high();
+    PinUtils::set_output_high(SERIAL_PIN);
     serial_delay();
 
     // Send data - MSB
     for (int8_t i = 7; i >= 0; i--) {
         if (data & (1 << i)) {
-            serial_output_high();
+            PinUtils::set_output_high(SERIAL_PIN);
         } else {
-            serial_output_low();
+            PinUtils::set_output_low(SERIAL_PIN);
         }
         serial_delay();
     }
 
     // Pull the line HIGH - IDLE
-    serial_output_high();
+    PinUtils::set_output_high(SERIAL_PIN);
     serial_delay();
 }
 
 inline static uint8_t serial_master_read() {
     serial_half_delay();
     // Sync to the end of slave LOW
-    while (!serial_read_pin());
+    while (!PinUtils::read_pin(SERIAL_PIN));
     // Wait till the HIGH signal
     serial_delay();
     // Get to the middle of the data signal
@@ -57,7 +57,7 @@ inline static uint8_t serial_master_read() {
 
     // Receive data - MSB
     for (uint8_t i = 0; i < 8; i++) {
-        data = (data << 1) | serial_read_pin();
+        data = (data << 1) | PinUtils::read_pin(SERIAL_PIN);
         serial_delay();
     }
 
@@ -82,27 +82,6 @@ inline static void serial_delay() {
 
 inline static void serial_half_delay() {
     _delay_us(SERIAL_DELAY/2);
-}
-
-inline static uint8_t serial_read_pin() {
-    return SERIAL_PIN_INPUT & SERIAL_PIN_MASK;
-}
-
-inline static void serial_output_low() {
-    SERIAL_PIN_PORT &= ~SERIAL_PIN_MASK;
-}
-
-inline static void serial_output_high() {
-    SERIAL_PIN_PORT |= SERIAL_PIN_MASK;
-}
-
-inline void set_serial_pin_input_pullup() {
-    SERIAL_PIN_DDR  &= ~SERIAL_PIN_MASK;
-    SERIAL_PIN_PORT |= SERIAL_PIN_MASK;
-}
-
-inline void set_serial_pin_output() {
-    SERIAL_PIN_DDR |= SERIAL_PIN_MASK;
 }
 
 #if IS_MASTER

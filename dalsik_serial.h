@@ -6,10 +6,9 @@
 #ifndef DALSIK_SERIAL_H
 #define DALSIK_SERIAL_H
 
-#define SERIAL_PIN_DDR DDRD
-#define SERIAL_PIN_PORT PORTD
-#define SERIAL_PIN_INPUT PIND
-#define SERIAL_PIN_MASK _BV(PD0)
+#include "pin_utils.h"
+
+#define SERIAL_PIN PIN_D(0)
 #define SERIAL_PIN_INTERRUPT INT0_vect
 #define SERIAL_PIN_INTERRUPT_FLAG INTF0
 

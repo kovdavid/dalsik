@@ -4,6 +4,7 @@
 #include "slave_report.h"
 #include "dalsik_serial.h"
 #include "serialcommand.h"
+#include "pin_utils.h"
 #include <avr/io.h>
 #if USE_I2C
     #include <Wire.h>
@@ -25,7 +26,7 @@ void setup() {
     MCUCR |= _BV(JTD);
 
 #if ON_OFF_PIN
-    pinMode(ON_OFF_PIN, INPUT_PULLUP);
+    PinUtils::pinmode_input_pullup(ON_OFF_PIN);
 #endif
 
 #if USE_I2C
@@ -55,7 +56,7 @@ void setup() {
 void loop() {
 #if ON_OFF_PIN
     // Turn off the whole keyboard with a switch
-    while (digitalRead(ON_OFF_PIN) == LOW);
+    while (!PinUtils::read_pin(ON_OFF_PIN));
 #endif
 
 #if IS_MASTER

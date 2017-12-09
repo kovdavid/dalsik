@@ -1,6 +1,8 @@
 #ifndef DALSIK_H
 #define DALSIK_H
 
+#include "pin_utils.h"
+
 #define DEBUG 0
 #define DEBUG_KEYREPORT 0
 
@@ -17,7 +19,7 @@
 #define I2C_SLAVE_ADDRESS  0x02
 
 // Turn off the keyboard with this PIN
-#define ON_OFF_PIN 4
+#define ON_OFF_PIN PIN_D(4)
 
 // Trigger key press after holding a key for X ms
 #define DUAL_MODE_TIMEOUT_MS 1000
@@ -28,12 +30,6 @@
 #define ONE_SIDE_COL_PIN_COUNT 6
 #define BOTH_SIDE_COL_PIN_COUNT 2*ONE_SIDE_COL_PIN_COUNT
 #define KEY_COUNT ROW_PIN_COUNT * BOTH_SIDE_COL_PIN_COUNT
-
-#define PIN_B(x) (0x30+x)
-#define PIN_C(x) (0x60+x)
-#define PIN_D(x) (0x90+x)
-#define PIN_E(x) (0xC0+x)
-#define PIN_F(x) (0xF0+x)
 
 const uint8_t ROW_PINS[ROW_PIN_COUNT] = {
     PIN_D(7), PIN_E(6), PIN_B(4), PIN_B(5)
