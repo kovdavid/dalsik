@@ -25,7 +25,51 @@ Depending on which half you want to connect via USB, set the `MASTER_SIDE` value
 ### 5. Setting the keymap
 There are various Perl scripts in the `utils/` directory for communicating the the keyboard. One of these commands is the `SET_KEY` command, which sets the key for a specific row/column/layer into the EEPROM. The main utility is the `utils/set_keymap.pl` script, which sets the whole keymap from a `json` file.
 
-TODO json structure
+Example usage: `perl utils/set_keymap.pl -j /path/to/keymap.json [-s /dev/ttyACM0]`
+
+### 5.1 Key types
+Every supported key type is in [key_definitions.h](https://github.com/DavsX/dalsik/blob/master/key_definitions.h). The `KeyInfo` struct mirrors the keymap representation in the EEPROM, having 2 bytes: key type and key. KEY_UNSET and KEY_TRANSPARENT does not take 'key' argument (it is set to 0x00). The following key types are supported:
+
+* KEY_UNSET - Has no effect
+* KEY_NORMAL - Basic keys, like modifiers (CTRL,ALT,SHIFT,GUI), letters, numbers etc.
+* KEY_DUAL_LCTRL - Left CTRL on hold, other KEY_NORMAL on tap
+* KEY_DUAL_RCTRL - Right CTRL on hold, other KEY_NORMAL on tap
+* KEY_DUAL_LSHIFT - Left SHIFT on hold, other KEY_NORMAL on tap
+* KEY_DUAL_RSHIFT - Right SHIFT on hold, other KEY_NORMAL on tap
+* KEY_DUAL_LGUI - Left GUI on hold, other KEY_NORMAL on tap
+* KEY_DUAL_RGUI - Right GUI on hold, other KEY_NORMAL on tap
+* KEY_DUAL_LALT - Left ALT on hold, other KEY_NORMAL on tap
+* KEY_DUAL_RALT - Right ALT on hold, other KEY_NORMAL on tap
+* KEY_LAYER_PRESS - Switch to other layer, while the key is pressed
+* KEY_LAYER_TOGGLE - Switch to other layer, until this key is pressed again. Other KEY_LAYER_PRESS keys can momentarily change layers, but after those are release, the current layer stays at the toggled layer
+* KEY_LAYER_HOLD_OR_TOGGLE - Switch momentarily to other layer if held. Toggle layer on tap
+* KEY_WITH_MOD_LCTRL - Press some KEY_NORMAL with Left CTRL
+* KEY_WITH_MOD_RCTRL - Press some KEY_NORMAL with Left CTRL
+* KEY_WITH_MOD_LSHIFT - Press some KEY_NORMAL with Left SHIFT
+* KEY_WITH_MOD_RSHIFT - Press some KEY_NORMAL with Right SHIFT
+* KEY_WITH_MOD_LGUI - Press some KEY_NORMAL with Left GUI
+* KEY_WITH_MOD_RGUI - Press some KEY_NORMAL with Right GUI
+* KEY_WITH_MOD_LALT - Press some KEY_NORMAL with Left ALT
+* KEY_WITH_MOD_RALT - Press some KEY_NORMAL with Right ALT
+* KEY_SYSTEM - System keys (power-off, sleep, wake-up etc)
+* KEY_MULTIMEDIA_0 - Multimedia keys with '0x00' prefix - mute, volume up, volume down etc
+* KEY_MULTIMEDIA_1 - Multimedia keys with '0x01' prefix - application launch (calculator, browser) etc
+* KEY_MULTIMEDIA_2 - Multimedia keys with '0x02' prefix - application control (Save, Exit, Open) etc.
+* KEY_TAPDANCE - Tapdance key - sends one from up to 3 different keys based on number of taps
+* KEY_DUAL_LAYER_1 - Switch to layer 1 on hold, other KEY_NORMAL on tap
+* KEY_DUAL_LAYER_2 - Switch to layer 2 on hold, other KEY_NORMAL on tap
+* KEY_DUAL_LAYER_3 - Switch to layer 3 on hold, other KEY_NORMAL on tap
+* KEY_DUAL_LAYER_4 - Switch to layer 4 on hold, other KEY_NORMAL on tap
+* KEY_DUAL_LAYER_5 - Switch to layer 5 on hold, other KEY_NORMAL on tap
+* KEY_DUAL_LAYER_6 - Switch to layer 6 on hold, other KEY_NORMAL on tap
+* KEY_DUAL_LAYER_7 - Switch to layer 7 on hold, other KEY_NORMAL on tap
+* KEY_TRANSPARENT - Use key from the previous layer
+
+The [USB HID Usage Tables](http://www.usb.org/developers/hidpage/Hut1_12v2.pdf) document contains every possible key codes used in HID communication.
+
+### 5.2 Keymap JSON format
+
+TODO
 
 ### 6. Code architecture
 Everything starts in the [dalsik.ino](https://github.com/DavsX/dalsik/blob/master/dalsik.ino) file. It contains the `void setup()` function, which initializes the hardware and the `void loop()` function, which is responsible for managing all the work that the keyboard does. Each side of the keyboard scans it's own set of keys for any change (key press or key release). This scanning is done with the [`matrix.scan()`](#61-the-matrix-module) call.
