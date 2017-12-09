@@ -40,4 +40,8 @@ The translation from `ChangedKeyCoords` to actual keys (and eventually sending d
 * The key change events detected on the slave half are sent to the master half, where it is processed in the `handle_slave_changed_key` function.
 * The key change events on the master half are handled in the `handle_master_changed_key` function.
 
-In the end, every key handling is done in `MasterReport`.
+### 5.5 The KeyMap module
+The main responsibility of the `KeyMap` module is to translate key coordinates (row+column+layer number) into actual keys - see the [`KeyInfo` structure](https://github.com/DavsX/dalsik/blob/master/keymap.h). This module serves as an interface between the keyboard and the EEPROM, where the whole keymap is kept.
+
+### 5.6 The MasterReport module
+In the end, every key handling is done in `MasterReport`. It's main responsibility is to translate the `ChangedKeyCoords` event into actual keys (using the `KeyMap` module) and to maintain/send the [USB HID report](https://docs.mbed.com/docs/ble-hid/en/latest/api/md_doc_HID.html) structure.
