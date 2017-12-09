@@ -36,8 +36,8 @@ static uint8_t execute_command(KeyMap* keymap) {
         uint8_t row   = buffer[2];
         uint8_t col   = buffer[3];
 
-        if (layer >= MAX_LAYER_COUNT) return 7; // Invalid layer
-        if (row >= ROW_PIN_COUNT) return 8; // Invalid row
+        if (layer >= MAX_LAYER_COUNT) return 7;       // Invalid layer
+        if (row >= ROW_PIN_COUNT) return 8;           // Invalid row
         if (col >= BOTH_SIDE_COL_PIN_COUNT) return 9; // Invalid col
 
         serial_print_key(keymap, layer, row, col);
@@ -59,8 +59,8 @@ static uint8_t execute_command(KeyMap* keymap) {
         uint8_t key_type = buffer[4];
         uint8_t key      = buffer[5];
 
-        if (layer >= MAX_LAYER_COUNT) return 7; // Invalid layer
-        if (row >= ROW_PIN_COUNT) return 8; // Invalid row
+        if (layer >= MAX_LAYER_COUNT) return 7;       // Invalid layer
+        if (row >= ROW_PIN_COUNT) return 8;           // Invalid row
         if (col >= BOTH_SIDE_COL_PIN_COUNT) return 9; // Invalid col
 
         keymap->set_key(layer, row, col, KeyInfo { key_type, key });

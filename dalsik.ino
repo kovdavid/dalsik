@@ -45,7 +45,7 @@ void setup() {
     #endif
 #endif
 
-#if IS_MASTER || DEBUG
+#if IS_MASTER || DEBUG || DEBUG_KEYREPORT
     Serial.begin(115200);
     while (!Serial);
 #endif
