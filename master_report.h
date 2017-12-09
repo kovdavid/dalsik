@@ -14,7 +14,7 @@
 typedef struct {
     uint8_t mode;
     KeyInfo key_info;
-    unsigned long last_tap_ts;
+    unsigned long last_press_ts;
 } DualKeyState;
 
 #define HOLD_OR_TOGGLE_NOT_PRESSED 0x00
@@ -30,7 +30,6 @@ typedef struct {
     uint8_t key_reported;
     uint8_t key_pressed;
     uint8_t tap_count;
-    unsigned long last_tap_ts;
 } TapDanceState;
 
 class MasterReport {
@@ -38,21 +37,23 @@ class MasterReport {
         void print_base_report_to_serial();
         void print_system_report_to_serial();
         void print_multimedia_report_to_serial();
-    public:
-        MasterReport(KeyMap* keymap);
 
+        void handle_changed_key(ChangedKeyCoords coords);
+        void press(KeyInfo key_info);
+        void release(KeyInfo key_info);
         void clear();
+
         void send_hid_report();
         void send_base_hid_report();
         void send_system_hid_report();
         void send_multimedia_hid_report();
 
-        void handle_master_changed_key(ChangedKeyCoords coords);
-        void handle_slave_changed_key(ChangedKeyCoords coords);
-        void handle_changed_key(ChangedKeyCoords coords);
-        void press(KeyInfo key_info);
-        void release(KeyInfo key_info);
         inline void key_timeout_check();
+        inline void press_hook_for_dual_keys();
+        inline void press_hook_for_layer_hold_or_toggle();
+        inline void press_hook_for_tapdance_keys(KeyInfo key_info);
+        inline void release_all_hook_for_tapdance_keys();
+        inline void activate_tapdance(uint8_t index);
 
         inline void press_normal_key(KeyInfo key_info);
         inline void release_normal_key(KeyInfo key_info);
@@ -65,9 +66,9 @@ class MasterReport {
         inline void press_system_key(KeyInfo key_info);
         inline void release_system_key(KeyInfo key_info);
 
-        inline void press_hook_for_dual_keys();
         inline void press_dual_key(KeyInfo key_info);
         inline void release_dual_key(KeyInfo key_info);
+
         inline void press_dual_layer_key(KeyInfo key_info);
         inline void release_dual_layer_key(KeyInfo key_info);
 
@@ -77,7 +78,6 @@ class MasterReport {
         inline void press_key_with_mod(KeyInfo key_info);
         inline void release_key_with_mod(KeyInfo key_info);
 
-        inline void press_hook_for_layer_hold_or_toggle();
         inline void press_layer_hold_or_toggle(KeyInfo key_info);
         inline void release_layer_hold_or_toggle(KeyInfo key_info);
 
@@ -99,7 +99,14 @@ class MasterReport {
         TapDanceState tapdance_state[MAX_TAPDANCE_KEYS];
 
         uint8_t active_tapdance_key_count;
+        uint8_t last_tapdance_index;
+        unsigned long last_tapdance_press_ts;
         uint8_t num_keys_pressed;
+    public:
+        MasterReport(KeyMap* keymap);
+
+        void handle_master_changed_key(ChangedKeyCoords coords);
+        void handle_slave_changed_key(ChangedKeyCoords coords);
 };
 
 #endif

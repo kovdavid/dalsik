@@ -18,6 +18,8 @@ MasterReport::MasterReport(KeyMap* keymap) {
         memset(&(this->tapdance_state[i]), 0, sizeof(TapDanceState));
     }
     this->active_tapdance_key_count = 0;
+    this->last_tapdance_press_ts = 0;
+    this->last_tapdance_index = 0;
 }
 
 void MasterReport::clear() {
@@ -73,6 +75,7 @@ void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
         this->release(key_info);
 
         if (this->num_keys_pressed == 0) {
+            this->release_all_hook_for_tapdance_keys();
             this->clear();
         }
     }
@@ -91,6 +94,7 @@ void MasterReport::press(KeyInfo key_info) {
 
     this->press_hook_for_dual_keys();
     this->press_hook_for_layer_hold_or_toggle();
+    this->press_hook_for_tapdance_keys(key_info);
 
     if (key_info.type == KEY_NORMAL) {
         this->press_normal_key(key_info);
@@ -192,7 +196,7 @@ inline void MasterReport::press_toggle_layer_key(KeyInfo key_info) {
 inline void MasterReport::press_dual_key(KeyInfo key_info) {
     if (this->dual_key_state.mode == DUAL_MODE_NOT_PRESSED) {
         this->dual_key_state.key_info = key_info;
-        this->dual_key_state.last_tap_ts = millis();
+        this->dual_key_state.last_press_ts = millis();
         if (this->num_keys_pressed > 1) {
             this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
             uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
@@ -230,7 +234,7 @@ inline void MasterReport::release_dual_key(KeyInfo key_info) {
 inline void MasterReport::press_dual_layer_key(KeyInfo key_info) {
     if (this->dual_layer_key_state.mode == DUAL_MODE_NOT_PRESSED) {
         this->dual_layer_key_state.key_info = key_info;
-        this->dual_layer_key_state.last_tap_ts = millis();
+        this->dual_layer_key_state.last_press_ts = millis();
         if (this->num_keys_pressed > 1) {
             this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
             uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
@@ -367,6 +371,46 @@ inline void MasterReport::release_key_with_mod(KeyInfo key_info) {
     this->release(KeyInfo { KEY_NORMAL, key_info.key });
 }
 
+inline void MasterReport::press_hook_for_tapdance_keys(KeyInfo key_info) {
+    if (key_info.type == KEY_TAPDANCE && key_info.key == this->last_tapdance_index) {
+        return;
+    }
+    uint8_t last_index = this->last_tapdance_index;
+    if (this->tapdance_state[last_index].tap_count == 0) {
+        return;
+    }
+    if (this->tapdance_state[last_index].key_reported == 0) {
+        this->activate_tapdance(last_index);
+    }
+}
+
+// Handle stuck tapdance keys
+inline void MasterReport::release_all_hook_for_tapdance_keys() {
+    for (uint8_t i = 0; i < MAX_TAPDANCE_KEYS; i++) {
+        if (this->tapdance_state[i].key_pressed == 1) {
+            this->release(KeyInfo { KEY_TAPDANCE, i });
+        }
+    }
+    this->send_hid_report();
+}
+
+inline void MasterReport::activate_tapdance(uint8_t index) {
+    KeyInfo key_info = this->keymap->get_tapdance_key(
+        index, this->tapdance_state[index].tap_count
+    );
+
+    this->tapdance_state[index].key_reported = 1;
+    this->press(key_info);
+    this->send_hid_report();
+
+    if (this->tapdance_state[index].key_pressed == 0) {
+        memset(&(this->tapdance_state[index]), 0, sizeof(TapDanceState));
+        this->active_tapdance_key_count--;
+        this->release(key_info);
+        this->send_hid_report();
+    }
+}
+
 inline void MasterReport::press_tapdance_key(KeyInfo key_info) {
     uint8_t index = key_info.key;
 
@@ -374,12 +418,14 @@ inline void MasterReport::press_tapdance_key(KeyInfo key_info) {
         return;
     }
 
+    this->last_tapdance_index = index;
+    this->last_tapdance_press_ts = millis();
+
     if (this->tapdance_state[index].tap_count == 0) {
         this->tapdance_state[index] = TapDanceState {
             .key_reported = 0,
             .key_pressed = 1,
             .tap_count = 1,
-            .last_tap_ts = millis()
         };
         this->active_tapdance_key_count++;
         return;
@@ -387,12 +433,9 @@ inline void MasterReport::press_tapdance_key(KeyInfo key_info) {
 
     this->tapdance_state[index].tap_count++;
     this->tapdance_state[index].key_pressed = 1;
-    this->tapdance_state[index].last_tap_ts = millis();
 
     if (this->tapdance_state[index].tap_count >= MAX_TAPDANCE_TAPS) {
-        KeyInfo key_info = this->keymap->get_tapdance_key(index, MAX_TAPDANCE_TAPS);
-        this->tapdance_state[index].key_reported = 1;
-        this->press(key_info);
+        this->activate_tapdance(index);
     }
 }
 
@@ -418,56 +461,31 @@ inline void MasterReport::release_tapdance_key(KeyInfo key_info) {
 inline void MasterReport::key_timeout_check() {
     unsigned long now_ms = millis();
 
-    if (this->active_tapdance_key_count != 0) {
-        for (uint8_t i = 0; i < MAX_TAPDANCE_KEYS; i++) {
-            if (this->tapdance_state[i].tap_count == 0) {
-                continue;
-            }
-            // Stuck tapdance key (for example on some layer)
-            if (this->tapdance_state[i].key_pressed == 1 && this->num_keys_pressed > 0) {
-                this->release(KeyInfo { KEY_TAPDANCE, i });
-                this->send_hid_report();
-                continue;
-            }
-            if (this->tapdance_state[i].key_reported == 1) {
-                continue;
-            }
-
-            if (this->tapdance_state[i].last_tap_ts + TAPDANCE_TIMEOUT_MS < now_ms) {
-                KeyInfo key_info = this->keymap->get_tapdance_key(
-                    i, this->tapdance_state[i].tap_count
-                );
-
-                this->tapdance_state[i].key_reported = 1;
-                this->press(key_info);
-                this->send_hid_report();
-
-                if (this->tapdance_state[i].key_pressed == 0) {
-                    memset(&(this->tapdance_state[i]), 0, sizeof(TapDanceState));
-                    this->active_tapdance_key_count--;
-                    this->release(key_info);
-                    this->send_hid_report();
-                }
-            }
-        }
+    TapDanceState tapdance_state = this->tapdance_state[this->last_tapdance_index];
+    if (
+        tapdance_state.tap_count != 0
+        && tapdance_state.key_reported == 0
+        && this->last_tapdance_press_ts + TAPDANCE_TIMEOUT_MS < now_ms
+    ) {
+        this->activate_tapdance(this->last_tapdance_index);
     }
 
 #if DUAL_MODE_TIMEOUT_MS
     if (
         this->dual_key_state.mode == DUAL_MODE_PENDING
-        && this->dual_key_state.last_tap_ts + DUAL_MODE_TIMEOUT_MS >= now_ms
+        && this->dual_key_state.last_press_ts + DUAL_MODE_TIMEOUT_MS < now_ms
     ) {
         this->dual_key_state.mode = DUAL_MODE_PRESS_KEY;
-        this->press_normal_key(this->dual_key_state.key_info);
+        this->press(this->dual_key_state.key_info);
         this->send_hid_report();
     }
 
     if (
         this->dual_layer_key_state.mode == DUAL_MODE_PENDING
-        && this->dual_layer_key_state.last_tap_ts + DUAL_MODE_TIMEOUT_MS >= now_ms
+        && this->dual_layer_key_state.last_press_ts + DUAL_MODE_TIMEOUT_MS < now_ms
     ) {
         this->dual_layer_key_state.mode = DUAL_MODE_PRESS_KEY;
-        this->press_normal_key(this->dual_layer_key_state.key_info);
+        this->press(this->dual_layer_key_state.key_info);
         this->send_hid_report();
     }
 #endif
