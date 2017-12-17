@@ -31,9 +31,19 @@ void MasterReport::clear() {
     memset(&(this->hold_or_toggle_state), 0, sizeof(LayerHoldOrToggleState));
 
     this->num_keys_pressed = 0;
-    this->base_hid_report_changed = 1;
-    this->system_hid_report_changed = 1;
-    this->multimedia_hid_report_changed = 1;
+
+    if (this->base_keys_pressed != 0) {
+        this->base_keys_pressed = 0;
+        this->base_hid_report_changed = 1;
+    }
+    if (this->system_keys_pressed != 0) {
+        this->system_keys_pressed = 0;
+        this->system_hid_report_changed = 1;
+    }
+    if (this->multimedia_keys_pressed != 0) {
+        this->multimedia_keys_pressed = 0;
+        this->multimedia_hid_report_changed = 1;
+    }
 
     this->keymap->clear();
 }
@@ -57,7 +67,7 @@ void MasterReport::handle_changed_key(KeyInfo key_info, uint8_t key_event) {
         this->num_keys_pressed--;
         this->release(key_info);
         if (this->num_keys_pressed == 0) {
-            this->release_all_hook_for_tapdance_keys();
+            this->release_all_keys_hook_for_tapdance_keys();
             this->clear();
         }
     }
@@ -145,6 +155,7 @@ inline void MasterReport::press_normal_key(KeyInfo key_info) {
     }
 
     this->base_hid_report_changed = 1;
+    this->base_keys_pressed++;
 }
 
 inline void MasterReport::release_normal_key(KeyInfo key_info) {
@@ -160,6 +171,7 @@ inline void MasterReport::release_normal_key(KeyInfo key_info) {
     }
 
     this->base_hid_report_changed = 1;
+    this->base_keys_pressed--;
 }
 
 inline void MasterReport::press_layer_key(KeyInfo key_info) {
@@ -260,6 +272,7 @@ inline void MasterReport::press_multimedia_key(KeyInfo key_info) {
         this->multimedia_hid_report.prefix = 0x00;
     }
     this->multimedia_hid_report_changed = 1;
+    this->multimedia_keys_pressed++;
 }
 
 inline void MasterReport::release_multimedia_key(KeyInfo key_info) {
@@ -277,6 +290,7 @@ inline void MasterReport::release_multimedia_key(KeyInfo key_info) {
     ) {
         memset(&(this->multimedia_hid_report), 0, sizeof(MultimediaHIDReport));
         this->multimedia_hid_report_changed = 1;
+        this->multimedia_keys_pressed--;
     }
 }
 
@@ -325,12 +339,14 @@ inline void MasterReport::release_layer_hold_or_toggle(KeyInfo key_info) {
 inline void MasterReport::press_system_key(KeyInfo key_info) {
     this->system_hid_report.key = key_info.key;
     this->system_hid_report_changed = 1;
+    this->system_keys_pressed++;
 }
 
 inline void MasterReport::release_system_key(KeyInfo key_info) {
     if (this->system_hid_report.key == key_info.key) {
         this->system_hid_report.key = 0x00;
         this->system_hid_report_changed = 1;
+        this->system_keys_pressed--;
     }
 }
 
@@ -367,7 +383,7 @@ inline void MasterReport::press_hook_for_tapdance_keys(KeyInfo key_info) {
 }
 
 // Handle stuck tapdance keys
-inline void MasterReport::release_all_hook_for_tapdance_keys() {
+inline void MasterReport::release_all_keys_hook_for_tapdance_keys() {
     for (uint8_t i = 0; i < MAX_TAPDANCE_KEYS; i++) {
         if (this->tapdance_state[i].key_pressed == 1) {
             this->release(KeyInfo { KEY_TAPDANCE, i });

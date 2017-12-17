@@ -51,7 +51,7 @@ class MasterReport {
         inline void press_hook_for_dual_keys();
         inline void press_hook_for_layer_hold_or_toggle();
         inline void press_hook_for_tapdance_keys(KeyInfo key_info);
-        inline void release_all_hook_for_tapdance_keys();
+        inline void release_all_keys_hook_for_tapdance_keys();
         inline void activate_tapdance(uint8_t index);
 
         inline void press_normal_key(KeyInfo key_info);
@@ -91,6 +91,11 @@ class MasterReport {
         uint8_t system_hid_report_changed;
         uint8_t multimedia_hid_report_changed;
 
+        uint8_t num_keys_pressed;
+        uint8_t base_keys_pressed;
+        uint8_t system_keys_pressed;
+        uint8_t multimedia_keys_pressed;
+
         KeyMap* keymap;
         DualKeyState dual_key_state;
         DualKeyState dual_layer_key_state;
@@ -100,7 +105,6 @@ class MasterReport {
         uint8_t active_tapdance_key_count;
         uint8_t last_tapdance_index;
         unsigned long last_tapdance_press_ts;
-        uint8_t num_keys_pressed;
     public:
         MasterReport(KeyMap* keymap);
 
