@@ -15,8 +15,7 @@ Fun :) I made this to see if I can do it and to learn. The list of features is k
 * Split keyboard support via I2C or single-wire serial
 
 ### 3. Flashing
-To flash the atmega32u4, use the [Arduino IDE](https://www.arduino.cc/en/main/software). Set `IS_MASTER` to 1 in `dalsik.h` to flash the master and to 0 to flash the slave microcontroller.
-Depending on which half you want to connect via USB, set the `MASTER_SIDE` value in `dalsik.h` to `MASTER_SIDE_LEFT` or `MASTER_SIDE_RIGHT`.
+To flash the atmega32u4, use the [Arduino IDE](https://www.arduino.cc/en/main/software).
 
 ### 4. Inspired by
 * [Animus firmware](https://github.com/blahlicus/animus-family)
@@ -24,6 +23,8 @@ Depending on which half you want to connect via USB, set the `MASTER_SIDE` value
 
 ### 5. Setting the keymap
 There are various Perl scripts in the `utils/` directory for communicating the the keyboard. One of these commands is the `SET_KEY` command, which sets the key for a specific row/column/layer into the EEPROM. The main utility is the `utils/set_keymap.pl` script, which sets the whole keymap from a `json` file.
+
+The master side is automatically detected, when the atmega32u4 gets power from the USB.
 
 Example usage: `perl utils/set_keymap.pl -j /path/to/keymap.json [-s /dev/ttyACM0]`
 
