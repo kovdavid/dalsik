@@ -14,7 +14,7 @@ KeyMap::KeyMap() {
 
 void KeyMap::clear() {
     this->layer_index = 0;
-    memset(this->layer_history, 0, LAYER_HISTORY_CAPACITY);
+    memset(this->layer_history, 0, sizeof(uint8_t)*LAYER_HISTORY_CAPACITY);
     if (this->toggled_layer_index > 0) {
         this->set_layer(this->toggled_layer_index);
     }

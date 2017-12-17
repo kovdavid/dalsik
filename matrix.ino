@@ -5,11 +5,11 @@ Matrix::Matrix() {
     memset(this->keystate, 0, sizeof(uint8_t)*ROW_PIN_COUNT*ONE_SIDE_COL_PIN_COUNT);
     memset(this->debounce, 0, sizeof(uint8_t)*ROW_PIN_COUNT*ONE_SIDE_COL_PIN_COUNT);
 
-    for (uint8_t i = 0; i < ROW_PIN_COUNT; i++) {
-        PinUtils::pinmode_input_pullup(ROW_PINS[i]);
+    for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
+        PinUtils::pinmode_input_pullup(ROW_PINS[row]);
     }
-    for (uint8_t i = 0; i < ONE_SIDE_COL_PIN_COUNT; i++) {
-        PinUtils::pinmode_input_pullup(COL_PINS[i]);
+    for (uint8_t col = 0; col < ONE_SIDE_COL_PIN_COUNT; col++) {
+        PinUtils::pinmode_input_pullup(COL_PINS[col]);
     }
 }
 
