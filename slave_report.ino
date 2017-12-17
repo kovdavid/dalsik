@@ -1,9 +1,6 @@
 #include "dalsik.h"
 #include "matrix.h"
 #include "dalsik_serial.h"
-#if USE_I2C
-    #include <Wire.h>
-#endif
 
 void SlaveReport::send_changed_key(ChangedKeyCoords coords) {
     if (coords.type == EVENT_NONE) {
@@ -12,13 +9,7 @@ void SlaveReport::send_changed_key(ChangedKeyCoords coords) {
 
     uint8_t slave_data = SlaveReport::encode_slave_report_data(coords);
 
-#if USE_I2C
-    Wire.beginTransmission(I2C_MASTER_ADDRESS);
-    Wire.write(slave_data);
-    Wire.endTransmission();
-#else
     DalsikSerial::slave_send(slave_data);
-#endif
 }
 
 // We use 1B to send type, row and col from ChangedKeyCoords + 2 parity

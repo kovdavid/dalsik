@@ -6,11 +6,6 @@
 #define DEBUG 0
 #define DEBUG_KEYREPORT 0
 
-// Use I2C or serial?
-#define USE_I2C 0
-#define I2C_MASTER_ADDRESS 0x01
-#define I2C_SLAVE_ADDRESS  0x02
-
 // Turn off the keyboard with this PIN
 #define ON_OFF_PIN PIN_D(4)
 

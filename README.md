@@ -12,7 +12,7 @@ Fun :) I made this to see if I can do it and to learn. The list of features is k
 * DualKey - tap for standard key, hold with other key for modifier (e.g. CTRL+ESC on a single key)
 * TapDance - registers as different key based on the number of taps within short time
 * Multimedia and system (power-off, sleep, wake-up) keys
-* Split keyboard support via I2C or single-wire serial
+* Split keyboard support single-wire serial
 * Automatic master/slave election (based on the USB cable)
 
 ### 3. Flashing

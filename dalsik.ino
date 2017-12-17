@@ -6,9 +6,6 @@
 #include "serial_command.h"
 #include "pin_utils.h"
 #include <avr/io.h>
-#if USE_I2C
-    #include <Wire.h>
-#endif
 
 Matrix matrix;
 KeyMap keymap;
@@ -16,7 +13,6 @@ KeyMap keymap;
 MasterReport master_report(&keymap);
 
 uint8_t is_master = 0;
-uint8_t read_from_slave = 0;
 unsigned long prev_millis = millis();
 
 uint8_t usb_connected() {
@@ -42,20 +38,11 @@ void setup() {
     PinUtils::pinmode_input_pullup(ON_OFF_PIN);
 #endif
 
-#if USE_I2C
-    if (is_master) {
-        Wire.begin(I2C_MASTER_ADDRESS);
-        Wire.onReceive(I2C_receive_event);
-    } else {
-        Wire.begin(I2C_SLAVE_ADDRESS);
-    }
-#else
     if (is_master) {
         DalsikSerial::master_init();
     } else {
         DalsikSerial::slave_init();
     }
-#endif
 
     delay(100);
 }
@@ -70,17 +57,10 @@ void loop() {
         if (Serial.available() > 0) {
             SerialCommand::process_command(&keymap);
         }
-        #if USE_I2C
-        if (read_from_slave != 0) {
-            read_changed_key_from_slave();
-            read_from_slave = 0;
-        }
-        #else
         if (DalsikSerial::slave_data_available != 0) {
             handle_slave_data(DalsikSerial::slave_data);
             DalsikSerial::slave_data_available = 0;
         }
-        #endif
     }
 
     // By making matrix scanning only once every millisecond, we can make
@@ -115,19 +95,6 @@ void loop() {
         SlaveReport::send_changed_key(coords);
     }
 }
-
-#if USE_I2C
-void read_changed_key_from_slave() {
-    while (Wire.available() > 0) {
-        handle_slave_data(Wire.read());
-    }
-}
-
-void I2C_receive_event(int count) {
-    void(count); // Supress unused parameter warning
-    read_from_slave = 1;
-}
-#endif
 
 inline void handle_slave_data(uint8_t data) {
     ChangedKeyCoords coords = SlaveReport::decode_slave_report_data(data);
