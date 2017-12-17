@@ -4,13 +4,13 @@
 #include "keymap.h"
 #include "array_utils.h"
 #include "dalsik.h"
-#include "EEPROM.h"
-
-#define KEYBOARD_IS_RIGHT_HALF_ADDRESS EEPROM.length() - 1
 
 extern const uint8_t KEYBOARD_HID_DESC[] PROGMEM;
 
 MasterReport::MasterReport(KeyMap* keymap) {
+    static HIDSubDescriptor node(KEYBOARD_HID_DESC, sizeof(KEYBOARD_HID_DESC));
+    HID().AppendDescriptor(&node);
+
     this->keymap = keymap;
     this->clear();
 
@@ -20,17 +20,6 @@ MasterReport::MasterReport(KeyMap* keymap) {
     this->active_tapdance_key_count = 0;
     this->last_tapdance_press_ts = 0;
     this->last_tapdance_index = 0;
-    this->keyboard_is_right_half = EEPROM.read(KEYBOARD_IS_RIGHT_HALF_ADDRESS);
-}
-
-void MasterReport::update_keyboard_side(uint8_t side) {
-    if (side == 'R') {
-        EEPROM.update(KEYBOARD_IS_RIGHT_HALF_ADDRESS, 0x01);
-        this->keyboard_is_right_half = 1;
-    } else {
-        EEPROM.update(KEYBOARD_IS_RIGHT_HALF_ADDRESS, 0x00);
-        this->keyboard_is_right_half = 0;
-    }
 }
 
 void MasterReport::clear() {
@@ -49,25 +38,13 @@ void MasterReport::clear() {
     this->keymap->clear();
 }
 
-// The right side sends columns 0-5, while in the keymap/eeprom it is at 6-11, so we need
-// to offset the column reported
 void MasterReport::handle_master_changed_key(ChangedKeyCoords coords) {
-    this->key_timeout_check(); // check once every millisecond
-    if (coords.type == EVENT_NONE) {
-        return;
-    }
-    if (this->keyboard_is_right_half) {
-        coords.col += ONE_SIDE_COL_PIN_COUNT;
-    }
-    KeyInfo key_info = this->keymap->get_key(coords.row, coords.col);
+    KeyInfo key_info = this->keymap->get_master_key(coords.row, coords.col);
     this->handle_changed_key(key_info, coords.type);
 }
 
 void MasterReport::handle_slave_changed_key(ChangedKeyCoords coords) {
-    if (!this->keyboard_is_right_half) {
-        coords.col += ONE_SIDE_COL_PIN_COUNT;
-    }
-    KeyInfo key_info = this->keymap->get_key(coords.row, coords.col);
+    KeyInfo key_info = this->keymap->get_slave_key(coords.row, coords.col);
     this->handle_changed_key(key_info, coords.type);
 }
 
@@ -462,7 +439,7 @@ inline void MasterReport::release_tapdance_key(KeyInfo key_info) {
     }
 }
 
-inline void MasterReport::key_timeout_check() {
+void MasterReport::key_timeout_check() {
     unsigned long now_ms = millis();
 
     TapDanceState tapdance_state = this->tapdance_state[this->last_tapdance_index];
@@ -542,11 +519,6 @@ void MasterReport::send_hid_report() {
         this->send_multimedia_hid_report();
         this->multimedia_hid_report_changed = 0;
     }
-}
-
-void MasterReport::send_hid_keyboard_desc() {
-    static HIDSubDescriptor node(KEYBOARD_HID_DESC, sizeof(KEYBOARD_HID_DESC));
-    HID().AppendDescriptor(&node);
 }
 
 void MasterReport::send_base_hid_report() {

@@ -48,7 +48,6 @@ class MasterReport {
         void send_system_hid_report();
         void send_multimedia_hid_report();
 
-        inline void key_timeout_check();
         inline void press_hook_for_dual_keys();
         inline void press_hook_for_layer_hold_or_toggle();
         inline void press_hook_for_tapdance_keys(KeyInfo key_info);
@@ -102,14 +101,12 @@ class MasterReport {
         uint8_t last_tapdance_index;
         unsigned long last_tapdance_press_ts;
         uint8_t num_keys_pressed;
-        uint8_t keyboard_is_right_half;
     public:
         MasterReport(KeyMap* keymap);
 
-        void send_hid_keyboard_desc();
+        void key_timeout_check();
         void handle_master_changed_key(ChangedKeyCoords coords);
         void handle_slave_changed_key(ChangedKeyCoords coords);
-        void update_keyboard_side(uint8_t side);
 };
 
 #endif

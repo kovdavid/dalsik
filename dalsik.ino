@@ -3,7 +3,7 @@
 #include "master_report.h"
 #include "slave_report.h"
 #include "dalsik_serial.h"
-#include "serialcommand.h"
+#include "serial_command.h"
 #include "pin_utils.h"
 #include <avr/io.h>
 #if USE_I2C
@@ -33,10 +33,10 @@ void setup() {
     delay(100);
     if (usb_connected()) {
         is_master = 1;
-        Serial.begin(115200);
-        while (!Serial);
-        master_report.send_hid_keyboard_desc();
     }
+    delay(100);
+
+    Serial.begin(115200);
 
 #if ON_OFF_PIN
     PinUtils::pinmode_input_pullup(ON_OFF_PIN);
@@ -57,7 +57,7 @@ void setup() {
     }
 #endif
 
-    delay(200);
+    delay(100);
 }
 
 void loop() {
@@ -68,7 +68,7 @@ void loop() {
 
     if (is_master) {
         if (Serial.available() > 0) {
-            SerialCommand::process_command(&keymap, &master_report);
+            SerialCommand::process_command(&keymap);
         }
         #if USE_I2C
         if (read_from_slave != 0) {
@@ -90,20 +90,23 @@ void loop() {
     }
     prev_millis = millis();
 
+    master_report.key_timeout_check(); // check once every millisecond
+
     ChangedKeyCoords coords = matrix.scan();
+    if (coords.type == EVENT_NONE) {
+        return;
+    }
 
 #if DEBUG
-    if (coords.type != EVENT_NONE) {
-        Serial.print("Handle_master_data<T:");
-        Serial.print(coords.type);
-        Serial.print("|R:");
-        Serial.print(coords.row);
-        Serial.print("|C:");
-        Serial.print(coords.col);
-        Serial.print(">");
-        Serial.print(" now:");
-        Serial.println(prev_millis);
-    }
+    Serial.print("Master ChangedKeyCoords <T:");
+    Serial.print(coords.type);
+    Serial.print("|R:");
+    Serial.print(coords.row);
+    Serial.print("|C:");
+    Serial.print(coords.col);
+    Serial.print(">");
+    Serial.print(" now:");
+    Serial.println(prev_millis);
 #endif
 
     if (is_master) {
@@ -130,7 +133,7 @@ inline void handle_slave_data(uint8_t data) {
     ChangedKeyCoords coords = SlaveReport::decode_slave_report_data(data);
 
 #if DEBUG
-    Serial.print("Handle_slave_data<T:");
+    Serial.print("Slave ChangedKeyCoords <T:");
     Serial.print(coords.type);
     Serial.print("|R:");
     Serial.print(coords.row);

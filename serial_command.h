@@ -20,7 +20,8 @@ static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 #define CMD_GET_TAPDANCE_KEYMAP 0x0C
 #define CMD_CLEAR_EEPROM        0x0D
 #define CMD_GET_FULL_KEYMAP     0x0E
-#define CMD_SET_KEYBOARD_SIDE   0x0F
+#define CMD_GET_KEYBOARD_SIDE   0x0F
+#define CMD_SET_KEYBOARD_SIDE   0x10
 
 // +1 for the command type
 // +5 is the max size of arguments (for SET_KEY)
@@ -29,7 +30,7 @@ static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 #define CMD_LENGTH sizeof(CMD_PREFIX)+1+5
 
 namespace SerialCommand {
-    void process_command(KeyMap* keymap, MasterReport* master_report);
+    void process_command(KeyMap* keymap);
 }
 
 #endif
