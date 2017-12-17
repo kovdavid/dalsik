@@ -26,25 +26,17 @@ KeyInfo KeyMap::get_master_key(uint8_t row, uint8_t col) {
     if (this->keyboard_side == KEYBOARD_SIDE_RIGHT) {
         col += ONE_SIDE_COL_PIN_COUNT;
     }
-
-    uint32_t eeprom_address = this->get_eeprom_address(this->layer_index, row, col);
-
-    uint8_t type = EEPROM.read(eeprom_address);
-    uint8_t key = EEPROM.read(eeprom_address + 0x01);
-
-    KeyInfo key_info = KeyInfo { type, key };
-    if (key_info.type == KEY_TRANSPARENT) { // Get the key from lower layers
-        key_info = this->get_non_transparent_key(row, col);
-    }
-
-    return key_info;
+    return this->get_key(row, col);
 }
 
 KeyInfo KeyMap::get_slave_key(uint8_t row, uint8_t col) {
     if (this->keyboard_side == KEYBOARD_SIDE_LEFT) {
         col += ONE_SIDE_COL_PIN_COUNT;
     }
+    return this->get_key(row, col);
+}
 
+KeyInfo KeyMap::get_key(uint8_t row, uint8_t col) {
     uint32_t eeprom_address = this->get_eeprom_address(this->layer_index, row, col);
 
     uint8_t type = EEPROM.read(eeprom_address);

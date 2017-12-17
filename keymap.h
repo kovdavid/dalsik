@@ -32,6 +32,7 @@ class KeyMap {
         inline uint32_t get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col);
         inline uint32_t get_tapdance_eeprom_address(uint8_t index, uint8_t tap);
         KeyInfo get_non_transparent_key(uint8_t row, uint8_t col);
+        KeyInfo get_key(uint8_t row, uint8_t col);
     public:
         KeyMap(void);
 
