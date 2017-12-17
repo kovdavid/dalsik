@@ -10,16 +10,14 @@ use lib "$Bin";
 use Dalsik;
 
 my $serial = '/dev/ttyACM0';
-GetOptions(
-    "serial=s" => \$serial,
-);
+GetOptions("serial=s" => \$serial);
 
 my $fh = Dalsik::open_serial($serial);
 
-print "Sending:\n\tCLEAR_KEYMAP\n";
-my $cmd = Dalsik::get_cmd('CLEAR_KEYMAP');
+print "Sending:\n\tGET_KEYBOARD_SIDE\n";
+my $cmd = Dalsik::get_cmd('GET_KEYBOARD_SIDE');
 unless (print $fh $cmd) {
-    die "Could not send CLEAR_KEYMAP: $!";
+    die "Could not send GET_KEYBOARD_SIDE: $!";
 }
 
 my $res = <$fh>;

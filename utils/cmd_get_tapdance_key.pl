@@ -3,16 +3,20 @@
 use strict;
 use warnings;
 use FindBin qw[ $Bin ];
+use Getopt::Long qw( GetOptions );
 
 use lib "$Bin";
 
 use Dalsik;
 
-my $serial = shift || "/dev/ttyACM0";
+my $serial = '/dev/ttyACM0';
+my $index = 0;
+GetOptions(
+    "serial=s" => \$serial,
+    "index=i" => \$index,
+);
 
 my $fh = Dalsik::open_serial($serial);
-
-my $index = 0;
 
 for my $tap (1..3) {
     print "Sending:\n\tGET_TAPDANCE_KEY tap:$tap\n";

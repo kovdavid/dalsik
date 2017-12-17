@@ -10,23 +10,29 @@ use lib "$Bin";
 use Dalsik;
 
 my $serial = '/dev/ttyACM0';
+my $side = 'UNSET';
+
 GetOptions(
     "serial=s" => \$serial,
+    "side=s" => \$side,
 );
+
+if ($side ne 'L' && $side ne 'R') {
+    die "Invalid side[$side]! Usage: $0 [--serial /dev/ttyACM0] --side C|L";
+}
 
 my $fh = Dalsik::open_serial($serial);
 
-print "Sending:\n\tCLEAR_KEYMAP\n";
-my $cmd = Dalsik::get_cmd('CLEAR_KEYMAP');
+print "Sending:\n\tSET_KEYBOARD_SIDE $side\n";
+my $cmd = Dalsik::get_cmd('SET_KEYBOARD_SIDE', $side);
+
 unless (print $fh $cmd) {
-    die "Could not send CLEAR_KEYMAP: $!";
+    die "Could not send SET_KEYBOARD_SIDE: $!";
 }
 
 my $res = <$fh>;
-my $cmd_res = <$fh>;
 
 print "Received:\n";
 print "\t$res";
-print "\t$cmd_res";
 
 close $fh;

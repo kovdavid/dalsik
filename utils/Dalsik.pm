@@ -13,7 +13,7 @@ our $type_to_byte = {};
 our $byte_to_type = {};
 our $key_to_byte = {};
 our $byte_to_key = {};
-our $aliases      = {};
+our $aliases = {};
 
 my $file = "$Bin/../key_definitions.h";
 open my $fh, "<", $file or die "Could not open $file: $!";
@@ -165,6 +165,10 @@ sub get_cmd {
         return "DALSIK-\x0D".join("", ("\x00")x5);
     } elsif ($cmd eq 'GET_FULL_KEYMAP') {
         return "DALSIK-\x0E".join("", ("\x00")x5);
+    } elsif ($cmd eq 'GET_KEYBOARD_SIDE') {
+        return "DALSIK-\x0F".join("", ("\x00")x5);
+    } elsif ($cmd eq 'SET_KEYBOARD_SIDE') {
+        return "DALSIK-\x10".$args[0]."\x00\x00\x00\x00";
     }
 }
 

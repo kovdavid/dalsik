@@ -151,9 +151,13 @@ static uint8_t execute_command(KeyMap* keymap) {
         }
         return 0;
     } else if (buffer[0] == CMD_SET_KEYBOARD_SIDE) {
-        uint8_t keyboard_side = buffer[1];
-        if (keyboard_side == KEYBOARD_SIDE_LEFT || keyboard_side == KEYBOARD_SIDE_RIGHT) {
-            keymap->update_keyboard_side(keyboard_side);
+        uint8_t side = buffer[1];
+        if (side == 'L') {
+            keymap->update_keyboard_side(KEYBOARD_SIDE_LEFT);
+            return 0;
+        }
+        if (side == 'R') {
+            keymap->update_keyboard_side(KEYBOARD_SIDE_RIGHT);
             return 0;
         }
         return 9;
