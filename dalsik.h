@@ -6,13 +6,6 @@
 #define DEBUG 0
 #define DEBUG_KEYREPORT 0
 
-#define IS_MASTER 1
-
-#define MASTER_SIDE_LEFT 0x00
-#define MASTER_SIDE_RIGHT 0x01
-// Which side has the USB cable plugged?
-#define MASTER_SIDE MASTER_SIDE_LEFT
-
 // Use I2C or serial?
 #define USE_I2C 0
 #define I2C_MASTER_ADDRESS 0x01

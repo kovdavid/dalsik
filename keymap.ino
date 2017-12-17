@@ -3,10 +3,62 @@
 #include "keymap.h"
 #include "array_utils.h"
 
+#define KEYBOARD_SIDE_EEPROM_ADDRESS EEPROM.length() - 1
+
 KeyMap::KeyMap() {
     this->layer_index = 0;
     this->toggled_layer_index = 0;
+    this->keyboard_side = EEPROM.read(KEYBOARD_SIDE_EEPROM_ADDRESS);
     this->clear();
+}
+
+void KeyMap::clear() {
+    this->layer_index = 0;
+    memset(this->layer_history, 0, LAYER_HISTORY_CAPACITY);
+    if (this->toggled_layer_index > 0) {
+        this->set_layer(this->toggled_layer_index);
+    }
+}
+
+// The right side sends columns 0-5, while in the keymap/eeprom it is at 6-11, so we need
+// to offset the column reported
+KeyInfo KeyMap::get_master_key(uint8_t row, uint8_t col) {
+    if (this->keyboard_side == KEYBOARD_SIDE_RIGHT) {
+        col += ONE_SIDE_COL_PIN_COUNT;
+    }
+    return this->get_key(row, col);
+}
+
+KeyInfo KeyMap::get_slave_key(uint8_t row, uint8_t col) {
+    if (this->keyboard_side == KEYBOARD_SIDE_LEFT) {
+        col += ONE_SIDE_COL_PIN_COUNT;
+    }
+    return this->get_key(row, col);
+}
+
+KeyInfo KeyMap::get_key(uint8_t row, uint8_t col) {
+    uint32_t eeprom_address = this->get_eeprom_address(this->layer_index, row, col);
+
+    uint8_t type = EEPROM.read(eeprom_address);
+    uint8_t key = EEPROM.read(eeprom_address + 0x01);
+
+    KeyInfo key_info = KeyInfo { type, key };
+    if (key_info.type == KEY_TRANSPARENT) { // Get the key from lower layers
+        key_info = this->get_non_transparent_key(row, col);
+    }
+
+    return key_info;
+}
+
+void KeyMap::update_keyboard_side(uint8_t side) {
+    if (side == KEYBOARD_SIDE_LEFT || side == KEYBOARD_SIDE_RIGHT) {
+        EEPROM.update(KEYBOARD_SIDE_EEPROM_ADDRESS, side);
+        this->keyboard_side = side;
+    }
+}
+
+uint8_t KeyMap::get_keyboard_side() {
+    return this->keyboard_side;
 }
 
 uint8_t KeyMap::get_layer() {
@@ -42,14 +94,6 @@ void KeyMap::toggle_layer(uint8_t layer) {
     }
 }
 
-void KeyMap::clear() {
-    this->layer_index = 0;
-    memset(this->layer_history, 0, LAYER_HISTORY_CAPACITY);
-    if (this->toggled_layer_index > 0) {
-        this->set_layer(this->toggled_layer_index);
-    }
-}
-
 inline uint32_t KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col) {
     return sizeof(KeyInfo)*( layer*KEY_COUNT + row*BOTH_SIDE_COL_PIN_COUNT + col );
 }
@@ -60,15 +104,6 @@ inline uint32_t KeyMap::get_tapdance_eeprom_address(uint8_t index, uint8_t tap) 
 
 KeyInfo KeyMap::get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col) {
     uint32_t eeprom_address = this->get_eeprom_address(layer, row, col);
-
-    uint8_t type = EEPROM.read(eeprom_address);
-    uint8_t key = EEPROM.read(eeprom_address + 0x01);
-
-    return KeyInfo { type, key };
-}
-
-KeyInfo KeyMap::get_key(uint8_t row, uint8_t col) {
-    uint32_t eeprom_address = this->get_eeprom_address(this->layer_index, row, col);
 
     uint8_t type = EEPROM.read(eeprom_address);
     uint8_t key = EEPROM.read(eeprom_address + 0x01);

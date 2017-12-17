@@ -73,7 +73,7 @@ for my $layer (sort keys %{ $data }) {
     say "\n";
 }
 
-say "TapDacne:";
+say "TapDance:";
 for my $tapdance (sort keys %{ $tapdances }) {
     render_tapdance($tapdance, $tapdances->{$tapdance});
 }

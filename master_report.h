@@ -38,7 +38,7 @@ class MasterReport {
         void print_system_report_to_serial();
         void print_multimedia_report_to_serial();
 
-        void handle_changed_key(ChangedKeyCoords coords);
+        void handle_changed_key(KeyInfo key_info, uint8_t key_event);
         void press(KeyInfo key_info);
         void release(KeyInfo key_info);
         void clear();
@@ -48,7 +48,6 @@ class MasterReport {
         void send_system_hid_report();
         void send_multimedia_hid_report();
 
-        inline void key_timeout_check();
         inline void press_hook_for_dual_keys();
         inline void press_hook_for_layer_hold_or_toggle();
         inline void press_hook_for_tapdance_keys(KeyInfo key_info);
@@ -105,6 +104,7 @@ class MasterReport {
     public:
         MasterReport(KeyMap* keymap);
 
+        void key_timeout_check();
         void handle_master_changed_key(ChangedKeyCoords coords);
         void handle_slave_changed_key(ChangedKeyCoords coords);
 };

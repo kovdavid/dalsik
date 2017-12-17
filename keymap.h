@@ -19,21 +19,30 @@ typedef struct {
 #define MAX_TAPDANCE_TAPS 3
 #define TAPDANCE_EEPROM_OFFSET (sizeof(KeyInfo)*MAX_LAYER_COUNT*KEY_COUNT)
 
+#define KEYBOARD_SIDE_LEFT  0x00
+#define KEYBOARD_SIDE_RIGHT 0x01
+
 class KeyMap {
     private:
         uint8_t layer_index;
         uint8_t toggled_layer_index;
+        uint8_t keyboard_side;
         uint8_t layer_history[LAYER_HISTORY_CAPACITY];
 
         inline uint32_t get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col);
         inline uint32_t get_tapdance_eeprom_address(uint8_t index, uint8_t tap);
+        KeyInfo get_non_transparent_key(uint8_t row, uint8_t col);
+        KeyInfo get_key(uint8_t row, uint8_t col);
     public:
         KeyMap(void);
 
-        KeyInfo get_key(uint8_t row, uint8_t col);
+        KeyInfo get_master_key(uint8_t row, uint8_t col);
+        KeyInfo get_slave_key(uint8_t row, uint8_t col);
         KeyInfo get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col);
-        KeyInfo get_non_transparent_key(uint8_t row, uint8_t col);
         KeyInfo get_tapdance_key(uint8_t index, uint8_t tap);
+
+        void update_keyboard_side(uint8_t side);
+        uint8_t get_keyboard_side();
 
         void set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key);
         void set_tapdance_key(uint8_t index, uint8_t tap, KeyInfo key_info);

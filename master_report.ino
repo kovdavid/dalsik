@@ -38,48 +38,29 @@ void MasterReport::clear() {
     this->keymap->clear();
 }
 
-// The right side sends columns 0-5, while in the keymap/eeprom it is at 6-11, so we need
-// to offset the column reported
 void MasterReport::handle_master_changed_key(ChangedKeyCoords coords) {
-#if MASTER_SIDE == MASTER_SIDE_RIGHT
-    coords.col += ONE_SIDE_COL_PIN_COUNT;
-#endif
-    this->handle_changed_key(coords);
+    KeyInfo key_info = this->keymap->get_master_key(coords.row, coords.col);
+    this->handle_changed_key(key_info, coords.type);
 }
 
 void MasterReport::handle_slave_changed_key(ChangedKeyCoords coords) {
-#if MASTER_SIDE == MASTER_SIDE_LEFT
-    coords.col += ONE_SIDE_COL_PIN_COUNT;
-#endif
-    this->handle_changed_key(coords);
+    KeyInfo key_info = this->keymap->get_slave_key(coords.row, coords.col);
+    this->handle_changed_key(key_info, coords.type);
 }
 
-void MasterReport::handle_changed_key(ChangedKeyCoords coords) {
-    this->key_timeout_check();
-
-    if (coords.type == EVENT_NONE) {
-        return;
-    }
-
-    KeyInfo key_info = this->keymap->get_key(coords.row, coords.col);
-    if (key_info.type == KEY_TRANSPARENT) { // Get the key from lower layers
-        key_info = this->keymap->get_non_transparent_key(coords.row, coords.col);
-    }
-
-    if (coords.type == EVENT_KEY_PRESS) {
+void MasterReport::handle_changed_key(KeyInfo key_info, uint8_t key_event) {
+    if (key_event == EVENT_KEY_PRESS) {
         this->num_keys_pressed++;
         this->press(key_info);
     }
-    if (coords.type == EVENT_KEY_RELEASE) {
+    if (key_event == EVENT_KEY_RELEASE) {
         this->num_keys_pressed--;
         this->release(key_info);
-
         if (this->num_keys_pressed == 0) {
             this->release_all_hook_for_tapdance_keys();
             this->clear();
         }
     }
-
     this->send_hid_report();
 }
 
@@ -458,7 +439,7 @@ inline void MasterReport::release_tapdance_key(KeyInfo key_info) {
     }
 }
 
-inline void MasterReport::key_timeout_check() {
+void MasterReport::key_timeout_check() {
     unsigned long now_ms = millis();
 
     TapDanceState tapdance_state = this->tapdance_state[this->last_tapdance_index];

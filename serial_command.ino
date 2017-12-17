@@ -1,7 +1,6 @@
 #include "dalsik.h"
 #include "keymap.h"
-#include "master_report.h"
-#include "serialcommand.h"
+#include "serial_command.h"
 
 char cmd_buffer[CMD_LENGTH] = {0};
 uint8_t cmd_buffer_index = 0;
@@ -143,6 +142,21 @@ static uint8_t execute_command(KeyMap* keymap) {
             }
         }
         return 0;
+    } else if (buffer[0] == CMD_GET_KEYBOARD_SIDE) {
+        uint8_t keyboard_side = keymap->get_keyboard_side();
+        if (keyboard_side == KEYBOARD_SIDE_LEFT) {
+            Serial.println(F("Keyboard Side <LEFT>"));
+        } else {
+            Serial.println(F("Keyboard Side <RIGHT>"));
+        }
+        return 0;
+    } else if (buffer[0] == CMD_SET_KEYBOARD_SIDE) {
+        uint8_t keyboard_side = buffer[1];
+        if (keyboard_side == KEYBOARD_SIDE_LEFT || keyboard_side == KEYBOARD_SIDE_RIGHT) {
+            keymap->update_keyboard_side(keyboard_side);
+            return 0;
+        }
+        return 9;
     }
 
     return 1;
