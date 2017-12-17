@@ -84,11 +84,9 @@ inline static void serial_half_delay() {
     _delay_us(SERIAL_DELAY/2);
 }
 
-#if IS_MASTER
 ISR(SERIAL_PIN_INTERRUPT) {
     DalsikSerial::slave_data = serial_master_read();
     DalsikSerial::slave_data_available = 1;
     // Clear pending interrupts for INTF0 (which were registered during serial_master_read)
     EIFR |= (1 << SERIAL_PIN_INTERRUPT_FLAG);
 }
-#endif

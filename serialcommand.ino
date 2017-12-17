@@ -6,12 +6,12 @@
 char cmd_buffer[CMD_LENGTH] = {0};
 uint8_t cmd_buffer_index = 0;
 
-void SerialCommand::process_command(KeyMap* keymap) {
+void SerialCommand::process_command(KeyMap* keymap, MasterReport* master_report) {
     char c = Serial.read();
     cmd_buffer[cmd_buffer_index++] = c;
 
     if (cmd_buffer_index == CMD_LENGTH) {
-        uint8_t res = execute_command(keymap);
+        uint8_t res = execute_command(keymap, master_report);
         if (res) {
             Serial.print(F("CMD_ERROR "));
             Serial.print(res);
@@ -24,7 +24,7 @@ void SerialCommand::process_command(KeyMap* keymap) {
     }
 }
 
-static uint8_t execute_command(KeyMap* keymap) {
+static uint8_t execute_command(KeyMap* keymap, MasterReport* master_report) {
     if (memcmp(cmd_buffer, CMD_PREFIX, sizeof(CMD_PREFIX)) != 0) {
         return 1; // Invalid command
     }
@@ -143,6 +143,13 @@ static uint8_t execute_command(KeyMap* keymap) {
             }
         }
         return 0;
+    } else if (buffer[0] == CMD_SET_KEYBOARD_SIDE) {
+        uint8_t keyboard_side = buffer[1];
+        if (keyboard_side == 'R' || keyboard_side == 'L') {
+            master_report->update_keyboard_side(keyboard_side);
+        } else {
+            return 9;
+        }
     }
 
     return 1;

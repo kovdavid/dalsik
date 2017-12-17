@@ -38,7 +38,7 @@ class MasterReport {
         void print_system_report_to_serial();
         void print_multimedia_report_to_serial();
 
-        void handle_changed_key(ChangedKeyCoords coords);
+        void handle_changed_key(KeyInfo key_info, uint8_t key_event);
         void press(KeyInfo key_info);
         void release(KeyInfo key_info);
         void clear();
@@ -102,11 +102,14 @@ class MasterReport {
         uint8_t last_tapdance_index;
         unsigned long last_tapdance_press_ts;
         uint8_t num_keys_pressed;
+        uint8_t keyboard_is_right_half;
     public:
         MasterReport(KeyMap* keymap);
 
+        void send_hid_keyboard_desc();
         void handle_master_changed_key(ChangedKeyCoords coords);
         void handle_slave_changed_key(ChangedKeyCoords coords);
+        void update_keyboard_side(uint8_t side);
 };
 
 #endif
