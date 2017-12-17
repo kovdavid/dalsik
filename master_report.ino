@@ -285,6 +285,7 @@ inline void MasterReport::press_hook_for_dual_keys() {
         this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
         uint8_t modifier = KeyMap::get_dual_key_modifier(this->dual_key_state.key_info);
         this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
+        this->send_hid_report();
     }
     if (this->dual_layer_key_state.mode == DUAL_MODE_PENDING) {
         this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
