@@ -13,6 +13,7 @@ Fun :) I made this to see if I can do it and to learn. The list of features is k
 * TapDance - registers as different key based on the number of taps within short time
 * Multimedia and system (power-off, sleep, wake-up) keys
 * Split keyboard support via I2C or single-wire serial
+* Automatic master/slave election (based on the USB cable)
 
 ### 3. Flashing
 To flash the atmega32u4, use the [Arduino IDE](https://www.arduino.cc/en/main/software).
