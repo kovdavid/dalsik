@@ -37,7 +37,7 @@ static uint8_t execute_command(KeyMap* keymap) {
 
         if (layer >= MAX_LAYER_COUNT) return 7;       // Invalid layer
         if (row >= ROW_PIN_COUNT) return 8;           // Invalid row
-        if (col >= BOTH_SIDE_COL_PIN_COUNT) return 9; // Invalid col
+        if (col >= 2*ONE_SIDE_COL_PIN_COUNT) return 9; // Invalid col
 
         serial_print_key(keymap, layer, row, col);
 
@@ -45,7 +45,7 @@ static uint8_t execute_command(KeyMap* keymap) {
     } else if (buffer[0] == CMD_GET_KEYMAP) {
         for (uint8_t layer = 0; layer < MAX_LAYER_COUNT; layer++) {
             for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
-                for (uint8_t col = 0; col < BOTH_SIDE_COL_PIN_COUNT; col++) {
+                for (uint8_t col = 0; col < 2*ONE_SIDE_COL_PIN_COUNT; col++) {
                     serial_print_key(keymap, layer, row, col);
                 }
             }
@@ -60,7 +60,7 @@ static uint8_t execute_command(KeyMap* keymap) {
 
         if (layer >= MAX_LAYER_COUNT) return 7;       // Invalid layer
         if (row >= ROW_PIN_COUNT) return 8;           // Invalid row
-        if (col >= BOTH_SIDE_COL_PIN_COUNT) return 9; // Invalid col
+        if (col >= 2*ONE_SIDE_COL_PIN_COUNT) return 9; // Invalid col
 
         keymap->set_key(layer, row, col, KeyInfo { key_type, key });
 
@@ -77,7 +77,7 @@ static uint8_t execute_command(KeyMap* keymap) {
         return 0;
     } else if (buffer[0] == CMD_NUM_COLS) {
         Serial.print(F("COLS<"));
-        Serial.print(BOTH_SIDE_COL_PIN_COUNT);
+        Serial.print(2*ONE_SIDE_COL_PIN_COUNT);
         Serial.print(F(">\n"));
         return 0;
     } else if (buffer[0] == CMD_PING) {
@@ -131,7 +131,7 @@ static uint8_t execute_command(KeyMap* keymap) {
     } else if (buffer[0] == CMD_GET_FULL_KEYMAP) {
         for (uint8_t layer = 0; layer < MAX_LAYER_COUNT; layer++) {
             for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
-                for (uint8_t col = 0; col < BOTH_SIDE_COL_PIN_COUNT; col++) {
+                for (uint8_t col = 0; col < 2*ONE_SIDE_COL_PIN_COUNT; col++) {
                     serial_print_key(keymap, layer, row, col);
                 }
             }

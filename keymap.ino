@@ -95,7 +95,7 @@ void KeyMap::toggle_layer(uint8_t layer) {
 }
 
 inline uint32_t KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col) {
-    return sizeof(KeyInfo)*( layer*KEY_COUNT + row*BOTH_SIDE_COL_PIN_COUNT + col );
+    return sizeof(KeyInfo)*( layer*KEY_COUNT + row*2*ONE_SIDE_COL_PIN_COUNT + col );
 }
 
 inline uint32_t KeyMap::get_tapdance_eeprom_address(uint8_t index, uint8_t tap) {
@@ -164,7 +164,7 @@ void KeyMap::eeprom_clear_all() {
 void KeyMap::eeprom_clear_keymap() {
     for (uint8_t layer = 0; layer < MAX_LAYER_COUNT; layer++) {
         for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
-            for (uint8_t col = 0; col < BOTH_SIDE_COL_PIN_COUNT; col++) {
+            for (uint8_t col = 0; col < 2*ONE_SIDE_COL_PIN_COUNT; col++) {
                 this->set_key(layer, row, col, KeyInfo { KEY_UNSET, 0x00 });
             }
         }

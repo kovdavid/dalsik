@@ -22,6 +22,8 @@ typedef struct {
 #define KEYBOARD_SIDE_LEFT  0x00
 #define KEYBOARD_SIDE_RIGHT 0x01
 
+#define KEY_COUNT ROW_PIN_COUNT * 2 * ONE_SIDE_COL_PIN_COUNT
+
 class KeyMap {
     private:
         uint8_t layer_index;
