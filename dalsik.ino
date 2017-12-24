@@ -49,7 +49,6 @@ void setup() {
 
 void loop() {
 #if ON_OFF_PIN
-    // Turn off the whole keyboard with a switch
     while (!PinUtils::read_pin(ON_OFF_PIN));
 #endif
 
@@ -65,10 +64,11 @@ void loop() {
 
     // By making matrix scanning only once every millisecond, we can make
     // the time-dependent debounce logic more predictable
-    if (prev_millis == millis()) {
+    unsigned long now_ms = millis();
+    if (prev_millis == now_ms) {
         return;
     }
-    prev_millis = millis();
+    prev_millis = now_ms;
 
     master_report.key_timeout_check(); // check once every millisecond
 

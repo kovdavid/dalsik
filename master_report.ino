@@ -457,33 +457,27 @@ inline void MasterReport::release_tapdance_key(KeyInfo key_info) {
 }
 
 void MasterReport::key_timeout_check() {
-    unsigned long now_ms = millis();
-
     TapDanceState tapdance_state = this->tapdance_state[this->last_tapdance_index];
     if (
         tapdance_state.tap_count != 0
         && tapdance_state.key_reported == 0
-        && this->last_tapdance_press_ts + TAPDANCE_TIMEOUT_MS < now_ms
+        && this->last_tapdance_press_ts + TAPDANCE_TIMEOUT_MS < millis();
     ) {
         this->activate_tapdance(this->last_tapdance_index);
     }
 
+    this->dual_key_timeout_check(&(this->dual_key_state));
+    this->dual_key_timeout_check(&(this->dual_layer_key_state));
+}
+
+inline void MasterReport::dual_key_timeout_check(DualKeyState* state) {
 #if DUAL_MODE_TIMEOUT_MS
     if (
-        this->dual_key_state.mode == DUAL_MODE_PENDING
-        && this->dual_key_state.last_press_ts + DUAL_MODE_TIMEOUT_MS < now_ms
+        state->mode == DUAL_MODE_PENDING
+        && state->last_press_ts + DUAL_MODE_TIMEOUT_MS < millis()
     ) {
-        this->dual_key_state.mode = DUAL_MODE_PRESS_KEY;
-        this->press(this->dual_key_state.key_info);
-        this->send_hid_report();
-    }
-
-    if (
-        this->dual_layer_key_state.mode == DUAL_MODE_PENDING
-        && this->dual_layer_key_state.last_press_ts + DUAL_MODE_TIMEOUT_MS < now_ms
-    ) {
-        this->dual_layer_key_state.mode = DUAL_MODE_PRESS_KEY;
-        this->press(this->dual_layer_key_state.key_info);
+        state->mode = DUAL_MODE_PRESS_KEY;
+        this->press(state->key_info);
         this->send_hid_report();
     }
 #endif

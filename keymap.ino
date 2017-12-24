@@ -20,18 +20,21 @@ void KeyMap::clear() {
     }
 }
 
-// The right side sends columns 0-5, while in the keymap/eeprom it is at 6-11, so we need
-// to offset the column reported
+// The right side PCB of the Let's Split is reversed, so if it send col 0, it is actually col 5
+// Also the keyboard is represented in EEPROM as a whole, so the reported col must be incremented
+// by ONE_SIDE_COL_PIN_COUNT (col 4 becomes col 10, as there as 6 columns)
+// The right side sends columns 0-5 and thus we offset it to 6-11
 KeyInfo KeyMap::get_master_key(uint8_t row, uint8_t col) {
     if (this->keyboard_side == KEYBOARD_SIDE_RIGHT) {
-        col += ONE_SIDE_COL_PIN_COUNT;
+        col = 2*ONE_SIDE_COL_PIN_COUNT - col - 1;
     }
     return this->get_key(row, col);
 }
 
 KeyInfo KeyMap::get_slave_key(uint8_t row, uint8_t col) {
+    // KeyMap is used only on the master side; The slave is the right side if the master is the left
     if (this->keyboard_side == KEYBOARD_SIDE_LEFT) {
-        col += ONE_SIDE_COL_PIN_COUNT;
+        col = 2*ONE_SIDE_COL_PIN_COUNT - col - 1;
     }
     return this->get_key(row, col);
 }

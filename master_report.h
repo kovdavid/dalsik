@@ -53,6 +53,7 @@ class MasterReport {
         inline void press_hook_for_tapdance_keys(KeyInfo key_info);
         inline void release_all_keys_hook_for_tapdance_keys();
         inline void activate_tapdance(uint8_t index);
+        inline void dual_key_timeout_check(DualKeyState* state);
 
         inline void press_normal_key(KeyInfo key_info);
         inline void release_normal_key(KeyInfo key_info);
