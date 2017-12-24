@@ -461,7 +461,7 @@ void MasterReport::key_timeout_check() {
     if (
         tapdance_state.tap_count != 0
         && tapdance_state.key_reported == 0
-        && this->last_tapdance_press_ts + TAPDANCE_TIMEOUT_MS < millis();
+        && this->last_tapdance_press_ts + TAPDANCE_TIMEOUT_MS < millis()
     ) {
         this->activate_tapdance(this->last_tapdance_index);
     }
