@@ -50,26 +50,34 @@ void MasterReport::clear() {
 
 void MasterReport::handle_master_changed_key(ChangedKeyCoords coords) {
     KeyInfo key_info = this->keymap->get_master_key(coords.row, coords.col);
-    this->handle_changed_key(key_info, coords.type);
-}
-
-void MasterReport::handle_slave_changed_key(ChangedKeyCoords coords) {
-    KeyInfo key_info = this->keymap->get_slave_key(coords.row, coords.col);
-    this->handle_changed_key(key_info, coords.type);
-}
-
-void MasterReport::handle_changed_key(KeyInfo key_info, uint8_t key_event) {
-    if (key_event == EVENT_KEY_PRESS) {
-        this->num_keys_pressed++;
-        this->press(key_info);
+    if (coords.type == EVENT_KEY_PRESS) {
+        this->handle_key_press(key_info);
+    } else if (coords.type == EVENT_KEY_RELEASE) {
+        this->handle_key_release(key_info);
     }
-    if (key_event == EVENT_KEY_RELEASE) {
-        this->num_keys_pressed--;
-        this->release(key_info);
-        if (this->num_keys_pressed == 0) {
-            this->release_all_keys_hook_for_tapdance_keys();
-            this->clear();
-        }
+}
+
+inline void MasterReport::handle_slave_changed_key(ChangedKeyCoords coords) {
+    KeyInfo key_info = this->keymap->get_slave_key(coords.row, coords.col);
+    if (coords.type == EVENT_KEY_PRESS) {
+        this->handle_key_press(key_info);
+    } else if (coords.type == EVENT_KEY_RELEASE) {
+        this->handle_key_release(key_info);
+    }
+}
+
+inline void MasterReport::handle_key_press(KeyInfo key_info) {
+    this->num_keys_pressed++;
+    this->press(key_info);
+    this->send_hid_report();
+}
+
+void MasterReport::handle_key_release(KeyInfo key_info) {
+    this->num_keys_pressed--;
+    this->release(key_info);
+    if (this->num_keys_pressed == 0) {
+        this->release_all_keys_hook_for_tapdance_keys();
+        this->clear();
     }
     this->send_hid_report();
 }

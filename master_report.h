@@ -38,7 +38,8 @@ class MasterReport {
         void print_system_report_to_serial();
         void print_multimedia_report_to_serial();
 
-        void handle_changed_key(KeyInfo key_info, uint8_t key_event);
+        inline void handle_key_press(KeyInfo key_info);
+        inline void handle_key_release(KeyInfo key_info);
         void press(KeyInfo key_info);
         void release(KeyInfo key_info);
         void clear();
