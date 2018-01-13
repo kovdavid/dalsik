@@ -2,6 +2,8 @@
 #include "matrix.h"
 #include "dalsik_serial.h"
 
+inline static uint8_t parity(uint8_t d);
+
 void SlaveReport::send_changed_key(ChangedKeyCoords coords) {
     if (coords.type == EVENT_NONE) {
         return;
