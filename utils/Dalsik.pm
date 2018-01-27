@@ -117,7 +117,9 @@ sub type_and_key_to_str {
     my $key_byte = hex("0x$key");
     my $key_str = $byte_to_key->{$key_byte};
 
-    if ($type_alias =~ m/\(|\,$/) {
+    if ($type_alias eq 'LP(' || $type_alias eq 'LT(' || $type_alias eq 'LHT(' || $type_alias eq 'TD(') {
+        return "${type_alias}$key)";
+    } elsif ($type_alias =~ m/\(|\,$/) {
         return "${type_alias}$key_str)";
     } else {
         return "$type_alias";
