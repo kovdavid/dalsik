@@ -20,12 +20,14 @@ void remove_uniq_from_uint8_array(uint8_t* array, uint8_t array_size, uint8_t el
 
     uint8_t last_nonzero_elem_index = 0;
     for (uint8_t i = 0; i < array_size; i++) {
-        if (array[i] == elem) {
+        if (array[i] == elem || array[i] == 0x00) {
             array[i] = 0x00;
             continue;
         }
 
-        if (array[i] != 0x00) {
+        if (last_nonzero_elem_index == i) {
+            array[last_nonzero_elem_index++] = array[i];
+        } else {
             array[last_nonzero_elem_index++] = array[i];
             array[i] = 0x00;
         }
