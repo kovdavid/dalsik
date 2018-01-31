@@ -32,18 +32,12 @@ void MasterReport::clear() {
 
     this->num_keys_pressed = 0;
 
-    if (this->base_keys_pressed != 0) {
-        this->base_keys_pressed = 0;
-        this->base_hid_report_changed = 1;
-    }
-    if (this->system_keys_pressed != 0) {
-        this->system_keys_pressed = 0;
-        this->system_hid_report_changed = 1;
-    }
-    if (this->multimedia_keys_pressed != 0) {
-        this->multimedia_keys_pressed = 0;
-        this->multimedia_hid_report_changed = 1;
-    }
+    this->base_keys_pressed = 0;
+    this->base_hid_report_changed = 1;
+    this->system_keys_pressed = 0;
+    this->system_hid_report_changed = 1;
+    this->multimedia_keys_pressed = 0;
+    this->multimedia_hid_report_changed = 1;
 
     this->keymap->clear();
 }
@@ -79,6 +73,7 @@ void MasterReport::handle_key_release(KeyInfo key_info) {
         this->release_all_keys_hook_for_tapdance_keys();
         this->clear();
     }
+
     this->send_hid_report();
 }
 
