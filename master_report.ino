@@ -193,7 +193,7 @@ inline void MasterReport::press_dual_key(KeyInfo key_info) {
     if (this->dual_key_state.mode == DUAL_MODE_NOT_PRESSED) {
         this->dual_key_state.key_info = key_info;
         this->dual_key_state.last_press_ts = millis();
-        if (this->num_keys_pressed > 1) {
+        if (!LAZY_DUAL_KEYS && this->num_keys_pressed > 1) {
             this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
             uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
             this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
@@ -231,7 +231,7 @@ inline void MasterReport::press_dual_layer_key(KeyInfo key_info) {
     if (this->dual_layer_key_state.mode == DUAL_MODE_NOT_PRESSED) {
         this->dual_layer_key_state.key_info = key_info;
         this->dual_layer_key_state.last_press_ts = millis();
-        if (this->num_keys_pressed > 1) {
+        if (!LAZY_DUAL_KEYS && this->num_keys_pressed > 1) {
             this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
             uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
             this->press_layer_key(KeyInfo { KEY_LAYER_PRESS, layer });

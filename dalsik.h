@@ -17,6 +17,11 @@
 #define ROW_PIN_COUNT 4
 #define ONE_SIDE_COL_PIN_COUNT 6
 
+// What to do, if other key is pressed before the dual key?
+// 0 - send the dual key's modifier
+// 1 - determine at the next key_press (modifier) or timeout (normal key) or release of the dual key (also normal key)
+#define LAZY_DUAL_KEYS 1
+
 const uint8_t ROW_PINS[ROW_PIN_COUNT] = {
     PIN_D(7), PIN_E(6), PIN_B(4), PIN_B(5)
 };
