@@ -11,7 +11,7 @@
     "L0R0C8":  "KC(I)",
     "L0R0C9":  "KC(O)",
     "L0R0C10": "KC(P)",
-    "L0R0C11": "KC(BSPACE)",
+    "L0R0C11": "KC(QUOTE)",
 
     "L0R1C0":  "D(LCTRL,ESC)",
     "L0R1C1":  "KC(A)",
