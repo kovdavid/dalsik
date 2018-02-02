@@ -190,17 +190,13 @@ inline void MasterReport::press_toggle_layer_key(KeyInfo key_info) {
 }
 
 inline void MasterReport::press_dual_key(KeyInfo key_info) {
-    if (this->dual_key_state.mode == DUAL_MODE_NOT_PRESSED) {
-        this->dual_key_state.key_info = key_info;
-        this->dual_key_state.last_press_ts = millis();
-        if (!LAZY_DUAL_KEYS && this->num_keys_pressed > 1) {
-            this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
-            uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
-            this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
-        } else {
-            this->dual_key_state.mode = DUAL_MODE_PENDING;
-        }
-    } else {
+    // Old dual_key (if any) is already activated as a modifier in the press_hook_for_dual_keys
+    this->dual_key_state.last_press_ts = millis();
+    this->dual_key_state.key_info = key_info;
+    this->dual_key_state.mode = DUAL_MODE_NOT_PRESSED;
+
+    if (!LAZY_DUAL_KEYS && this->num_keys_pressed > 1) {
+        this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
         uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
         this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
     }
@@ -228,17 +224,13 @@ inline void MasterReport::release_dual_key(KeyInfo key_info) {
 }
 
 inline void MasterReport::press_dual_layer_key(KeyInfo key_info) {
-    if (this->dual_layer_key_state.mode == DUAL_MODE_NOT_PRESSED) {
-        this->dual_layer_key_state.key_info = key_info;
-        this->dual_layer_key_state.last_press_ts = millis();
-        if (!LAZY_DUAL_KEYS && this->num_keys_pressed > 1) {
-            this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
-            uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
-            this->press_layer_key(KeyInfo { KEY_LAYER_PRESS, layer });
-        } else {
-            this->dual_layer_key_state.mode = DUAL_MODE_PENDING;
-        }
-    } else {
+    // Old dual_layer_key (if any) is already activated as a layer_press in the press_hook_for_dual_keys
+    this->dual_layer_key_state.last_press_ts = millis();
+    this->dual_layer_key_state.key_info = key_info;
+    this->dual_layer_key_state.mode = DUAL_MODE_NOT_PRESSED;
+
+    if (!LAZY_DUAL_KEYS && this->num_keys_pressed > 1) {
+        this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
         uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
         this->press_layer_key(KeyInfo { KEY_LAYER_PRESS, layer });
     }
