@@ -18,7 +18,7 @@ GetOptions(
 );
 
 if ($side ne 'L' && $side ne 'R') {
-    die "Invalid side[$side]! Usage: $0 [--serial /dev/ttyACM0] --side C|L";
+    die "Invalid side[$side]! Usage: $0 [--serial /dev/ttyACM0] --side L|R";
 }
 
 my $fh = Dalsik::open_serial($serial);

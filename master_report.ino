@@ -193,7 +193,7 @@ inline void MasterReport::press_dual_key(KeyInfo key_info) {
     // Old dual_key (if any) is already activated as a modifier in the press_hook_for_dual_keys
     this->dual_key_state.last_press_ts = millis();
     this->dual_key_state.key_info = key_info;
-    this->dual_key_state.mode = DUAL_MODE_NOT_PRESSED;
+    this->dual_key_state.mode = DUAL_MODE_PENDING;
 
     if (!LAZY_DUAL_KEYS && this->num_keys_pressed > 1) {
         this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
@@ -227,7 +227,7 @@ inline void MasterReport::press_dual_layer_key(KeyInfo key_info) {
     // Old dual_layer_key (if any) is already activated as a layer_press in the press_hook_for_dual_keys
     this->dual_layer_key_state.last_press_ts = millis();
     this->dual_layer_key_state.key_info = key_info;
-    this->dual_layer_key_state.mode = DUAL_MODE_NOT_PRESSED;
+    this->dual_layer_key_state.mode = DUAL_MODE_PENDING;
 
     if (!LAZY_DUAL_KEYS && this->num_keys_pressed > 1) {
         this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
@@ -469,10 +469,11 @@ inline void MasterReport::dual_key_timeout_check(DualKeyState* state) {
 #if DUAL_MODE_TIMEOUT_MS
     if (
         state->mode == DUAL_MODE_PENDING
-        && state->last_press_ts + DUAL_MODE_TIMEOUT_MS < millis()
+        &&
+        state->last_press_ts + DUAL_MODE_TIMEOUT_MS < millis()
     ) {
         state->mode = DUAL_MODE_PRESS_KEY;
-        this->press(state->key_info);
+        this->press_normal_key(state->key_info);
         this->send_hid_report();
     }
 #endif
