@@ -1,6 +1,10 @@
 #include <avr/io.h>
 #include "dalsik.h"
 
+// LED ws2812
+// "0" -> HI[0.35] LO[0.80] ->  6cycle high + 13cycle low = 19cycle
+// "1" -> HI[0.70] LO[0.60] -> 11cycle high + 10cycle low = 21cycle
+
 unsigned long last_led_ts = micros();
 
 void set_led_rgb(uint8_t red, uint8_t green, uint8_t blue) {
