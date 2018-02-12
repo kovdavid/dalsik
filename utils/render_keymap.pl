@@ -19,7 +19,7 @@ if ($file) {
 }
 
 my $data = {};
-my $column_lengths_on_layers = {};
+my $column_lengths = {};
 my $num_keys_on_layers = {};
 my $tapdances = {};
 
@@ -41,10 +41,10 @@ while (my $line = <$fh>) {
 
         $data->{$layer}->{$row}->{$col} = $str;
         if (
-            !$column_lengths_on_layers->{$layer}->{$col}
-            || length($str) > $column_lengths_on_layers->{$layer}->{$col}
+            !$column_lengths->{$col}
+            || length($str) > $column_lengths->{$col}
         ) {
-            $column_lengths_on_layers->{$layer}->{$col} = length($str);
+            $column_lengths->{$col} = length($str);
         }
 
         if ($row+1 > $num_rows) {
@@ -81,8 +81,7 @@ for my $tapdance (sort keys %{ $tapdances }) {
 sub render_layer {
     my ($layer, $rows) = @_;
 
-    my $col_lengths = $column_lengths_on_layers->{$layer};
-    my $col_length_sum = sum(values %{ $col_lengths });
+    my $col_length_sum = sum(values %{ $column_lengths });
 
     say "Layer:$layer";
     say (('-')x($col_length_sum+4+($num_cols-1)*3));
@@ -91,10 +90,10 @@ sub render_layer {
         print "| ";
         for my $col (sort { $a <=> $b } keys %{ $rows->{$row} }) {
             if ($col+1 == $num_cols) {
-                my $len = $col_lengths->{$col};
+                my $len = $column_lengths->{$col};
                 printf "%-${len}s |", $rows->{$row}->{$col};
             } else {
-                my $len = $col_lengths->{$col};
+                my $len = $column_lengths->{$col};
                 printf "%-${len}s | ", $rows->{$row}->{$col};
             }
         }
