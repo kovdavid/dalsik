@@ -89,12 +89,17 @@ sub render_layer {
     for my $row (sort { $a <=> $b } keys %{ $rows }) {
         print "| ";
         for my $col (sort { $a <=> $b } keys %{ $rows->{$row} }) {
+            my $separator = "|";
+            if ($col eq '5') {
+                $separator = "||";
+            }
+
             if ($col+1 == $num_cols) {
                 my $len = $column_lengths->{$col};
-                printf "%-${len}s |", $rows->{$row}->{$col};
+                printf "%-${len}s $separator", $rows->{$row}->{$col};
             } else {
                 my $len = $column_lengths->{$col};
-                printf "%-${len}s | ", $rows->{$row}->{$col};
+                printf "%-${len}s $separator ", $rows->{$row}->{$col};
             }
         }
         print "\n";
