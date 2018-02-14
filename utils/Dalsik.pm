@@ -88,7 +88,7 @@ sub _keystr_to_type_and_arg {
                 my $arg = $1;
                 if (defined($key_to_byte->{$arg})) {
                     return ($type_to_byte->{$type}, $key_to_byte->{$arg});
-                } elsif ($arg =~ m/^0x\d+$/ || $arg =~ m/^\d+$/) {
+                } elsif ($arg =~ m/^0x[0-9A-Fa-f]+$/ || $arg =~ m/^\d+$/) {
                     return ($type_to_byte->{$type}, hex($arg));
                 } elsif ($arg =~ m/^T(\d+)$/) {
                     return ($type_to_byte->{$type}, hex($1));
