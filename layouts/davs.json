@@ -114,8 +114,8 @@
     "L2R0C7":  "KC(F17)",
     "L2R0C8":  "KC(F18)",
     "L2R0C9":  "KC(F19)",
-    "L2R0C10": "KC_M1(0x9E)",
-    "L2R0C11": "TRANS",
+    "L2R0C10": "KC(F20)",
+    "L2R0C11": "KC_M1(0x9E)",
 
     "L2R1C0":  "TRANS",
     "L2R1C1":  "LSHIFT(1)",
