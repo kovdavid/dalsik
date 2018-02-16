@@ -1,5 +1,3 @@
-#include <util/atomic.h>
-
 RingBuffer::RingBuffer() {
     for (uint8_t i = 0; i < BUFFER_LENGTH; i++) {
         this->buffer[i] = 0x00;
@@ -9,8 +7,9 @@ RingBuffer::RingBuffer() {
     this->write_index = 0;
 }
 
+// Called from ISR
 void RingBuffer::append_elem(uint8_t elem) {
-    if (elem == 0x00 || this->size >= BUFFER_LENGTH) {
+    if (this->size >= BUFFER_LENGTH) {
         return;
     }
     this->buffer[ this->write_index ] = elem;
@@ -18,20 +17,17 @@ void RingBuffer::append_elem(uint8_t elem) {
     this->size++;
 }
 
+// Called from main loop
 uint8_t RingBuffer::get_next_elem() {
     if (this->size == 0) {
         return 0x00;
     }
 
-    uint8_t elem = 0x00;
+    uint8_t elem = this->buffer[ this->read_index ];
+    this->buffer[ this->read_index ] = 0x00;
 
-    ATOMIC_BLOCK(ATOMIC_FORCEON) {
-        elem = this->buffer[ this->read_index ];
-        this->buffer[ this->read_index ] = 0x00;
-
-        this->read_index = (this->read_index + 1) % BUFFER_LENGTH;
-        this->size--;
-    }
+    this->read_index = (this->read_index + 1) % BUFFER_LENGTH;
+    this->size--;
 
     return elem;
 }
