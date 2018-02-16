@@ -57,7 +57,8 @@ void loop() {
             SerialCommand::process_command(&keymap);
         }
         while (DalsikSerial::serial_buffer.has_data()) {
-            handle_slave_data(DalsikSerial::serial_buffer.get_next_elem());
+            uint8_t slave_data = DalsikSerial::serial_buffer.get_next_elem();
+            handle_slave_data(slave_data);
         }
     }
 

@@ -19,16 +19,9 @@ void RingBuffer::append_elem(uint8_t elem) {
 
 // Called from main loop
 uint8_t RingBuffer::get_next_elem() {
-    if (this->size == 0) {
-        return 0x00;
-    }
-
     uint8_t elem = this->buffer[ this->read_index ];
-    this->buffer[ this->read_index ] = 0x00;
-
     this->read_index = (this->read_index + 1) % BUFFER_LENGTH;
     this->size--;
-
     return elem;
 }
 
