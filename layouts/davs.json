@@ -44,7 +44,7 @@
     "L0R3C2":  "KC(LGUI)",
     "L0R3C3":  "KC(LALT)",
     "L0R3C4":  "LP(0x01)",
-    "L0R3C5":  "KC(SPACE)",
+    "L0R3C5":  "D(LSHIFT,SPACE)",
     "L0R3C6":  "KC(BSPACE)",
     "L0R3C7":  "LP(0x02)",
     "L0R3C8":  "KC(NO)",
@@ -96,7 +96,7 @@
     "L1R3C2":  "TRANS",
     "L1R3C3":  "TRANS",
     "L1R3C4":  "TRANS",
-    "L1R3C5":  "TRANS",
+    "L1R3C5":  "KC(SPACE)",
     "L1R3C6":  "KC(DEL)",
     "L1R3C7":  "LP(0x03)",
     "L1R3C8":  "TRANS",
@@ -148,7 +148,7 @@
     "L2R3C2":  "TRANS",
     "L2R3C3":  "TRANS",
     "L2R3C4":  "LP(0x03)",
-    "L2R3C5":  "TRANS",
+    "L2R3C5":  "KC(SPACE)",
     "L2R3C6":  "TRANS",
     "L2R3C7":  "TRANS",
     "L2R3C8":  "KC(LEFT)",
@@ -165,7 +165,8 @@
     "L3R0C8":  "KC(UP)",
     "L3R1C7":  "KC(LEFT)",
     "L3R1C8":  "KC(DOWN)",
-    "L3R1C9":  "KC(RIGHT)"
+    "L3R1C9":  "KC(RIGHT)",
+    "L3R3C5":  "KC(SPACE)"
   },
   "tapdances": {
       "T0": ["KC(A)", "KC(B)", "KC(C)"]
