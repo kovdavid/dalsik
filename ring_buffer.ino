@@ -1,3 +1,5 @@
+#include <util/atomic.h>
+
 RingBuffer::RingBuffer() {
     for (uint8_t i = 0; i < BUFFER_LENGTH; i++) {
         this->buffer[i] = 0x00;
@@ -21,7 +23,9 @@ void RingBuffer::append_elem(uint8_t elem) {
 uint8_t RingBuffer::get_next_elem() {
     uint8_t elem = this->buffer[ this->read_index ];
     this->read_index = (this->read_index + 1) % BUFFER_LENGTH;
-    this->size--;
+    ATOMIC_BLOCK(ATOMIC_FORCEON) {
+        this->size--;
+    }
     return elem;
 }
 
