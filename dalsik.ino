@@ -56,9 +56,8 @@ void loop() {
         if (Serial.available() > 0) {
             SerialCommand::process_command(&keymap);
         }
-        if (DalsikSerial::slave_data_available != 0) {
-            handle_slave_data(DalsikSerial::slave_data);
-            DalsikSerial::slave_data_available = 0;
+        while (DalsikSerial::serial_buffer.has_data()) {
+            handle_slave_data(DalsikSerial::serial_buffer.get_next_elem());
         }
     }
 

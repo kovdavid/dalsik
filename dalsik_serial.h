@@ -7,6 +7,7 @@
 #define DALSIK_SERIAL_H
 
 #include "pin_utils.h"
+#include "ring_buffer.h"
 
 #define SERIAL_PIN PIN_D(0)
 #define SERIAL_PIN_INTERRUPT INT0_vect
@@ -16,8 +17,7 @@
 #define SERIAL_DELAY 50
 
 namespace DalsikSerial {
-    extern volatile uint8_t slave_data_available;
-    extern volatile uint8_t slave_data;
+    RingBuffer serial_buffer;
 
     void master_init();
     void slave_init();

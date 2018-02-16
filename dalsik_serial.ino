@@ -7,11 +7,9 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include "pin_utils.h"
+#include "ring_buffer.h"
 #include "dalsik_serial.h"
 #include "dalsik.h"
-
-volatile uint8_t DalsikSerial::slave_data = 0x00;
-volatile uint8_t DalsikSerial::slave_data_available = 0;
 
 void DalsikSerial::master_init(void) {
     PinUtils::pinmode_input_pullup(SERIAL_PIN);
@@ -85,8 +83,8 @@ inline static void serial_half_delay() {
 }
 
 ISR(SERIAL_PIN_INTERRUPT) {
-    DalsikSerial::slave_data = serial_master_read();
-    DalsikSerial::slave_data_available = 1;
+    uint8_t slave_data = serial_master_read();
+    DalsikSerial::serial_buffer.append_elem(slave_data);
     // Clear pending interrupts for INTF0 (which were registered during serial_master_read)
     EIFR |= (1 << SERIAL_PIN_INTERRUPT_FLAG);
 }
