@@ -7,7 +7,7 @@
 #define DEBUG_KEYREPORT 0
 
 // Turn off the keyboard with this PIN
-// #define ON_OFF_PIN PIN_D(4)
+#define ON_OFF_PIN PIN_D(4)
 
 // #define LED_PIN PIN_D(4)
 
