@@ -8,7 +8,7 @@
 unsigned long last_led_ts = micros();
 
 void set_led_rgb(uint8_t red, uint8_t green, uint8_t blue) {
-#ifdef DALSIK_LED
+#ifdef LED_PIN
     while ((micros() - last_led_ts) < 50L); // wait for 50us (data latch)
     uint8_t grb_array[] = { green, red, blue };
 
@@ -63,12 +63,10 @@ void set_led_rgb(uint8_t red, uint8_t green, uint8_t blue) {
         "NOP\n\t"
         "NOP\n\t"
     "load_next_byte:\n\t"
-        // "LD  %[VAL], %a0+\n\t"
         "LD  %[VAL], %a[VAL_POINTER]+\n\t"
         "DEC %[BYTE_INDEX]\n\t"
         "BRNE loop_bit\n\t"
     ::
-        // "e" (val_pointer),
         [VAL_POINTER] "e" (val_pointer),
         [PORT]        "I" (_SFR_IO_ADDR(*port)),
         [PORT_LOW]    "r" (port_low),
