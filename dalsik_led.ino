@@ -77,5 +77,10 @@ void set_led_rgb(uint8_t red, uint8_t green, uint8_t blue) {
     );
     sei();
     last_led_ts = micros();
+#else
+    // Suppress 'unused parameter' warnings
+    (void) red;
+    (void) green;
+    (void) blue;
 #endif
 }
