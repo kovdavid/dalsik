@@ -6,25 +6,10 @@
 #define DEBUG 0
 #define DEBUG_KEYREPORT 0
 
-#define MAX_LAYER_COUNT 8
-
 // Turn off the keyboard with this PIN
 #define ON_OFF_PIN PIN_C(6)
 
 #define LED_PIN PIN_D(4)
-
-#ifdef LED_PIN
-const uint32_t LED_LAYER_COLORS[MAX_LAYER_COUNT] = {
-    0x00000000,
-    0x00FF0000,
-    0x0000FF00,
-    0x000000FF,
-    0x00FFFF00,
-    0x00FF00FF,
-    0x00000000,
-    0x00000000,
-};
-#endif
 
 // Trigger key press after holding a key for X ms
 #define DUAL_MODE_TIMEOUT_MS 1000

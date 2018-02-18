@@ -13,6 +13,7 @@ typedef struct {
     uint8_t key;
 } KeyInfo;
 
+#define MAX_LAYER_COUNT 8
 #define LAYER_HISTORY_CAPACITY 5
 #define MAX_TAPDANCE_KEYS 16
 #define MAX_TAPDANCE_TAPS 3
@@ -22,6 +23,19 @@ typedef struct {
 #define KEYBOARD_SIDE_RIGHT 0x01
 
 #define KEY_COUNT ROW_PIN_COUNT * 2 * ONE_SIDE_COL_PIN_COUNT
+
+#ifdef LED_PIN
+const uint32_t LED_LAYER_COLORS[MAX_LAYER_COUNT] = {
+    0x00000000, // Layer 0 - default (LED off)
+    0x00FF0000,
+    0x0000FF00,
+    0x000000FF,
+    0x00FFFF00,
+    0x00FF00FF,
+    0x00000000,
+    0x00000000,
+};
+#endif
 
 class KeyMap {
     private:
