@@ -7,17 +7,25 @@
 
 unsigned long last_led_ts = micros();
 
-void set_led_rgb(uint8_t red, uint8_t green, uint8_t blue) {
+// 0x00AABBCC
+// AA - red
+// BB - green
+// CC - blue
+void set_led_rgb(uint32_t rgb) {
+    uint8_t green_red_blue_array[] = {
+        uint8_t((rgb >>  8) & (0x000000FF)), //green
+        uint8_t((rgb >> 16) & (0x000000FF)), //red
+        uint8_t((rgb >>  0) & (0x000000FF)), //blue
+    };
 #ifdef LED_PIN
     while ((micros() - last_led_ts) < 50L); // wait for 50us (data latch)
-    uint8_t grb_array[] = { green, red, blue };
 
     volatile uint8_t *port        = &(_SFR_IO8((LED_PIN >> 4) + 2));
     volatile uint8_t port_high    = *port |  (_BV(LED_PIN & 0x0F));
     volatile uint8_t port_low     = *port & ~(_BV(LED_PIN & 0x0F));
     volatile uint8_t bit_index    = 8;
     volatile uint8_t byte_index   = 3;
-    volatile uint8_t *val_pointer = grb_array;
+    volatile uint8_t *val_pointer = green_red_blue_array;
     volatile uint8_t val          = *val_pointer++;
 
     cli();
@@ -77,10 +85,5 @@ void set_led_rgb(uint8_t red, uint8_t green, uint8_t blue) {
     );
     sei();
     last_led_ts = micros();
-#else
-    // Suppress 'unused parameter' warnings
-    (void) red;
-    (void) green;
-    (void) blue;
 #endif
 }

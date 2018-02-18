@@ -2,6 +2,7 @@
 #include "dalsik.h"
 #include "keymap.h"
 #include "array_utils.h"
+#include "dalsik_led.h"
 
 #define KEYBOARD_SIDE_EEPROM_ADDRESS EEPROM.length() - 1
 
@@ -13,11 +14,8 @@ KeyMap::KeyMap() {
 }
 
 void KeyMap::clear() {
-    this->layer_index = 0;
+    this->layer_index = this->toggled_layer_index; // toggled layer or 0
     memset(this->layer_history, 0, sizeof(uint8_t)*LAYER_HISTORY_CAPACITY);
-    if (this->toggled_layer_index > 0) {
-        this->set_layer(this->toggled_layer_index);
-    }
 }
 
 // The right side PCB of the Let's Split is reversed, so if it send col 0, it is actually col 5
@@ -71,6 +69,9 @@ uint8_t KeyMap::get_layer() {
 void KeyMap::set_layer(uint8_t layer) {
     this->layer_index = layer;
     append_uniq_to_uint8_array(this->layer_history, LAYER_HISTORY_CAPACITY, layer);
+#ifdef LED_PIN
+    set_led_rgb(LED_LAYER_COLORS[layer]);
+#endif
 }
 
 // We could have pressed multiple layer keys, so releasing one means we switch to the other one
@@ -81,9 +82,9 @@ void KeyMap::remove_layer(uint8_t layer) {
     );
 
     if (prev_layer > 0) {
-        this->layer_index = prev_layer;
+        this->set_layer(prev_layer);
     } else {
-        this->layer_index = this->toggled_layer_index; // toggled layer or 0
+        this->set_layer(this->toggled_layer_index); // toggled layer or 0
     }
 }
 

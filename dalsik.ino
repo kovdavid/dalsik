@@ -34,8 +34,11 @@ void setup() {
 
     Serial.begin(115200);
 
-#if ON_OFF_PIN
+#ifdef ON_OFF_PIN
     PinUtils::pinmode_input_pullup(ON_OFF_PIN);
+#endif
+#ifdef LED_PIN
+    PinUtils::pinmode_output_low(LED_PIN);
 #endif
 
     if (is_master) {
@@ -56,6 +59,7 @@ void loop() {
         if (Serial.available() > 0) {
             SerialCommand::process_command(&keymap);
         }
+
         while (DalsikSerial::serial_buffer.has_data()) {
             uint8_t slave_data = DalsikSerial::serial_buffer.get_next_elem();
             handle_slave_data(slave_data);

@@ -13,7 +13,6 @@ typedef struct {
     uint8_t key;
 } KeyInfo;
 
-#define MAX_LAYER_COUNT 8
 #define LAYER_HISTORY_CAPACITY 5
 #define MAX_TAPDANCE_KEYS 16
 #define MAX_TAPDANCE_TAPS 3
