@@ -162,11 +162,11 @@
     "L3R1C2": "KC(RBRACKET)",
     "L3R2C1": "LSHIFT(LBRACKET)",
     "L3R2C2": "LSHIFT(RBRACKET)",
-    "L3R0C8":  "KC(UP)",
-    "L3R1C7":  "KC(LEFT)",
-    "L3R1C8":  "KC(DOWN)",
-    "L3R1C9":  "KC(RIGHT)",
-    "L3R3C5":  "KC(SPACE)"
+    "L3R0C8": "KC(UP)",
+    "L3R1C7": "KC(LEFT)",
+    "L3R1C8": "KC(DOWN)",
+    "L3R1C9": "KC(RIGHT)",
+    "L3R3C5": "KC(SPACE)"
   },
   "tapdances": {
       "T0": ["KC(A)", "KC(B)", "KC(C)"]
