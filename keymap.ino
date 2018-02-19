@@ -14,8 +14,11 @@ KeyMap::KeyMap() {
 }
 
 void KeyMap::clear() {
-    this->layer_index = this->toggled_layer_index; // toggled layer or 0
+    this->layer_index = 0;
     memset(this->layer_history, 0, sizeof(uint8_t)*LAYER_HISTORY_CAPACITY);
+    if (this->toggled_layer_index > 0) {
+        this->set_layer(this->toggled_layer_index);
+    }
 }
 
 // The right side PCB of the Let's Split is reversed, so if it send col 0, it is actually col 5
