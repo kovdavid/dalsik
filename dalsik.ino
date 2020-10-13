@@ -47,6 +47,9 @@ void setup() {
         DalsikSerial::slave_init();
     }
 
+    TXLED0;
+    RXLED0;
+
     delay(100);
 }
 
