@@ -11,6 +11,8 @@
 typedef struct {
     uint8_t type;
     uint8_t key;
+    int8_t row;
+    int8_t col;
 } KeyInfo;
 
 #define MAX_LAYER_COUNT 8
@@ -59,7 +61,7 @@ class KeyMap {
         void update_keyboard_side(uint8_t side);
         uint8_t get_keyboard_side();
 
-        void set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key);
+        void set_key(uint8_t layer, KeyInfo key);
         void set_tapdance_key(uint8_t index, uint8_t tap, KeyInfo key_info);
         uint8_t get_layer();
         void set_layer(uint8_t layer);
@@ -79,6 +81,9 @@ class KeyMap {
         inline static uint8_t get_dual_key_modifier(KeyInfo key_info);
         inline static uint8_t get_dual_layer_key_layer(KeyInfo key_info);
         inline static uint8_t get_key_with_mod_modifier(KeyInfo key_info);
+
+        inline static KeyInfo init_key_info(uint8_t type, uint8_t key, int8_t row, int8_t col);
+        inline static KeyInfo init_key_info_without_coords(uint8_t type, uint8_t key);
 
         // For Serial.print() usage only
         inline static const __FlashStringHelper* key_type_to_string(KeyInfo key_info);

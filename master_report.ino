@@ -198,7 +198,9 @@ inline void MasterReport::press_dual_key(KeyInfo key_info) {
     if (!LAZY_DUAL_KEYS && this->num_keys_pressed > 1) {
         this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
         uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
-        this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
+        KeyInfo ki = KeyMap::init_key_info(KEY_NORMAL, modifier, key_info.row, key_info.col);
+        this->press_normal_key(ki);
+
     }
 }
 
@@ -206,20 +208,24 @@ inline void MasterReport::release_dual_key(KeyInfo key_info) {
     if (KeyMap::key_info_compare(key_info, this->dual_key_state.key_info) == 0) {
         if (this->dual_key_state.mode == DUAL_MODE_HOLD_MODIFIER) {
             uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
-            this->release_normal_key(KeyInfo { KEY_NORMAL, modifier });
+            KeyInfo ki = KeyMap::init_key_info(KEY_NORMAL, modifier, key_info.row, key_info.col);
+            this->release_normal_key(ki);
         } else if (this->dual_key_state.mode == DUAL_MODE_PRESS_KEY) {
-            this->release_normal_key(KeyInfo { KEY_NORMAL, key_info.key });
+            KeyInfo ki = KeyMap::init_key_info(KEY_NORMAL, key_info.key, key_info.row, key_info.col);
+            this->release_normal_key(ki);
         } else {
-            this->press_normal_key(KeyInfo { KEY_NORMAL, key_info.key });
+            KeyInfo ki = KeyMap::init_key_info(KEY_NORMAL, key_info.key, key_info.row, key_info.col);
+            this->press_normal_key(ki);
             this->send_base_hid_report();
-            this->release_normal_key(KeyInfo { KEY_NORMAL, key_info.key });
+            this->release_normal_key(ki);
         }
 
         memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
     } else {
         // There were more dual_keys pressed, this one is not the first
         uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
-        this->release_normal_key(KeyInfo { KEY_NORMAL, modifier });
+        KeyInfo ki = KeyMap::init_key_info(KEY_NORMAL, modifier, key_info.row, key_info.col);
+        this->release_normal_key(ki);
     }
 }
 
@@ -232,7 +238,8 @@ inline void MasterReport::press_dual_layer_key(KeyInfo key_info) {
     if (!LAZY_DUAL_KEYS && this->num_keys_pressed > 1) {
         this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
         uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
-        this->press_layer_key(KeyInfo { KEY_LAYER_PRESS, layer });
+        KeyInfo ki = KeyMap::init_key_info(KEY_LAYER_PRESS, layer, key_info.row, key_info.col);
+        this->press_layer_key(ki);
     }
 }
 
@@ -240,20 +247,24 @@ inline void MasterReport::release_dual_layer_key(KeyInfo key_info) {
     if (KeyMap::key_info_compare(key_info, this->dual_layer_key_state.key_info) == 0) {
         if (this->dual_layer_key_state.mode == DUAL_MODE_HOLD_LAYER) {
             uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
-            this->release_layer_key(KeyInfo { KEY_LAYER_PRESS, layer });
+            KeyInfo ki = KeyMap::init_key_info(KEY_LAYER_PRESS, layer, key_info.row, key_info.col);
+            this->release_layer_key(ki);
         } else if (this->dual_layer_key_state.mode == DUAL_MODE_PRESS_KEY) {
-            this->release_normal_key(KeyInfo { KEY_NORMAL, key_info.key });
+            KeyInfo ki = KeyMap::init_key_info(KEY_LAYER_PRESS, key_info.key, key_info.row, key_info.col);
+            this->release_normal_key(ki);
         } else {
-            this->press_normal_key(KeyInfo { KEY_NORMAL, key_info.key });
+            KeyInfo ki = KeyMap::init_key_info(KEY_NORMAL, key_info.key, key_info.row, key_info.col);
+            this->press_normal_key(ki);
             this->send_base_hid_report();
-            this->release_normal_key(KeyInfo { KEY_NORMAL, key_info.key });
+            this->release_normal_key(ki);
         }
 
         memset(&(this->dual_layer_key_state), 0, sizeof(DualKeyState));
     } else {
         // There were more dual_layer_keys pressed, this one is not the first
         uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
-        this->release_layer_key(KeyInfo { KEY_LAYER_PRESS, layer });
+        KeyInfo ki = KeyMap::init_key_info(KEY_LAYER_PRESS, layer, key_info.row, key_info.col);
+        this->release_layer_key(ki);
     }
 }
 
@@ -293,13 +304,15 @@ inline void MasterReport::press_hook_for_dual_keys() {
     if (this->dual_key_state.mode == DUAL_MODE_PENDING) {
         this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
         uint8_t modifier = KeyMap::get_dual_key_modifier(this->dual_key_state.key_info);
-        this->press_normal_key(KeyInfo { KEY_NORMAL, modifier });
+        KeyInfo ki = KeyMap::init_key_info_without_coords(KEY_NORMAL, modifier);
+        this->press_normal_key(ki);
         this->send_hid_report();
     }
     if (this->dual_layer_key_state.mode == DUAL_MODE_PENDING) {
         this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
         uint8_t layer = KeyMap::get_dual_layer_key_layer(this->dual_layer_key_state.key_info);
-        this->press_layer_key(KeyInfo { KEY_LAYER_PRESS, layer });
+        KeyInfo ki = KeyMap::init_key_info_without_coords(KEY_LAYER_PRESS, layer);
+        this->press_layer_key(ki);
     }
 }
 
@@ -354,14 +367,14 @@ inline void MasterReport::press_hook_for_layer_hold_or_toggle() {
 
 inline void MasterReport::press_key_with_mod(KeyInfo key_info) {
     uint8_t modifier = KeyMap::get_key_with_mod_modifier(key_info);
-    this->press(KeyInfo { KEY_NORMAL, modifier });
-    this->press(KeyInfo { KEY_NORMAL, key_info.key });
+    this->press(KeyMap::init_key_info(KEY_NORMAL, modifier, key_info.row, key_info.col));
+    this->press(KeyMap::init_key_info(KEY_NORMAL, key_info.key, key_info.row, key_info.col));
 }
 
 inline void MasterReport::release_key_with_mod(KeyInfo key_info) {
     uint8_t modifier = KeyMap::get_key_with_mod_modifier(key_info);
-    this->release(KeyInfo { KEY_NORMAL, modifier });
-    this->release(KeyInfo { KEY_NORMAL, key_info.key });
+    this->release(KeyMap::init_key_info(KEY_NORMAL, modifier, key_info.row, key_info.col));
+    this->release(KeyMap::init_key_info(KEY_NORMAL, key_info.key, key_info.row, key_info.col));
 }
 
 inline void MasterReport::press_hook_for_tapdance_keys(KeyInfo key_info) {
@@ -381,7 +394,8 @@ inline void MasterReport::press_hook_for_tapdance_keys(KeyInfo key_info) {
 inline void MasterReport::release_all_keys_hook_for_tapdance_keys() {
     for (uint8_t i = 0; i < MAX_TAPDANCE_KEYS; i++) {
         if (this->tapdance_state[i].key_pressed == 1) {
-            this->release(KeyInfo { KEY_TAPDANCE, i });
+            KeyInfo ki = KeyMap::init_key_info_without_coords(KEY_TAPDANCE, i);
+            this->release(ki);
         }
     }
     this->send_hid_report();

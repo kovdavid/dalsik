@@ -62,7 +62,8 @@ static uint8_t execute_command(KeyMap* keymap) {
         if (row >= ROW_PIN_COUNT) return 8;           // Invalid row
         if (col >= 2*ONE_SIDE_COL_PIN_COUNT) return 9; // Invalid col
 
-        keymap->set_key(layer, row, col, KeyInfo { key_type, key });
+        KeyInfo ki = KeyMap::init_key_info(key_type, key, row, col);
+        keymap->set_key(layer, ki);
 
         return 0;
     } else if (buffer[0] == CMD_CLEAR_KEYMAP) {
@@ -102,7 +103,8 @@ static uint8_t execute_command(KeyMap* keymap) {
         if (index >= MAX_TAPDANCE_KEYS) return 7;
         if (tap > MAX_TAPDANCE_TAPS) return 8;
 
-        keymap->set_tapdance_key(index, tap, KeyInfo { key_type, key });
+        KeyInfo ki = KeyMap::init_key_info_without_coords(key_type, key);
+        keymap->set_tapdance_key(index, tap, ki);
 
         return 0;
     } else if (buffer[0] == CMD_GET_TAPDANCE_KEY) {
