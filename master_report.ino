@@ -200,7 +200,6 @@ inline void MasterReport::press_dual_key(KeyInfo key_info) {
         uint8_t modifier = KeyMap::get_dual_key_modifier(key_info);
         KeyInfo ki = KeyMap::init_key_info(KEY_NORMAL, modifier, key_info.row, key_info.col);
         this->press_normal_key(ki);
-
     }
 }
 
