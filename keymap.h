@@ -57,6 +57,7 @@ class KeyMap {
         KeyInfo get_slave_key(uint8_t row, uint8_t col);
         KeyInfo get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col);
         KeyInfo get_tapdance_key(uint8_t index, uint8_t tap);
+        void reload_key_info_by_row_col(KeyInfo* ki);
 
         void update_keyboard_side(uint8_t side);
         uint8_t get_keyboard_side();

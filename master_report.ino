@@ -86,8 +86,8 @@ void MasterReport::press(KeyInfo key_info) {
     Serial.print("\n");
 #endif
 
-    this->press_hook_for_dual_keys();
-    this->press_hook_for_layer_hold_or_toggle();
+    this->press_hook_for_dual_keys(&key_info);
+    this->press_hook_for_layer_hold_or_toggle(&key_info);
     this->press_hook_for_tapdance_keys(key_info);
 
     if (key_info.type == KEY_NORMAL) {
@@ -300,19 +300,20 @@ inline void MasterReport::release_multimedia_key(KeyInfo key_info) {
     }
 }
 
-inline void MasterReport::press_hook_for_dual_keys() {
+inline void MasterReport::press_hook_for_dual_keys(KeyInfo* current_ki) {
     if (this->dual_key_state.mode == DUAL_MODE_PENDING) {
         this->dual_key_state.mode = DUAL_MODE_HOLD_MODIFIER;
         uint8_t modifier = KeyMap::get_dual_key_modifier(this->dual_key_state.key_info);
-        KeyInfo ki = KeyMap::init_key_info_without_coords(KEY_NORMAL, modifier);
-        this->press_normal_key(ki);
+        this->press_normal_key(KeyMap::init_key_info_without_coords(KEY_NORMAL, modifier));
         this->send_hid_report();
     }
     if (this->dual_layer_key_state.mode == DUAL_MODE_PENDING) {
         this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
         uint8_t layer = KeyMap::get_dual_layer_key_layer(this->dual_layer_key_state.key_info);
-        KeyInfo ki = KeyMap::init_key_info_without_coords(KEY_LAYER_PRESS, layer);
-        this->press_layer_key(ki);
+        KeyInfo layer_ki = KeyMap::init_key_info_without_coords(KEY_LAYER_PRESS, layer);
+        this->press_layer_key(layer_ki);
+
+        this->keymap->reload_key_info_by_row_col(current_ki);
     }
 }
 
@@ -358,10 +359,11 @@ inline void MasterReport::release_system_key(KeyInfo key_info) {
     }
 }
 
-inline void MasterReport::press_hook_for_layer_hold_or_toggle() {
+inline void MasterReport::press_hook_for_layer_hold_or_toggle(KeyInfo* current_ki) {
     if (this->hold_or_toggle_state.mode == HOLD_OR_TOGGLE_PENDING) {
         this->hold_or_toggle_state.mode = HOLD_OR_TOGGLE_HOLD_LAYER;
         this->keymap->set_layer(this->hold_or_toggle_state.key_info.key);
+        this->keymap->reload_key_info_by_row_col(current_ki);
     }
 }
 

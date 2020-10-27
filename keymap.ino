@@ -54,6 +54,16 @@ KeyInfo KeyMap::get_key(uint8_t row, uint8_t col) {
     return key_info;
 }
 
+void KeyMap::reload_key_info_by_row_col(KeyInfo* ki) {
+    if (ki->row < 0 || ki->col < 0) {
+        return; // Missing coords info
+    }
+
+    KeyInfo new_ki = this->get_key(ki->row, ki->col);
+    ki->type = new_ki.type;
+    ki->key = new_ki.key;
+}
+
 void KeyMap::update_keyboard_side(uint8_t side) {
     if (side == KEYBOARD_SIDE_LEFT || side == KEYBOARD_SIDE_RIGHT) {
         EEPROM.update(KEYBOARD_SIDE_EEPROM_ADDRESS, side);
