@@ -58,11 +58,24 @@ static uint8_t execute_command(KeyMap* keymap) {
         uint8_t key_type = buffer[4];
         uint8_t key      = buffer[5];
 
-        if (layer >= MAX_LAYER_COUNT) return 7;       // Invalid layer
-        if (row >= ROW_PIN_COUNT) return 8;           // Invalid row
+        if (layer >= MAX_LAYER_COUNT) return 7; // Invalid layer
+        if (row >= ROW_PIN_COUNT) return 8; // Invalid row
         if (col >= 2*ONE_SIDE_COL_PIN_COUNT) return 9; // Invalid col
 
-        keymap->set_key(layer, row, col, KeyInfo { key_type, key });
+        KeyInfo ki = KeyMap::init_key_info(key_type, key, row, col);
+        keymap->set_key(layer, ki);
+
+        Serial.print(F("SET_KEY<LAYER:"));
+        Serial.print(layer);
+        Serial.print(F("|ROW:"));
+        Serial.print(row);
+        Serial.print(F("|COL:"));
+        Serial.print(col);
+        Serial.print(F("|TYPE:"));
+        Serial.print(key_type);
+        Serial.print(F("|KEY:"));
+        Serial.print(key, HEX);
+        Serial.print(F(">\n"));
 
         return 0;
     } else if (buffer[0] == CMD_CLEAR_KEYMAP) {
@@ -102,7 +115,8 @@ static uint8_t execute_command(KeyMap* keymap) {
         if (index >= MAX_TAPDANCE_KEYS) return 7;
         if (tap > MAX_TAPDANCE_TAPS) return 8;
 
-        keymap->set_tapdance_key(index, tap, KeyInfo { key_type, key });
+        KeyInfo ki = KeyMap::init_key_info_without_coords(key_type, key);
+        keymap->set_tapdance_key(index, tap, ki);
 
         return 0;
     } else if (buffer[0] == CMD_GET_TAPDANCE_KEY) {

@@ -46,12 +46,22 @@ KeyInfo KeyMap::get_key(uint8_t row, uint8_t col) {
     uint8_t type = EEPROM.read(eeprom_address);
     uint8_t key = EEPROM.read(eeprom_address + 0x01);
 
-    KeyInfo key_info = KeyInfo { type, key };
+    KeyInfo key_info = KeyMap::init_key_info(type, key, row, col);
     if (key_info.type == KEY_TRANSPARENT) { // Get the key from lower layers
         key_info = this->get_non_transparent_key(row, col);
     }
 
     return key_info;
+}
+
+void KeyMap::reload_key_info_by_row_col(KeyInfo* ki) {
+    if (ki->row == ROW_UNKNOWN || ki->col == COL_UNKNOWN) {
+        return; // Missing coords info
+    }
+
+    KeyInfo new_ki = this->get_key(ki->row, ki->col);
+    ki->type = new_ki.type;
+    ki->key = new_ki.key;
 }
 
 void KeyMap::update_keyboard_side(uint8_t side) {
@@ -102,11 +112,11 @@ void KeyMap::toggle_layer(uint8_t layer) {
 }
 
 inline uint32_t KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col) {
-    return sizeof(KeyInfo)*( layer*KEY_COUNT + row*2*ONE_SIDE_COL_PIN_COUNT + col );
+    return sizeof(EEPROM_KeyInfo)*( layer*KEY_COUNT + row*2*ONE_SIDE_COL_PIN_COUNT + col );
 }
 
 inline uint32_t KeyMap::get_tapdance_eeprom_address(uint8_t index, uint8_t tap) {
-    return TAPDANCE_EEPROM_OFFSET + sizeof(KeyInfo)*( index*MAX_TAPDANCE_TAPS + tap-1 );
+    return TAPDANCE_EEPROM_OFFSET + sizeof(EEPROM_KeyInfo)*( index*MAX_TAPDANCE_TAPS + tap-1 );
 }
 
 KeyInfo KeyMap::get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col) {
@@ -115,7 +125,7 @@ KeyInfo KeyMap::get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col) {
     uint8_t type = EEPROM.read(eeprom_address);
     uint8_t key = EEPROM.read(eeprom_address + 0x01);
 
-    return KeyInfo { type, key };
+    return KeyMap::init_key_info(type, key, row, col);
 }
 
 KeyInfo KeyMap::get_non_transparent_key(uint8_t row, uint8_t col) {
@@ -133,7 +143,7 @@ KeyInfo KeyMap::get_non_transparent_key(uint8_t row, uint8_t col) {
 
     KeyInfo key_info = this->get_key_from_layer(0, row, col);
     if (key_info.type == KEY_TRANSPARENT) {
-        return { KEY_UNSET, 0x00 };
+        return KeyMap::init_key_info(KEY_UNSET, 0x00, row, col);
     } else {
         return key_info;
     }
@@ -145,10 +155,17 @@ KeyInfo KeyMap::get_tapdance_key(uint8_t index, uint8_t tap) {
     uint8_t type = EEPROM.read(eeprom_address);
     uint8_t key = EEPROM.read(eeprom_address + 0x01);
 
-    return KeyInfo { type, key };
+    return KeyMap::init_key_info_without_coords(type, key);
 }
 
-void KeyMap::set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key_info) {
+void KeyMap::set_key(uint8_t layer, KeyInfo key_info) {
+    uint8_t row = key_info.row;
+    uint8_t col = key_info.col;
+
+    if (row == ROW_UNKNOWN || col == COL_UNKNOWN) {
+        return; // Invalid KeyInfo
+    }
+
     int eeprom_address = this->get_eeprom_address(layer, row, col);
 
     EEPROM.update(eeprom_address + 0x00, key_info.type);
@@ -172,7 +189,8 @@ void KeyMap::eeprom_clear_keymap() {
     for (uint8_t layer = 0; layer < MAX_LAYER_COUNT; layer++) {
         for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
             for (uint8_t col = 0; col < 2*ONE_SIDE_COL_PIN_COUNT; col++) {
-                this->set_key(layer, row, col, KeyInfo { KEY_UNSET, 0x00 });
+                KeyInfo ki = KeyMap::init_key_info(KEY_UNSET, 0x00, row, col);
+                this->set_key(layer, ki);
             }
         }
     }
@@ -181,13 +199,16 @@ void KeyMap::eeprom_clear_keymap() {
 void KeyMap::eeprom_clear_tapdance() {
     for (uint8_t index = 0; index < MAX_TAPDANCE_KEYS; index++) {
         for (uint8_t tap = 1; tap <= MAX_TAPDANCE_TAPS; tap++) {
-            this->set_tapdance_key(index, tap, KeyInfo { KEY_UNSET, 0x00 });
+            KeyInfo ki = KeyMap::init_key_info_without_coords(KEY_UNSET, 0x00);
+            this->set_tapdance_key(index, tap, ki);
         }
     }
 }
 
 inline int KeyMap::key_info_compare(KeyInfo key_info1, KeyInfo key_info2) {
-    return memcmp(&key_info1, &key_info2, sizeof(KeyInfo));
+    EEPROM_KeyInfo k1 = EEPROM_KeyInfo { key_info1.type, key_info1.key };
+    EEPROM_KeyInfo k2 = EEPROM_KeyInfo { key_info2.type, key_info2.key };
+    return memcmp(&k1, &k2, sizeof(EEPROM_KeyInfo));
 }
 
 inline uint8_t KeyMap::get_dual_key_modifier(KeyInfo key_info) {
@@ -229,6 +250,14 @@ inline uint8_t KeyMap::get_key_with_mod_modifier(KeyInfo key_info) {
         case KEY_WITH_MOD_RGUI:   return KC_RGUI;
     }
     return 0x00;
+}
+
+inline KeyInfo KeyMap::init_key_info(uint8_t type, uint8_t key, uint8_t row, uint8_t col) {
+    return KeyInfo { type, key, row, col };
+}
+
+inline KeyInfo KeyMap::init_key_info_without_coords(uint8_t type, uint8_t key) {
+    return KeyInfo { type, key, ROW_UNKNOWN, COL_UNKNOWN };
 }
 
 inline uint8_t KeyMap::is_type_between(KeyInfo key_info, uint8_t type1, uint8_t type2) {

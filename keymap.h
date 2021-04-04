@@ -11,13 +11,23 @@
 typedef struct {
     uint8_t type;
     uint8_t key;
+} EEPROM_KeyInfo;
+
+typedef struct {
+    uint8_t type;
+    uint8_t key;
+    uint8_t row;
+    uint8_t col;
 } KeyInfo;
 
 #define MAX_LAYER_COUNT 8
 #define LAYER_HISTORY_CAPACITY 5
 #define MAX_TAPDANCE_KEYS 16
 #define MAX_TAPDANCE_TAPS 3
-#define TAPDANCE_EEPROM_OFFSET (sizeof(KeyInfo)*MAX_LAYER_COUNT*KEY_COUNT)
+#define TAPDANCE_EEPROM_OFFSET (sizeof(EEPROM_KeyInfo)*MAX_LAYER_COUNT*KEY_COUNT)
+
+#define ROW_UNKNOWN 255
+#define COL_UNKNOWN 255
 
 #define KEYBOARD_SIDE_LEFT  0x00
 #define KEYBOARD_SIDE_RIGHT 0x01
@@ -55,11 +65,12 @@ class KeyMap {
         KeyInfo get_slave_key(uint8_t row, uint8_t col);
         KeyInfo get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col);
         KeyInfo get_tapdance_key(uint8_t index, uint8_t tap);
+        void reload_key_info_by_row_col(KeyInfo* ki);
 
         void update_keyboard_side(uint8_t side);
         uint8_t get_keyboard_side();
 
-        void set_key(uint8_t layer, uint8_t row, uint8_t col, KeyInfo key);
+        void set_key(uint8_t layer, KeyInfo key);
         void set_tapdance_key(uint8_t index, uint8_t tap, KeyInfo key_info);
         uint8_t get_layer();
         void set_layer(uint8_t layer);
@@ -79,6 +90,9 @@ class KeyMap {
         inline static uint8_t get_dual_key_modifier(KeyInfo key_info);
         inline static uint8_t get_dual_layer_key_layer(KeyInfo key_info);
         inline static uint8_t get_key_with_mod_modifier(KeyInfo key_info);
+
+        inline static KeyInfo init_key_info(uint8_t type, uint8_t key, uint8_t row, uint8_t col);
+        inline static KeyInfo init_key_info_without_coords(uint8_t type, uint8_t key);
 
         // For Serial.print() usage only
         inline static const __FlashStringHelper* key_type_to_string(KeyInfo key_info);

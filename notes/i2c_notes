@@ -1,0 +1,35 @@
+Master:
+    setup -> Wire.begin()
+    loop ->
+        // sendToSlave
+        int slaveAddress = 8;
+        Wire.beginTransmission(slaveAddress);
+        Wire.write("Hello, this is my data");
+        Wire.endTransmission();
+
+        // requestFromSlave
+        Wire.requestFrom(slaveAddress, 6);
+
+        while (Wire.available()) {
+            char c = Wire.read();
+        }
+
+Slave:
+    setup ->
+        int slaveAddress = 8;
+        Wire.begin(slaveAddress);
+        Wire.onReceive(receiveEvent);
+        Wire.onRequest(requestEvent);
+    loop ->
+        ...
+    void receiveEvent(int count) {
+        while (Wire.available() > 0) {
+            char c = Wire.read();
+        }
+    }
+
+    void requestEvent() {
+        Wire.write("Hello");
+    }
+
+After ae1ba57 i2c is removed

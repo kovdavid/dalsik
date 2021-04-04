@@ -49,8 +49,8 @@ class MasterReport {
         void send_system_hid_report();
         void send_multimedia_hid_report();
 
-        inline void press_hook_for_dual_keys();
-        inline void press_hook_for_layer_hold_or_toggle();
+        inline void press_hook_for_dual_keys(KeyInfo* ki);
+        inline void press_hook_for_layer_hold_or_toggle(KeyInfo* i);
         inline void press_hook_for_tapdance_keys(KeyInfo key_info);
         inline void release_all_keys_hook_for_tapdance_keys();
         inline void activate_tapdance(uint8_t index);
@@ -59,10 +59,9 @@ class MasterReport {
         inline void press_normal_key(KeyInfo key_info);
         inline void release_normal_key(KeyInfo key_info);
 
-        inline void press_layer_key(KeyInfo key_info);
-        inline void release_layer_key(KeyInfo key_info);
-
-        inline void press_toggle_layer_key(KeyInfo key_info);
+        inline void press_layer_key(uint8_t layer);
+        inline void release_layer_key(uint8_t layer);
+        inline void press_toggle_layer_key(uint8_t layer);
 
         inline void press_system_key(KeyInfo key_info);
         inline void release_system_key(KeyInfo key_info);

@@ -4,10 +4,14 @@ use v5.10;
 use strict;
 use warnings;
 
+use Text::SimpleTable;
+use List::Util qw[ sum min max ];
 use FindBin qw[ $Bin ];
 use lib "$Bin";
+
 use Dalsik;
-use List::Util qw[ sum ];
+
+binmode(STDOUT, ":utf8");
 
 my $fh;
 
@@ -38,6 +42,16 @@ while (my $line = <$fh>) {
         if ($str ne 'UNSET' && $str ne 'TRANS' && $str ne 'KC_NO') {
             $num_keys_on_layers->{$layer}++;
         }
+
+        $str =~ s/\bMINUS\b/-/;
+        $str =~ s/\bSCOLON\b/:/;
+        $str =~ s/\bSLSH\b/\//;
+        $str =~ s/\bQUOTE\b/'/;
+        $str =~ s/\bEQUAL\b/=/;
+        $str =~ s/\bBSLS\b/\\/;
+        $str =~ s/\bDOT\b/./;
+        $str =~ s/\bCOMMA\b/,/;
+        $str =~ s/\bKC_NO\b/ /;
 
         $data->{$layer}->{$row}->{$col} = $str;
         if (
@@ -70,7 +84,7 @@ close $fh;
 for my $layer (sort keys %{ $data }) {
     next unless $num_keys_on_layers->{$layer};
     render_layer($layer, $data->{$layer});
-    say "\n";
+    print "\n";
 }
 
 say "TapDance:";
@@ -81,31 +95,19 @@ for my $tapdance (sort keys %{ $tapdances }) {
 sub render_layer {
     my ($layer, $rows) = @_;
 
-    my $col_length_sum = sum(values %{ $column_lengths });
-
     say "Layer:$layer";
-    say (('-')x($col_length_sum+4+($num_cols-1)*3));
+
+    my $t = Text::SimpleTable->new(
+        map { $column_lengths->{$_} } 0..$num_cols-1
+    );
 
     for my $row (sort { $a <=> $b } keys %{ $rows }) {
-        print "| ";
-        for my $col (sort { $a <=> $b } keys %{ $rows->{$row} }) {
-            my $separator = "|";
-            if ($col eq '5') {
-                $separator = "||";
-            }
-
-            if ($col+1 == $num_cols) {
-                my $len = $column_lengths->{$col};
-                printf "%-${len}s $separator", $rows->{$row}->{$col};
-            } else {
-                my $len = $column_lengths->{$col};
-                printf "%-${len}s $separator ", $rows->{$row}->{$col};
-            }
-        }
-        print "\n";
-
-        say (('-')x($col_length_sum+4+($num_cols-1)*3));
+        $t->row(
+            map { $rows->{$row}->{$_} } 0..$num_cols-1
+        );
     }
+
+    print $t->boxes->draw();
 }
 
 sub render_tapdance {
