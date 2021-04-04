@@ -79,7 +79,7 @@ void MasterReport::handle_key_release(KeyInfo key_info) {
 
 void MasterReport::press(KeyInfo key_info) {
 #if DEBUG
-    Serial.print("Pressed key:");
+    Serial.print("press:");
     Serial.print(KeyMap::key_type_to_string(key_info));
     Serial.print("|");
     Serial.print(key_info.key, HEX);
@@ -115,7 +115,7 @@ void MasterReport::press(KeyInfo key_info) {
 
 void MasterReport::release(KeyInfo key_info) {
 #if DEBUG
-    Serial.print("Released key:");
+    Serial.print("release:");
     Serial.print(KeyMap::key_type_to_string(key_info));
     Serial.print("|");
     Serial.print(key_info.key, HEX);

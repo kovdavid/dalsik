@@ -85,15 +85,21 @@ void loop() {
     }
 
 #if DEBUG
-    Serial.print("Master ChangedKeyCoords <T:");
+    Serial.print("Master ChangedKeyCoords <");
+    if (coords.type == EVENT_KEY_PRESS) {
+        Serial.print("PRE");
+    } else {
+        Serial.print("REL");
+    }
     Serial.print(coords.type);
-    Serial.print("|R:");
+    Serial.print("|ROW:");
     Serial.print(coords.row);
-    Serial.print("|C:");
+    Serial.print("|COL:");
     Serial.print(coords.col);
     Serial.print(">");
     Serial.print(" now:");
-    Serial.println(prev_millis);
+    Serial.print(prev_millis);
+    Serial.print("\n");
 #endif
 
     if (is_master) {
@@ -107,15 +113,21 @@ inline void handle_slave_data(uint8_t data) {
     ChangedKeyCoords coords = SlaveReport::decode_slave_report_data(data);
 
 #if DEBUG
-    Serial.print("Slave ChangedKeyCoords <T:");
+    Serial.print("Master ChangedKeyCoords <");
+    if (coords.type == EVENT_KEY_PRESS) {
+        Serial.print("PRE");
+    } else {
+        Serial.print("REL");
+    }
     Serial.print(coords.type);
-    Serial.print("|R:");
+    Serial.print("|ROW:");
     Serial.print(coords.row);
-    Serial.print("|C:");
+    Serial.print("|COL:");
     Serial.print(coords.col);
     Serial.print(">");
     Serial.print(" now:");
-    Serial.println(prev_millis);
+    Serial.print(prev_millis);
+    Serial.print("\n");
 #endif
 
     master_report.handle_slave_changed_key(coords);
