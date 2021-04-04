@@ -57,6 +57,10 @@ for my $location (sort keys %{ $json_keys }) {
         print $serial_fh Dalsik::to_hex($cmd)."\n";
     } else {
         print $serial_fh $cmd;
+        my $res = <$serial_fh>;
+        my $cmd_res = <$serial_fh>;
+        print "\t$res";
+        print "\t$cmd_res";
     }
 }
 

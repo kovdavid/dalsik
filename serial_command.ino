@@ -53,17 +53,29 @@ static uint8_t execute_command(KeyMap* keymap) {
         return 0;
     } else if (buffer[0] == CMD_SET_KEY) {
         uint8_t layer    = buffer[1];
-        uint8_t row      = buffer[2];
-        uint8_t col      = buffer[3];
+        int8_t row       = buffer[2];
+        int8_t col       = buffer[3];
         uint8_t key_type = buffer[4];
         uint8_t key      = buffer[5];
 
-        if (layer >= MAX_LAYER_COUNT) return 7;       // Invalid layer
-        if (row >= ROW_PIN_COUNT) return 8;           // Invalid row
-        if (col >= 2*ONE_SIDE_COL_PIN_COUNT) return 9; // Invalid col
+        if (layer >= MAX_LAYER_COUNT) return 7; // Invalid layer
+        if (row < 0 || row >= ROW_PIN_COUNT) return 8; // Invalid row
+        if (col < 0 || col >= 2*ONE_SIDE_COL_PIN_COUNT) return 9; // Invalid col
 
         KeyInfo ki = KeyMap::init_key_info(key_type, key, row, col);
         keymap->set_key(layer, ki);
+
+        Serial.print(F("SET_KEY<LAYER:"));
+        Serial.print(layer);
+        Serial.print(F("|ROW:"));
+        Serial.print(row);
+        Serial.print(F("|COL:"));
+        Serial.print(col);
+        Serial.print(F("|TYPE:"));
+        Serial.print(key_type);
+        Serial.print(F("|KEY:"));
+        Serial.print(key, HEX);
+        Serial.print(F(">\n"));
 
         return 0;
     } else if (buffer[0] == CMD_CLEAR_KEYMAP) {
