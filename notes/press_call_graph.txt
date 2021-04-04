@@ -1,0 +1,34 @@
+master_report.ino
+- entrypoints
+    -> key_timeout_check
+    -> handle_master_changed_key
+    -> handle_slave_changed_key
+
+- L80 - void MasterReport::press()
+
+start -> key_timeout_check
+start -> handle_master_changed_key
+start -> handle_slave_changed_key
+key_timeout_check -> activate_tapdance
+key_timeout_check -> dual_key_timeout_check
+activate_tapdance -> press
+key_timeout_check -> press_normal_key
+handle_master_changed_key -> press
+handle_slave_changed_key -> press
+press -> press_hook_for_dual_keys
+press_hook_for_dual_keys -> press_normal_key
+press_hook_for_dual_keys -> press_layer_key
+press -> press_hook_for_layer_hold_or_toggle
+press_hook_for_layer_hold_or_toggle -> set_layer
+press -> press_hook_for_tapdance_keys
+press_hook_for_tapdance_keys -> activate_tapdance
+press -> press_normal_key
+press -> press_layer_key
+press -> press_toggle_layer_key
+press -> press_layer_hold_or_toggle
+press -> press_tapdance_key
+press_tapdance_key -> activate_tapdance
+press -> press_dual_key
+press_dual_key -> press_normal_key
+press -> press_dual_layer_key
+press_dual_layer_key -> press_layer_key
