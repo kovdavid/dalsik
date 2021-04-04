@@ -39,6 +39,15 @@ while (my $line = <$fh>) {
             $num_keys_on_layers->{$layer}++;
         }
 
+        $str =~ s/\bMINUS\b/-/;
+        $str =~ s/\bSCOLON\b/:/;
+        $str =~ s/\bSLSH\b/\//;
+        $str =~ s/\bQUOTE\b/'/;
+        $str =~ s/\bEQUAL\b/=/;
+        $str =~ s/\bBSLS\b/\\/;
+        $str =~ s/\bDOT\b/./;
+        $str =~ s/\bCOMMA\b/,/;
+
         $data->{$layer}->{$row}->{$col} = $str;
         if (
             !$column_lengths->{$col}
