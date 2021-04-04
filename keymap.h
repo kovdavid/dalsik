@@ -11,15 +11,23 @@
 typedef struct {
     uint8_t type;
     uint8_t key;
-    int8_t row;
-    int8_t col;
+} EEPROM_KeyInfo;
+
+typedef struct {
+    uint8_t type;
+    uint8_t key;
+    uint8_t row;
+    uint8_t col;
 } KeyInfo;
 
 #define MAX_LAYER_COUNT 8
 #define LAYER_HISTORY_CAPACITY 5
 #define MAX_TAPDANCE_KEYS 16
 #define MAX_TAPDANCE_TAPS 3
-#define TAPDANCE_EEPROM_OFFSET (sizeof(KeyInfo)*MAX_LAYER_COUNT*KEY_COUNT)
+#define TAPDANCE_EEPROM_OFFSET (sizeof(EEPROM_KeyInfo)*MAX_LAYER_COUNT*KEY_COUNT)
+
+#define ROW_UNKNOWN 255
+#define COL_UNKNOWN 255
 
 #define KEYBOARD_SIDE_LEFT  0x00
 #define KEYBOARD_SIDE_RIGHT 0x01
@@ -83,7 +91,7 @@ class KeyMap {
         inline static uint8_t get_dual_layer_key_layer(KeyInfo key_info);
         inline static uint8_t get_key_with_mod_modifier(KeyInfo key_info);
 
-        inline static KeyInfo init_key_info(uint8_t type, uint8_t key, int8_t row, int8_t col);
+        inline static KeyInfo init_key_info(uint8_t type, uint8_t key, uint8_t row, uint8_t col);
         inline static KeyInfo init_key_info_without_coords(uint8_t type, uint8_t key);
 
         // For Serial.print() usage only

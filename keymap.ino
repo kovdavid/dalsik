@@ -55,7 +55,7 @@ KeyInfo KeyMap::get_key(uint8_t row, uint8_t col) {
 }
 
 void KeyMap::reload_key_info_by_row_col(KeyInfo* ki) {
-    if (ki->row < 0 || ki->col < 0) {
+    if (ki->row == ROW_UNKNOWN || ki->col == COL_UNKNOWN) {
         return; // Missing coords info
     }
 
@@ -112,11 +112,11 @@ void KeyMap::toggle_layer(uint8_t layer) {
 }
 
 inline uint32_t KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col) {
-    return sizeof(KeyInfo)*( layer*KEY_COUNT + row*2*ONE_SIDE_COL_PIN_COUNT + col );
+    return sizeof(EEPROM_KeyInfo)*( layer*KEY_COUNT + row*2*ONE_SIDE_COL_PIN_COUNT + col );
 }
 
 inline uint32_t KeyMap::get_tapdance_eeprom_address(uint8_t index, uint8_t tap) {
-    return TAPDANCE_EEPROM_OFFSET + sizeof(KeyInfo)*( index*MAX_TAPDANCE_TAPS + tap-1 );
+    return TAPDANCE_EEPROM_OFFSET + sizeof(EEPROM_KeyInfo)*( index*MAX_TAPDANCE_TAPS + tap-1 );
 }
 
 KeyInfo KeyMap::get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col) {
@@ -159,10 +159,10 @@ KeyInfo KeyMap::get_tapdance_key(uint8_t index, uint8_t tap) {
 }
 
 void KeyMap::set_key(uint8_t layer, KeyInfo key_info) {
-    int8_t row = key_info.row;
-    int8_t col = key_info.col;
+    uint8_t row = key_info.row;
+    uint8_t col = key_info.col;
 
-    if (row < 0 || col < 0) {
+    if (row == ROW_UNKNOWN || col == COL_UNKNOWN) {
         return; // Invalid KeyInfo
     }
 
@@ -206,7 +206,9 @@ void KeyMap::eeprom_clear_tapdance() {
 }
 
 inline int KeyMap::key_info_compare(KeyInfo key_info1, KeyInfo key_info2) {
-    return memcmp(&key_info1, &key_info2, sizeof(KeyInfo));
+    EEPROM_KeyInfo k1 = EEPROM_KeyInfo { key_info1.type, key_info1.key };
+    EEPROM_KeyInfo k2 = EEPROM_KeyInfo { key_info2.type, key_info2.key };
+    return memcmp(&k1, &k2, sizeof(EEPROM_KeyInfo));
 }
 
 inline uint8_t KeyMap::get_dual_key_modifier(KeyInfo key_info) {
@@ -250,12 +252,12 @@ inline uint8_t KeyMap::get_key_with_mod_modifier(KeyInfo key_info) {
     return 0x00;
 }
 
-inline KeyInfo KeyMap::init_key_info(uint8_t type, uint8_t key, int8_t row, int8_t col) {
+inline KeyInfo KeyMap::init_key_info(uint8_t type, uint8_t key, uint8_t row, uint8_t col) {
     return KeyInfo { type, key, row, col };
 }
 
 inline KeyInfo KeyMap::init_key_info_without_coords(uint8_t type, uint8_t key) {
-    return KeyInfo { type, key, -1, -1 };
+    return KeyInfo { type, key, ROW_UNKNOWN, COL_UNKNOWN };
 }
 
 inline uint8_t KeyMap::is_type_between(KeyInfo key_info, uint8_t type1, uint8_t type2) {

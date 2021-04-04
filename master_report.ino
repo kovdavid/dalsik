@@ -93,9 +93,9 @@ void MasterReport::press(KeyInfo key_info) {
     if (key_info.type == KEY_NORMAL) {
         this->press_normal_key(key_info);
     } else if (key_info.type == KEY_LAYER_PRESS) {
-        this->press_layer_key(key_info);
+        this->press_layer_key(key_info.key);
     } else if (key_info.type == KEY_LAYER_TOGGLE) {
-        this->press_toggle_layer_key(key_info);
+        this->press_toggle_layer_key(key_info.key);
     } else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) {
         this->press_layer_hold_or_toggle(key_info);
     } else if (key_info.type == KEY_TAPDANCE) {
@@ -125,7 +125,7 @@ void MasterReport::release(KeyInfo key_info) {
     if (key_info.type == KEY_NORMAL) {
         this->release_normal_key(key_info);
     } else if (key_info.type == KEY_LAYER_PRESS) {
-        this->release_layer_key(key_info);
+        this->release_layer_key(key_info.key);
     } else if (key_info.type == KEY_LAYER_TOGGLE) {
         // do nothing; toggle_layer key has only effect on press
     } else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) {
@@ -177,16 +177,16 @@ inline void MasterReport::release_normal_key(KeyInfo key_info) {
     this->base_keys_pressed--;
 }
 
-inline void MasterReport::press_layer_key(KeyInfo key_info) {
-    this->keymap->set_layer(key_info.key);
+inline void MasterReport::press_layer_key(uint8_t layer) {
+    this->keymap->set_layer(layer);
 }
 
-inline void MasterReport::release_layer_key(KeyInfo key_info) {
-    this->keymap->remove_layer(key_info.key);
+inline void MasterReport::release_layer_key(uint8_t layer) {
+    this->keymap->remove_layer(layer);
 }
 
-inline void MasterReport::press_toggle_layer_key(KeyInfo key_info) {
-    this->keymap->toggle_layer(key_info.key);
+inline void MasterReport::press_toggle_layer_key(uint8_t layer) {
+    this->keymap->toggle_layer(layer);
 }
 
 inline void MasterReport::press_dual_key(KeyInfo key_info) {
@@ -237,8 +237,7 @@ inline void MasterReport::press_dual_layer_key(KeyInfo key_info) {
     if (!LAZY_DUAL_KEYS && this->num_keys_pressed > 1) {
         this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
         uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
-        KeyInfo ki = KeyMap::init_key_info(KEY_LAYER_PRESS, layer, key_info.row, key_info.col);
-        this->press_layer_key(ki);
+        this->press_layer_key(layer);
     }
 }
 
@@ -246,8 +245,7 @@ inline void MasterReport::release_dual_layer_key(KeyInfo key_info) {
     if (KeyMap::key_info_compare(key_info, this->dual_layer_key_state.key_info) == 0) {
         if (this->dual_layer_key_state.mode == DUAL_MODE_HOLD_LAYER) {
             uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
-            KeyInfo ki = KeyMap::init_key_info(KEY_LAYER_PRESS, layer, key_info.row, key_info.col);
-            this->release_layer_key(ki);
+            this->release_layer_key(layer);
         } else if (this->dual_layer_key_state.mode == DUAL_MODE_PRESS_KEY) {
             KeyInfo ki = KeyMap::init_key_info(KEY_LAYER_PRESS, key_info.key, key_info.row, key_info.col);
             this->release_normal_key(ki);
@@ -262,8 +260,7 @@ inline void MasterReport::release_dual_layer_key(KeyInfo key_info) {
     } else {
         // There were more dual_layer_keys pressed, this one is not the first
         uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
-        KeyInfo ki = KeyMap::init_key_info(KEY_LAYER_PRESS, layer, key_info.row, key_info.col);
-        this->release_layer_key(ki);
+        this->release_layer_key(layer);
     }
 }
 
@@ -309,8 +306,7 @@ inline void MasterReport::press_hook_for_dual_keys(KeyInfo* current_ki) {
     if (this->dual_layer_key_state.mode == DUAL_MODE_PENDING) {
         this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
         uint8_t layer = KeyMap::get_dual_layer_key_layer(this->dual_layer_key_state.key_info);
-        KeyInfo layer_ki = KeyMap::init_key_info_without_coords(KEY_LAYER_PRESS, layer);
-        this->press_layer_key(layer_ki);
+        this->press_layer_key(layer);
 
         this->keymap->reload_key_info_by_row_col(current_ki);
     }

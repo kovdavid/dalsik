@@ -59,10 +59,9 @@ class MasterReport {
         inline void press_normal_key(KeyInfo key_info);
         inline void release_normal_key(KeyInfo key_info);
 
-        inline void press_layer_key(KeyInfo key_info);
-        inline void release_layer_key(KeyInfo key_info);
-
-        inline void press_toggle_layer_key(KeyInfo key_info);
+        inline void press_layer_key(uint8_t layer);
+        inline void release_layer_key(uint8_t layer);
+        inline void press_toggle_layer_key(uint8_t layer);
 
         inline void press_system_key(KeyInfo key_info);
         inline void release_system_key(KeyInfo key_info);
