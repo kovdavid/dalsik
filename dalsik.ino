@@ -91,7 +91,6 @@ void loop() {
     } else {
         Serial.print("REL");
     }
-    Serial.print(coords.type);
     Serial.print("|ROW:");
     Serial.print(coords.row);
     Serial.print("|COL:");
@@ -113,13 +112,12 @@ inline void handle_slave_data(uint8_t data) {
     ChangedKeyCoords coords = SlaveReport::decode_slave_report_data(data);
 
 #if DEBUG
-    Serial.print("Master ChangedKeyCoords <");
+    Serial.print("Slave ChangedKeyCoords <");
     if (coords.type == EVENT_KEY_PRESS) {
         Serial.print("PRE");
     } else {
         Serial.print("REL");
     }
-    Serial.print(coords.type);
     Serial.print("|ROW:");
     Serial.print(coords.row);
     Serial.print("|COL:");
