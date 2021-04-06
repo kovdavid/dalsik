@@ -10,7 +10,7 @@ verify:
 clear_keymap:
 	./utils/cmd_clear_keymap.pl
 
-set_keymap: clear_keymap
+set_keymap:
 	./utils/set_keymap.pl -j ~/dotfiles/dalsik_layout/dalsik_layout_V3.json
 
 render_keymap:
