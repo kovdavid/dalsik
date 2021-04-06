@@ -540,7 +540,7 @@ void MasterReport::send_hid_report() {
 }
 
 void MasterReport::send_base_hid_report() {
-#if DEBUG_KEYREPORT
+#if DEBUG_KEYREPORT_BASE
     this->print_base_report_to_serial();
 #endif
     void *report = &(this->base_hid_report);
@@ -548,7 +548,7 @@ void MasterReport::send_base_hid_report() {
 }
 
 void MasterReport::send_system_hid_report() {
-#if DEBUG_KEYREPORT
+#if DEBUG_KEYREPORT_SYSTEM
     this->print_system_report_to_serial();
 #endif
     void *report = &(this->system_hid_report);
@@ -556,7 +556,7 @@ void MasterReport::send_system_hid_report() {
 }
 
 void MasterReport::send_multimedia_hid_report() {
-#if DEBUG_KEYREPORT
+#if DEBUG_KEYREPORT_MULTIMEDIA
     this->print_multimedia_report_to_serial();
 #endif
     void *report = &(this->multimedia_hid_report);

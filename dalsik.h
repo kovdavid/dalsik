@@ -4,7 +4,9 @@
 #include "pin_utils.h"
 
 #define DEBUG 0
-#define DEBUG_KEYREPORT 0
+#define DEBUG_KEYREPORT_BASE 0
+#define DEBUG_KEYREPORT_SYSTEM 0
+#define DEBUG_KEYREPORT_MULTIMEDIA 0
 
 // Turn off the keyboard with this PIN
 #define ON_OFF_PIN PIN_C(6)

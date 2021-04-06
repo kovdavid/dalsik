@@ -15,7 +15,7 @@ while (my $line = <$fh>) {
     $line =~ s/\s+$//g;
     next unless $line;
 
-    if ($line =~ m/^\w+ ChangedKeyCoords .* now:(\d+)$/) {
+    if ($line =~ m/^\w+ ChangedKeyCoords <PRE.* now:(\d+)$/) {
         my $ts = $1;
         if ($last_ts) {
             my $diff = $ts - $last_ts;

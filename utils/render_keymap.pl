@@ -52,6 +52,9 @@ while (my $line = <$fh>) {
         $str =~ s/\bDOT\b/./;
         $str =~ s/\bCOMMA\b/,/;
         $str =~ s/\bKC_NO\b/ /;
+        $str =~ s/\bLBRC\b/[/;
+        $str =~ s/\bRBRC\b/]/;
+        $str =~ s/\bGRV\b/`/;
 
         $data->{$layer}->{$row}->{$col} = $str;
         if (
