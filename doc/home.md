@@ -6,4 +6,5 @@ This document describes the implementation details of this software for the Let'
 
 * [Microcontroller basics](microcontroller_basics.md)
 * [Keyboard wiring](keyboard_wiring.md)
+* [Matrix scanning](matrix_scan.md)
 
