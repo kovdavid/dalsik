@@ -7,7 +7,7 @@ Modules:
 
 
 
-In the [Keyboard wiring](keyboard_wiring.md) document we saw how each key is wired up to the microcontroller. Scanning the keyboard matrix means checking the state (pressed or released) of each key and finding those, whose state has changes.
+In the [Keyboard wiring](keyboard_wiring.md) document we saw how each key is wired up to the microcontroller. Scanning the keyboard matrix means checking the state (pressed or released) of each key and finding those, whose state has changes. This is the main thing each half is doing.
 
 For tracking the state of each key I am using an array `uint8_t keystate[ROW_PIN_COUNT][ONE_SIDE_PIN_COUNT]` in [matrix.h](https://github.com/DavsX/dalsik/blob/master/matrix.h). The value of `0` means, that a key is released, while `1` is for pressed keys.
 
@@ -25,7 +25,19 @@ const uint8_t COL_PINS[ONE_SIDE_COL_PIN_COUNT] = {
 };
 ```
 
-Each pin is initialized in the `Matrix::Matrix()` constructor with `PinUtils::pinmode_input_pullup` using two for loops.
+Each pin is initialized in the `Matrix::Matrix()` constructor with `PinUtils::pinmode_input_pullup`:
+
+```c++
+// matrix.ino
+for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
+    PinUtils::pinmode_input_pullup(ROW_PINS[row]);
+}
+for (uint8_t col = 0; col < ONE_SIDE_COL_PIN_COUNT; col++) {
+    PinUtils::pinmode_input_pullup(COL_PINS[col]);
+}
+```
+
+
 
 ## Scanning
 
@@ -89,4 +101,34 @@ After that we check the previous state of the key and if it's different, then we
 
 When we press a key, the two metal electrodes don't instantly form a connection, but they bounce a bit (between connected and disconnected state). Without debouncing we could interpret a single key press as several press and release events, which is bad for a keyboard (If I press a button once, I expect the keyboard to send a single press event).
 
-There are multiple ways of debouncing an input. One could for example implement it using `read -> sleep -> read` (and comparing the two values before and after). In Dalsik I use a separate
+There are multiple ways of debouncing an input. One could for example implement it using `read -> sleep -> read` (and comparing the two values before and after). In Dalsik I use a separate, 6-step debounce array (each key has it's own debounce value).
+
+It works like this:
+
+* the value in the `debounce` array is always between `DEBOUNCE_LOW` (0) and `DEBOUNCE_MAX` (5)
+* during scanning each value for the key is decremented/incremented based on the pin state
+* if the `debounce` value is `DEBOUNCE_LOW`, then the key is considered released
+* if the `debounce` value is `DEBOUNCE_MAX`, then the key is considered pressed
+* if the `debounce` value is between `DEBOUNCE_LOW` and `DEBOUNCE_MAX`, then the key is considered to be in it's previous state (`DEBOUNCE_CHANGING` state)
+
+```c++
+uint8_t Matrix::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
+    if (input) {
+        if (this->debounce[row][col] < DEBOUNCE_MAX) {
+            this->debounce[row][col]++;
+        }
+        if (this->debounce[row][col] == DEBOUNCE_MAX) {
+            return DEBOUNCE_MAX;
+        }
+    } else {
+        if (this->debounce[row][col] > 0) {
+            this->debounce[row][col]--;
+        }
+        if (this->debounce[row][col] == 0) {
+            return DEBOUNCE_LOW;
+        }
+    }
+    return DEBOUNCE_CHANGING;
+}
+```
+

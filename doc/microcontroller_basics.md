@@ -60,3 +60,21 @@ PinUtils::set_output_low(pin);
 PinUtils::set_output_high(pin);
 ```
 
+## Setup and main loop
+
+When compiling a project for a microcontroller with the Arduino IDE, we have to provide two functions:
+
+* `void setup()` - this function is run only once at the beginning
+* `void loop()` - this function is called infinitely
+
+The main function provided by arduino is something like this:
+
+```c++
+void main() {
+    setup();
+    while(1) {
+        loop();
+    }
+}
+```
+
