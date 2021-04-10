@@ -7,4 +7,7 @@ This document describes the implementation details of this software for the Let'
 * [Microcontroller basics](microcontroller_basics.md)
 * [Keyboard wiring](keyboard_wiring.md)
 * [Matrix scanning](matrix_scan.md)
+* [Master & Slave](master_slave.md)
+* [EEPROM layout](eeprom_layout.md)
+* [SlaveReport](slave_report.md)
 
