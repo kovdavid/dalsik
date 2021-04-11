@@ -8,6 +8,8 @@ This document describes the implementation details of this software for the Let'
 * [Keyboard wiring](keyboard_wiring.md)
 * [Matrix scanning](matrix_scan.md)
 * [Master & Slave](master_slave.md)
+* [USB HID Structure](usb_hid.md)
+* [Key Types and features](key_types.md)
 * [EEPROM layout](eeprom_layout.md)
 * [SlaveReport](slave_report.md)
 
