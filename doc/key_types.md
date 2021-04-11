@@ -10,9 +10,18 @@ For example a key on row 1 and column 1 can act as "key a" on the default (0) la
 
 Layers can be switched by pressing keys, which have a layer changing key type assigned to them.
 
-# Tapdance
+# TapDance
 
+Tapdance is a functionality, that allows to define multiple keys/functionality for a single key. It is similar to layers, but while layers require to press an additional key (for switching layers) to get a different behavior for a given key, TapDance works by tapping a given key multiple times in a given time period.
 
+```c++
+// dalsik.h
+#define TAPDANCE_TIMEOUT_MS 300
+```
+
+If I tap a TapDance key only once, then the first functionality is triggered. If I tap a TapDance key twice, then the second one is triggered. Up to three different functionality can be mapped to a single key. (e.g. single tap - "CTRL+c", double tab - "CTRL+v")
+
+As each key takes 2 bytes in the EEPROM and a TapDance key can be configured for 3 different keys, the TapDance key mapping is located at a specific offset in the EEPROM, while each group is indexed, starting from 0.
 
 # Key types
 
@@ -25,6 +34,8 @@ The supported key types of Dalsik are the following:
 * `#define KEY_NORMAL 0x01`
 
   * basic keys, like modifiers (CTRL, ALT, SHIFT, GUI), letters, numbers etc.
+
+  * The [USB HID Usage tables](http://www.usb.org/developers/hidpage/Hut1_12v2.pdf) document contains all the HID keycodes
 
   * e.g. "a" is `KEY_NORMAL - KC_A`, so it will be encoded in memory as `0x01 0x04`
 
@@ -105,5 +116,29 @@ The supported key types of Dalsik are the following:
 
 * `#define KEY_TAPDANCE 0x19`
 
-  * Key `0x19 0x01` activates tapdance 1, `0x19 0x02` tapdance 2 etc.
+  * Key `0x19 0x01` activates tapdance 0, `0x19 0x02` tapdance 1 etc.
+
+* `#define KEY_DUAL_LAYER_1 0x1A`
+
+  * When tapped on its own, this key acts like `KEY_NORMAL`
+  * When pressed with a different key, then this key acts like `KEY_LAYER_PRESS`
+  * e.g. `0x1A 0x04` is "a" on its own and "Layer press 1" when held down with a different key
+
+* `#define KEY_DUAL_LAYER_2 0x1B`
+
+* `#define KEY_DUAL_LAYER_3 0x1C`
+
+* `#define KEY_DUAL_LAYER_4 0x1D`
+
+* `#define KEY_DUAL_LAYER_5 0x1E`
+
+* `#define KEY_DUAL_LAYER_6 0x1F`
+
+* `#define KEY_DUAL_LAYER_7 0x20`
+
+* `#define KEY_TRANSPARENT 0xFF`
+
+  * This makes the current key act like the key from a previous layer
+  * If I set the key at layer 0, row 1, column 1 to be `KC_A` and the same key on layer 1 to be `KEY_TRANSPARENT`, then the key on layer 1 will act as `KC_A`
+  * Useful, if I don't want to change a given key on the next layer, but also don't want to duplicate its value
 
