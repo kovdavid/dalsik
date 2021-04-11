@@ -25,7 +25,7 @@ const uint8_t COL_PINS[ONE_SIDE_COL_PIN_COUNT] = {
 };
 ```
 
-Each pin is initialized in the `Matrix::Matrix()` constructor with `PinUtils::pinmode_input_pullup`:
+Each pin is initialized in the `Matrix::Matrix()` constructor:
 
 ```c++
 // matrix.ino
@@ -37,7 +37,7 @@ for (uint8_t col = 0; col < ONE_SIDE_COL_PIN_COUNT; col++) {
 }
 ```
 
-
+Why are row pins initialized as input_pullup instead of output_high? Why are they then switched to output_low and back to input_pullup? According to [arduino.cc](https://www.arduino.cc/en/Tutorial/Foundations/DigitalPins) it is safer to keep those pins idle as input_pullup, because they provide less current as output_high, so there is less chance of damaging a pin in case of creating a short circuit.
 
 ## Scanning
 
@@ -45,7 +45,7 @@ for (uint8_t col = 0; col < ONE_SIDE_COL_PIN_COUNT; col++) {
 
 Scanning is implemented in `Matrix::scan()`. In it we loop through each row and we check each column. The pins are all set to the _high_ signal (pull-up) - so reading from each column pin in idle mode returns `1`. 
 
-We set each row ping to ground/`0` (`PinUtils::pinmode_output_low`) and for each row we read each column pin one by one.
+We set each row pin to _low_ signal (`PinUtils::pinmode_output_low`) and for each row we read each column pin one by one.
 
 * If the key for that row and column is not pressed, then we read a high signal for that pin (because of the pull-up resistor).
 * If the key for that row and columns is pressed, then the pull-up high signal of the column's pin is connected to the ground (to the row's pin) and because of that we read a low signal.
@@ -105,7 +105,7 @@ There are multiple ways of debouncing an input. One could for example implement 
 
 It works like this:
 
-* the value in the `debounce` array is always between `DEBOUNCE_LOW` (0) and `DEBOUNCE_MAX` (5)
+* the value in the `debounce` array is always between `DEBOUNCE_MIN` (0) and `DEBOUNCE_MAX` (5)
 * during scanning each value for the key is decremented/incremented based on the pin state
 * if the `debounce` value is `DEBOUNCE_LOW`, then the key is considered released
 * if the `debounce` value is `DEBOUNCE_MAX`, then the key is considered pressed
@@ -121,11 +121,11 @@ uint8_t Matrix::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
             return DEBOUNCE_MAX;
         }
     } else {
-        if (this->debounce[row][col] > 0) {
+        if (this->debounce[row][col] > DEBOUNCE_MIN) {
             this->debounce[row][col]--;
         }
-        if (this->debounce[row][col] == 0) {
-            return DEBOUNCE_LOW;
+        if (this->debounce[row][col] == DEBOUNCE_MIN) {
+            return DEBOUNCE_MIN;
         }
     }
     return DEBOUNCE_CHANGING;

@@ -53,11 +53,11 @@ uint8_t Matrix::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
             return DEBOUNCE_MAX;
         }
     } else {
-        if (this->debounce[row][col] > 0) {
+        if (this->debounce[row][col] > DEBOUNCE_MIN) {
             this->debounce[row][col]--;
         }
-        if (this->debounce[row][col] == 0) {
-            return DEBOUNCE_LOW;
+        if (this->debounce[row][col] == DEBOUNCE_MIN) {
+            return DEBOUNCE_MIN;
         }
     }
     return DEBOUNCE_CHANGING;

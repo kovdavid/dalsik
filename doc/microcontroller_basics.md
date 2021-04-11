@@ -16,7 +16,18 @@ The heart of the keyboard is the 8-bit AVR Pro Micro (atmega32u4) microcontrolle
 
 Flashing is compiling the C++ code and uploading it into the microcontroller's Flash memory. The Pro Micro has a bootloader, which supports flashing via the USB interface, which makes the whole process very easy, as there is no need for additional hardware.
 
-For flashing the Pro Micro I use the [Arduino IDE](https://www.arduino.cc/en/software). It has a GUI for editing / flashing the code, but I don't use it. For code editing I use Vim and for flashing I use the command-line interface of the Arduino IDE ( [Makefile](https://github.com/DavsX/dalsik/blob/master/Makefile) ).
+For flashing the Pro Micro I use the [Arduino IDE](https://www.arduino.cc/en/software). It has a GUI for editing / flashing the code, but I don't use it. For code editing I use Vim and for flashing I use the command-line interface of the Arduino IDE.
+
+```makefile
+// Makefile
+upload:
+	arduino --board sparkfun:avr:promicro:cpu=16MHzatmega32U4 --upload dalsik.ino --verbose --preserve-temp-files --port /dev/ttyACM0
+
+verify:
+	arduino --board sparkfun:avr:promicro:cpu=16MHzatmega32U4 --verify dalsik.ino --verbose --preserve-temp-files --port /dev/ttyACM0
+```
+
+
 
 ## I/O
 
@@ -59,6 +70,36 @@ PinUtils::pinmode_output_high(pin); // Setup + initial "high" value
 PinUtils::set_output_low(pin);
 PinUtils::set_output_high(pin);
 ```
+
+## Memory mapped IO
+
+Configuring/reading/writing pins are done by setting the values of special memory addresses. Constants with there memory addresses are defined in [iom32u4.h](https://github.com/vancegroup-mirrors/avr-libc/blob/master/avr-libc/include/avr/iom32u4.h) . The base addresses of various ports are also defined in `pin_utils.h`:
+
+```c++
+// pin_utils.h
+
+#define PIN_B(x) (0x30+x)
+#define PIN_C(x) (0x60+x)
+#define PIN_D(x) (0x90+x)
+#define PIN_E(x) (0xC0+x)
+#define PIN_F(x) (0xF0+x)
+```
+
+Each port has multiple pins, for example `PIN_B(1), PIN_C(2)` etc.
+
+There are 3 types of registers, that allow us to manipulate ports:
+
+* DDRx
+  * Data Direction Register (RW)
+  * To set a pin of a given port as input, we should set the corresponding bit to "0" of the DDRx register. Likewise, to set a pin as output, we should set its bit to "1"
+* PORTx
+  * Pin Output Register (RW)
+  * Sets the output value of different pins of a given port
+    * If the pin is configured as input, then "0" sets the pin to "floating", "1" sets the to to _high_ (using the pull-up resistor)
+    * If the pin is configured as output, then "0" set the pin to _low_ and "1" to _high_
+* PINx
+  * Pin Input Register (RO)
+  * This register can be used to read from pins (that are set to input mode). The value of "0" means _low_, "1" means _high_
 
 ## Setup and main loop
 
