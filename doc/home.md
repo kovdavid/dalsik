@@ -12,7 +12,7 @@ This document describes the implementation details of this software for the Let'
 * [Key Types and features](key_types.md)
 * [EEPROM layout](eeprom_layout.md)
 * [SerialCommand](serial_command.md)
-* [KeyMap](keymap.md) - TODO
+* [KeyMap](keymap.md)
 * [SlaveReport](slave_report.md)
 * [MasterReport](master_report.md) - TODO
 
