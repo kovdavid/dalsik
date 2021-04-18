@@ -37,7 +37,7 @@ Pin I/O is used for determining key events and also during communication between
 
 ### Using a pin as input
 
-When we configure a pin as input, it is by default connected via a pull-up resistor (R1) to Vcc, so that the pin's state is not _floating_. That means, that the default value of the pin is _high_. To change the state of the pin, we must connect it to ground. Therefore we must invert the signal read from the pin in code, as the signal _high_ represents the logical "0".
+When we configure a pin as input, it is by default connected via a pull-up resistor (R1) to Vcc, so that the pin's state is not [_floating_](https://roboticsbackend.com/arduino-input_pullup-pinmode/). That means, that the default value of the pin is _high_. To change the state of the pin, we must connect it to ground. Therefore we must invert the signal read from the pin in code, as the signal _high_ represents the logical "0".
 
 Using a pull-down resistor would also work, but the atmega32u4 MCU has internal pull-up resistors, so that we don't need to use any additional hardware.
 

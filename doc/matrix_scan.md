@@ -7,9 +7,9 @@ Modules:
 
 
 
-In the [Keyboard wiring](keyboard_wiring.md) document we saw how each key is wired up to the microcontroller. Scanning the keyboard matrix means checking the state (pressed or released) of each key and finding those, whose state has changes. This is the main thing each half is doing.
+In the [Keyboard wiring](keyboard_wiring.md) document we saw how each key is wired up to the microcontroller. Scanning the keyboard matrix means checking the state (pressed or released) of each key and looking for changes. This is the main thing each half of the keyboard is doing. Both the master and the slave side are checking only their keys (which are connected to the MCU).
 
-For tracking the state of each key I am using an array `uint8_t keystate[ROW_PIN_COUNT][ONE_SIDE_PIN_COUNT]` in [matrix.h](https://github.com/DavsX/dalsik/blob/master/matrix.h). The value of `0` means, that a key is released, while `1` is for pressed keys.
+For tracking the state of each key I am using an array `uint8_t keystate[ROW_PIN_COUNT][ONE_SIDE_PIN_COUNT]` in [matrix.h](https://github.com/DavsX/dalsik/blob/master/matrix.h).
 
 ## Pin initialization
 
@@ -37,20 +37,22 @@ for (uint8_t col = 0; col < ONE_SIDE_COL_PIN_COUNT; col++) {
 }
 ```
 
-Why are row pins initialized as input_pullup instead of output_high? Why are they then switched to output_low and back to input_pullup? According to [arduino.cc](https://www.arduino.cc/en/Tutorial/Foundations/DigitalPins) it is safer to keep those pins idle as input_pullup, because they provide less current as output_high, so there is less chance of damaging a pin in case of creating a short circuit.
+Why are the row pins initialized as input_pullup instead of output_high? Why are they then switched to output_low and back to input_pullup? According to [arduino.cc](https://www.arduino.cc/en/Tutorial/Foundations/DigitalPins) it is safer to keep those pins idle as input_pullup, because they provide less current, than output_high (less use of power).
 
 ## Scanning
 
 <img src="keyboard_matrix.png" alt="keyboard_matrix" style="zoom: 50%;" />
 
-Scanning is implemented in `Matrix::scan()`. In it we loop through each row and we check each column. The pins are all set to the _high_ signal (pull-up) - so reading from each column pin in idle mode returns `1`. 
+Scanning is implemented in `Matrix::scan()`. In it we loop through each row and we check each column for the given rows. The pins are all set to the _high_ signal (pull-up) - so reading from each column pin for released keys yields `1`. 
 
 We set each row pin to _low_ signal (`PinUtils::pinmode_output_low`) and for each row we read each column pin one by one.
 
-* If the key for that row and column is not pressed, then we read a high signal for that pin (because of the pull-up resistor).
-* If the key for that row and columns is pressed, then the pull-up high signal of the column's pin is connected to the ground (to the row's pin) and because of that we read a low signal.
+* If the key for that row and column is not pressed, then we read `1` from that column pin - there is no electric connection between the row pin and the column pin.
+* If the key for that row and column is pressed, then the pull-up _high_ signal of the column's pin is connected to the ground (to the row's pin) and because of that we read a _low_ signal.
 
-After checking each column we set the row's pin back to `pinmode_input_pullup` and proceed to the next row. The `Matrix::scan()` function returns the first detected key change via the `ChangedKeyCoords` struct:
+After checking each column we set the row's pin back to `pinmode_input_pullup` and proceed to the next row.
+
+The `Matrix::scan()` function returns the first detected key change using the `ChangedKeyCoords` struct:
 
 ```c++
 // matrix.h
@@ -93,23 +95,23 @@ if (debounced_input != this->keystate[row][col]) {
 }
 ```
 
-After that we check the previous state of the key and if it's different, then we update the keystate to the current value and return a `ChangedKeyCoords` struct.
+After that we check the previous state of the key and if it's different, then we update the `keystate` value to the new one and return a `ChangedKeyCoords` struct.
 
 ## Debouncing
 
 <img src="contact_bouncing.png" alt="contact_bouncing" style="zoom: 50%;" />
 
-When we press a key, the two metal electrodes don't instantly form a connection, but they bounce a bit (between connected and disconnected state). Without debouncing we could interpret a single key press as several press and release events, which is bad for a keyboard (If I press a button once, I expect the keyboard to send a single press event).
+When we press a key, the two metal electrodes don't instantly form a connection, but they bounce around a bit (altering between connected and disconnected states). Without debouncing we could interpret a single key press as several press and release events in a row, which is bad for a keyboard (If I press a button once, I expect the keyboard to send a single press event).
 
-There are multiple ways of debouncing an input. One could for example implement it using `read -> sleep -> read` (and comparing the two values before and after). In Dalsik I use a separate, 6-step debounce array (each key has it's own debounce value).
+There are multiple ways of debouncing an input. We could for example implement it using `read -> sleep -> read` (and comparing the states before and after). In Dalsik I use a separate, 6-step debounce array (each key has it's own debounce value). My solution was inspired by [Kenneth A. Kuhn](www.kennethkuhn.com/electronics/debounce.c).
 
 It works like this:
 
-* the value in the `debounce` array is always between `DEBOUNCE_MIN` (0) and `DEBOUNCE_MAX` (5)
-* during scanning each value for the key is decremented/incremented based on the pin state
+* values in the `debounce` array are always between `DEBOUNCE_MIN` (0) and `DEBOUNCE_MAX` (5)
+* during `Matrix::scan` each value for a given key (row/column) is decremented/incremented based on it's state (pressed -> increment, released -> decrement).
 * if the `debounce` value is `DEBOUNCE_LOW`, then the key is considered released
 * if the `debounce` value is `DEBOUNCE_MAX`, then the key is considered pressed
-* if the `debounce` value is between `DEBOUNCE_LOW` and `DEBOUNCE_MAX`, then the key is considered to be in it's previous state (`DEBOUNCE_CHANGING` state)
+* if the `debounce` value is between `DEBOUNCE_LOW` and `DEBOUNCE_MAX`, then the key is considered to be in it's previous state (`DEBOUNCE_CHANGING`)
 
 ```c++
 uint8_t Matrix::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
