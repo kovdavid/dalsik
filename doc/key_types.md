@@ -1,6 +1,6 @@
 # Key Types and features
 
-The definition of different key types is in [key_definitions.h](https://github.com/DavsX/dalsik/blob/master/key_definitions.h) . These codes are used to give different functionality for keys. Each key is encoded as 2 bytes in the [EEPROM](eeprom_layout.md). The first byte is the type, the second is the value (which can differ for each type).
+The different supported key types and key codes are defined in [key_definitions.h](https://github.com/DavsX/dalsik/blob/master/key_definitions.h). The USB HID standard uses 1 byte for key codes, but Dalsik uses 2 bytes to encode each key to support additional features. The first byte is the type, the second is the value (which can differ for each type - can be a HID key code, or something special).
 
 # Layers
 

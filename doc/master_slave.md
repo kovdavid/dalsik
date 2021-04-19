@@ -202,28 +202,30 @@ inline static uint8_t serial_master_read() {
 
 ## RingBuffer
 
- 
+The data received from the slave side is written into a 10 bytes long RingBuffer in the `DalsikSerial` module. This data is the processed later on in the main loop.
 
-REVIEW
+At the beginning I was using just a single `uint8_t` as a buffer, but soon I experienced some bugs. If the slave sent too much data too fast (pressing/releasing of multiple keys with multiple fingers), then sometimes some events in the buffer were overridden by the new data before they could be processed. This cause the master side to miss the "The key E was released" event, so a key got stuck.
 
+I chose the size of 10 bytes, because the slave side is intended to be used with 1 hand, so the press and sudden release of a key with each finger results in 10 events.
 
-
-The data read from the slave side is written into a RingBuffer of size 10 from the `DalsikSerial` module. This  data is the processed later on.
-
-At the beginning I was using just a single `uint8_t` as a buffer, but soon I experienced some bugs. If the slave sent too much data too fast (pressing/releasing of multiple keys with multiple fingers), then sometimes some events in the buffer were overridden by new data before they could be processed. This cause the master side to miss the "The key E was released" event, so a key got stuck.
-
-I chose the size of 10, because the slave side is intended to be used with 1 hand, so the press and sudden release of a key with each finger results in 10 events.
-
-The RingBuffer is implemented over a single array of 10 `uint8_t`s with separate variables for the `read_index`, `write_index` and `size` (number of actual unprocessed bytes in the RingBuffer).
-
-The `read_index` variable holds the index of the array, from where we should read a byte, if the `size` > 0.
+The RingBuffer is backed by an array of 10 `uint8_t`s with separate variables for the `read_index`, `write_index` and `size` (number of actual unprocessed bytes in the RingBuffer).
 
 ```c++
-// ring_buffer.ino
-uint8_t RingBuffer::has_data() {
-    return this->size;
+// ring_buffer.h
+
+#define BUFFER_LENGTH 10
+
+class RingBuffer {
+    private:
+        volatile uint8_t buffer[BUFFER_LENGTH];
+        volatile uint8_t size;
+        uint8_t read_index;
+        uint8_t write_index;
+	...
 }
 ```
+
+The `read_index` variable holds the index we should read from, if `size > 0`.
 
 After reading a byte, the `read_index` is incremented and the `size` variable is atomically decreased.
 
@@ -240,13 +242,13 @@ uint8_t RingBuffer::get_next_elem() {
 }
 ```
 
-The atomic block around `this->size--;` is needed, because this line of code results in three instructions:
+The atomic block around `this->size--;` is needed, because this line of code consists of three instructions:
 
-* fetch the current value from SRAM into a register
+* fetch the current value from RAM into a register
 * decrement the value of the register
-* write the value to SRAM
+* write the value to RAM
 
-This sequence can be at any time interrupted by the interrupt handler, which causes data races, because in the interrupt handler we read a byte from slave and put it in the RingBuffer, while incrementing the `size` variable:
+This sequence may be interrupted at any time by our interrupt handler, which causes data races, because in the interrupt handler we write to the RingBuffer, which increments the `size` variable:
 
 ```c++
 // Called from ISR
@@ -260,6 +262,6 @@ void RingBuffer::append_elem(uint8_t elem) {
 }
 ```
 
-Note, that the `this->size++;` statement is not wrapped in an atomic block, as it already runs in an interrupt handler (which can not be interrupted by anything else).
+Note, that the `this->size++;` statement is not wrapped in an atomic block, as it already runs in an interrupt handler (which can not be interrupted).
 
 Also note, that if the RingBuffer is full, we simply drop the data (which is bad, but in practice it never happened to me).

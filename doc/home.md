@@ -13,9 +13,9 @@ Let's Split is a split keyboard, meaning that it has two sides: master (connecte
 * [Microcontroller basics](microcontroller_basics.md)
 * [Keyboard wiring](keyboard_wiring.md)
 * [Matrix scanning](matrix_scan.md)
-* [Master & Slave](master_slave.md) REVIEW
+* [Master & Slave](master_slave.md)
 * [USB HID Structure](usb_hid.md)
-* [Key Types and features](key_types.md)
+* [Key Types and features](key_types.md) - REVIEW
 * [EEPROM layout](eeprom_layout.md)
 * [SerialCommand](serial_command.md)
 * [KeyMap](keymap.md)
