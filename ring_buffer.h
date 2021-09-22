@@ -5,7 +5,7 @@
 
 class RingBuffer {
     private:
-        volatile uint8_t buffer[10];
+        volatile uint8_t buffer[BUFFER_LENGTH];
         volatile uint8_t size;
         uint8_t read_index;
         uint8_t write_index;

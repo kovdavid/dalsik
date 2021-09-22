@@ -69,9 +69,11 @@ inline static uint8_t serial_master_read() {
 inline static void serial_set_interrupt() {
     // Enable INT0
     EIMSK |= _BV(INT0);
+
     // Trigger on falling edge of INT0
-    EICRA |=  (1 << ISC01);
+    // ATmega32U4 datasheet chapter 11.1.1 - External Interrupt Control Register A - EICRA
     EICRA &= ~(1 << ISC00);
+    EICRA |=  (1 << ISC01);
 }
 
 inline static void serial_delay() {
