@@ -213,27 +213,57 @@ inline int KeyMap::key_info_compare(KeyInfo key_info1, KeyInfo key_info2) {
 
 inline uint8_t KeyMap::get_dual_key_modifier(KeyInfo key_info) {
     switch (key_info.type) {
-        case KEY_DUAL_LCTRL:  return KC_LCTRL;
-        case KEY_DUAL_LSHIFT: return KC_LSHIFT;
-        case KEY_DUAL_LALT:   return KC_LALT;
-        case KEY_DUAL_LGUI:   return KC_LGUI;
-        case KEY_DUAL_RCTRL:  return KC_RCTRL;
-        case KEY_DUAL_RSHIFT: return KC_RSHIFT;
-        case KEY_DUAL_RALT:   return KC_RALT;
-        case KEY_DUAL_RGUI:   return KC_RGUI;
+        case KEY_DUAL_SINGLE_LCTRL:
+        case KEY_DUAL_LCTRL:
+            return KC_LCTRL;
+        case KEY_DUAL_SINGLE_LSHIFT:
+        case KEY_DUAL_LSHIFT:
+            return KC_LSHIFT;
+        case KEY_DUAL_SINGLE_LALT:
+        case KEY_DUAL_LALT:
+            return KC_LALT;
+        case KEY_DUAL_SINGLE_LGUI:
+        case KEY_DUAL_LGUI:
+            return KC_LGUI;
+        case KEY_DUAL_SINGLE_RCTRL:
+        case KEY_DUAL_RCTRL:
+            return KC_RCTRL;
+        case KEY_DUAL_SINGLE_RSHIFT:
+        case KEY_DUAL_RSHIFT:
+            return KC_RSHIFT;
+        case KEY_DUAL_SINGLE_RALT:
+        case KEY_DUAL_RALT:
+            return KC_RALT;
+        case KEY_DUAL_SINGLE_RGUI:
+        case KEY_DUAL_RGUI:
+            return KC_RGUI;
     }
     return 0x00;
 }
 
 inline uint8_t KeyMap::get_dual_layer_key_layer(KeyInfo key_info) {
     switch (key_info.type) {
-        case KEY_DUAL_LAYER_1: return 1;
-        case KEY_DUAL_LAYER_2: return 2;
-        case KEY_DUAL_LAYER_3: return 3;
-        case KEY_DUAL_LAYER_4: return 4;
-        case KEY_DUAL_LAYER_5: return 5;
-        case KEY_DUAL_LAYER_6: return 6;
-        case KEY_DUAL_LAYER_7: return 7;
+        case KEY_DUAL_LAYER_1:
+        case KEY_DUAL_LAYER_SINGLE_1:
+            return 1;
+        case KEY_DUAL_LAYER_2:
+        case KEY_DUAL_LAYER_SINGLE_2:
+            return 2;
+        case KEY_DUAL_LAYER_3:
+        case KEY_DUAL_LAYER_SINGLE_3:
+            return 3;
+        case KEY_DUAL_LAYER_4:
+        case KEY_DUAL_LAYER_SINGLE_4:
+            return 4;
+        case KEY_DUAL_LAYER_5:
+        case KEY_DUAL_LAYER_SINGLE_5:
+            return 5;
+        case KEY_DUAL_LAYER_6:
+        case KEY_DUAL_LAYER_SINGLE_6:
+            return 6;
+        case KEY_DUAL_LAYER_7:
+        case KEY_DUAL_LAYER_SINGLE_7:
+            return 7;
     }
     return 0;
 }
@@ -272,8 +302,16 @@ inline uint8_t KeyMap::is_dual_key(KeyInfo key_info) {
     return KeyMap::is_type_between(key_info, KEY_DUAL_LCTRL, KEY_DUAL_RALT);
 }
 
+inline uint8_t KeyMap::is_dual_single_key(KeyInfo key_info) {
+    return KeyMap::is_type_between(key_info, KEY_DUAL_SINGLE_LCTRL, KEY_DUAL_SINGLE_RALT);
+}
+
 inline uint8_t KeyMap::is_dual_layer_key(KeyInfo key_info) {
     return KeyMap::is_type_between(key_info, KEY_DUAL_LAYER_1, KEY_DUAL_LAYER_7);
+}
+
+inline uint8_t KeyMap::is_dual_layer_single_key(KeyInfo key_info) {
+    return KeyMap::is_type_between(key_info, KEY_DUAL_LAYER_SINGLE_1, KEY_DUAL_LAYER_SINGLE_7);
 }
 
 inline uint8_t KeyMap::is_multimedia_key(KeyInfo key_info) {

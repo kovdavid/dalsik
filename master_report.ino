@@ -104,8 +104,12 @@ void MasterReport::press(KeyInfo key_info) {
         this->press_system_key(key_info);
     } else if (KeyMap::is_dual_key(key_info)) {
         this->press_dual_key(key_info);
+    } else if (KeyMap::is_dual_single_key(key_info)) {
+        this->press_dual_single_key(key_info);
     } else if (KeyMap::is_dual_layer_key(key_info)) {
         this->press_dual_layer_key(key_info);
+    } else if (KeyMap::is_dual_layer_single_key(key_info)) {
+        this->press_dual_layer_single_key(key_info);
     } else if (KeyMap::is_multimedia_key(key_info)) {
         this->press_multimedia_key(key_info);
     } else if (KeyMap::is_key_with_mod(key_info)) {
@@ -134,9 +138,9 @@ void MasterReport::release(KeyInfo key_info) {
         this->release_tapdance_key(key_info);
     } else if (key_info.type == KEY_SYSTEM)  {
         this->release_system_key(key_info);
-    } else if (KeyMap::is_dual_key(key_info)) {
+    } else if (KeyMap::is_dual_key(key_info) || KeyMap::is_dual_single_key(key_info)) {
         this->release_dual_key(key_info);
-    } else if (KeyMap::is_dual_layer_key(key_info)) {
+    } else if (KeyMap::is_dual_layer_key(key_info) || KeyMap::is_dual_layer_single_key(key_info)) {
         this->release_dual_layer_key(key_info);
     } else if (KeyMap::is_multimedia_key(key_info)) {
         this->release_multimedia_key(key_info);
@@ -203,6 +207,19 @@ inline void MasterReport::press_dual_key(KeyInfo key_info) {
     }
 }
 
+inline void MasterReport::press_dual_single_key(KeyInfo key_info) {
+    this->dual_key_state.last_press_ts = millis();
+    this->dual_key_state.key_info = key_info;
+
+    if (this->num_keys_pressed > 1) {
+        this->dual_key_state.mode = DUAL_MODE_PRESS_KEY;
+        this->press_normal_key(key_info);
+        this->send_hid_report();
+    } else {
+        this->dual_key_state.mode = DUAL_MODE_PENDING;
+    }
+}
+
 inline void MasterReport::release_dual_key(KeyInfo key_info) {
     if (KeyMap::key_info_compare(key_info, this->dual_key_state.key_info) == 0) {
         if (this->dual_key_state.mode == DUAL_MODE_HOLD_MODIFIER) {
@@ -238,6 +255,19 @@ inline void MasterReport::press_dual_layer_key(KeyInfo key_info) {
         this->dual_layer_key_state.mode = DUAL_MODE_HOLD_LAYER;
         uint8_t layer = KeyMap::get_dual_layer_key_layer(key_info);
         this->press_layer_key(layer);
+    }
+}
+
+inline void MasterReport::press_dual_layer_single_key(KeyInfo key_info) {
+    this->dual_layer_key_state.last_press_ts = millis();
+    this->dual_layer_key_state.key_info = key_info;
+
+    if (this->num_keys_pressed > 1) {
+        this->dual_layer_key_state.mode = DUAL_MODE_PRESS_KEY;
+        this->press_normal_key(key_info);
+        this->send_hid_report();
+    } else {
+        this->dual_layer_key_state.mode = DUAL_MODE_PENDING;
     }
 }
 
