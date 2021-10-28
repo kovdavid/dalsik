@@ -356,6 +356,21 @@ inline const __FlashStringHelper* KeyMap::key_type_to_string(KeyInfo key_info) {
     else if (key_info.type == KEY_DUAL_LAYER_5)         { return F("KEY_DUAL_LAYER_5");         }
     else if (key_info.type == KEY_DUAL_LAYER_6)         { return F("KEY_DUAL_LAYER_6");         }
     else if (key_info.type == KEY_DUAL_LAYER_7)         { return F("KEY_DUAL_LAYER_7");         }
+    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_1)  { return F("KEY_DUAL_LAYER_SINGLE_1");  }
+    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_2)  { return F("KEY_DUAL_LAYER_SINGLE_2");  }
+    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_3)  { return F("KEY_DUAL_LAYER_SINGLE_3");  }
+    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_4)  { return F("KEY_DUAL_LAYER_SINGLE_4");  }
+    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_5)  { return F("KEY_DUAL_LAYER_SINGLE_5");  }
+    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_6)  { return F("KEY_DUAL_LAYER_SINGLE_6");  }
+    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_7)  { return F("KEY_DUAL_LAYER_SINGLE_7");  }
+    else if (key_info.type == KEY_DUAL_SINGLE_LCTRL)    { return F("KEY_DUAL_SINGLE_LCTRL");    }
+    else if (key_info.type == KEY_DUAL_SINGLE_RCTRL)    { return F("KEY_DUAL_SINGLE_RCTRL");    }
+    else if (key_info.type == KEY_DUAL_SINGLE_LSHIFT)   { return F("KEY_DUAL_SINGLE_LSHIFT");   }
+    else if (key_info.type == KEY_DUAL_SINGLE_RSHIFT)   { return F("KEY_DUAL_SINGLE_RSHIFT");   }
+    else if (key_info.type == KEY_DUAL_SINGLE_LGUI)     { return F("KEY_DUAL_SINGLE_LGUI");     }
+    else if (key_info.type == KEY_DUAL_SINGLE_RGUI)     { return F("KEY_DUAL_SINGLE_RGUI");     }
+    else if (key_info.type == KEY_DUAL_SINGLE_LALT)     { return F("KEY_DUAL_SINGLE_LALT");     }
+    else if (key_info.type == KEY_DUAL_SINGLE_RALT)     { return F("KEY_DUAL_SINGLE_RALT");     }
     else if (key_info.type == KEY_TRANSPARENT)          { return F("KEY_TRANSPARENT");          }
     else                                                { return F("KEY_TYPE_UNKNOWN");         }
 }
