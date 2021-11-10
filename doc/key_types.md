@@ -23,6 +23,14 @@ If I tap a TapDance key only once, then the first functionality is triggered. If
 
 As each key takes 2 bytes in the EEPROM and a TapDance key can be configured for 3 different keys, the TapDance key mapping is located at a specific offset in the EEPROM, while each group is indexed, starting from 0.
 
+# Dual keys
+
+Several types of dual keys are supported, which can do 2 different things. They can act as a modifier or layer press on some occasions and as a normal key as well.
+
+Basically when such a dual key is pressed and released on its own, then it acts as a normal key. The same is true, when this given key is pressed for more, than `DUAL_MODE_TIMEOUT_MS` milliseconds (see `dalsik.h`). These two conditions handle taps and long presses (which then trigger repeated "press" of the key by the operating system).
+
+The secondary functionality (modifier, layer press) is activated only when a different key is pressed after pressing the dual key before `DUAL_MODE_TIMEOUT_MS` milliseconds.
+
 # Key types
 
 The supported key types of Dalsik are the following:
@@ -135,6 +143,40 @@ The supported key types of Dalsik are the following:
 * `#define KEY_DUAL_LAYER_6 0x1F`
 
 * `#define KEY_DUAL_LAYER_7 0x20`
+
+* `#define KEY_DUAL_SINGLE_LCTRL 0x28`
+
+  * `DUAL_SINGLE` keys can act as a modifier (in this case as a `KEY_DUAL_LCTRL`) only, when they are the first keys to be pressed. If such a key is pressed after another key, then the primary key is activated right away.
+
+* `#define KEY_DUAL_SINGLE_RCTRL 0x29`
+
+* `#define KEY_DUAL_SINGLE_LSHIFT 0x2A`
+
+* `#define KEY_DUAL_SINGLE_RSHIFT 0x2B`
+
+* `#define KEY_DUAL_SINGLE_LGUI 0x2C`
+
+* `#define KEY_DUAL_SINGLE_RGUI 0x2D`
+
+* `#define KEY_DUAL_SINGLE_LALT 0x2E`
+
+* `#define KEY_DUAL_SINGLE_RALT 0x2F`
+
+* `#define KEY_DUAL_LAYER_SINGLE_1 0x21`
+
+  * `DUAL_SINGLE_LAYER` keys can act as a layer press (in this case as a `KEY_DUAL_LAYER_1`) only, when they are the first keys to be pressed. If such a key is pressed after another key, then the primary key is activated right away.
+
+* `#define KEY_DUAL_LAYER_SINGLE_2 0x22`
+
+* `#define KEY_DUAL_LAYER_SINGLE_3 0x23`
+
+* `#define KEY_DUAL_LAYER_SINGLE_4 0x24`
+
+* `#define KEY_DUAL_LAYER_SINGLE_5 0x25`
+
+* `#define KEY_DUAL_LAYER_SINGLE_6 0x26`
+
+* `#define KEY_DUAL_LAYER_SINGLE_7 0x27`
 
 * `#define KEY_TRANSPARENT 0xFF`
 
