@@ -34,17 +34,17 @@ Every supported key type is in [key_definitions.h](https://github.com/DavsX/dals
 
 * KEY_UNSET - Has no effect
 * KEY_NORMAL - Basic keys, like modifiers (CTRL,ALT,SHIFT,GUI), letters, numbers etc.
-* KEY_DUAL_LCTRL - Left CTRL on hold, other KEY_NORMAL on tap
-* KEY_DUAL_RCTRL - Right CTRL on hold, other KEY_NORMAL on tap
-* KEY_DUAL_LSHIFT - Left SHIFT on hold, other KEY_NORMAL on tap
-* KEY_DUAL_RSHIFT - Right SHIFT on hold, other KEY_NORMAL on tap
-* KEY_DUAL_LGUI - Left GUI on hold, other KEY_NORMAL on tap
-* KEY_DUAL_RGUI - Right GUI on hold, other KEY_NORMAL on tap
-* KEY_DUAL_LALT - Left ALT on hold, other KEY_NORMAL on tap
-* KEY_DUAL_RALT - Right ALT on hold, other KEY_NORMAL on tap
+* KEY_DUAL_MOD_LCTRL - Left CTRL on hold, other KEY_NORMAL on tap
+* KEY_DUAL_MOD_RCTRL - Right CTRL on hold, other KEY_NORMAL on tap
+* KEY_DUAL_MOD_LSHIFT - Left SHIFT on hold, other KEY_NORMAL on tap
+* KEY_DUAL_MOD_RSHIFT - Right SHIFT on hold, other KEY_NORMAL on tap
+* KEY_DUAL_MOD_LGUI - Left GUI on hold, other KEY_NORMAL on tap
+* KEY_DUAL_MOD_RGUI - Right GUI on hold, other KEY_NORMAL on tap
+* KEY_DUAL_MOD_LALT - Left ALT on hold, other KEY_NORMAL on tap
+* KEY_DUAL_MOD_RALT - Right ALT on hold, other KEY_NORMAL on tap
 * KEY_LAYER_PRESS - Switch to other layer, while the key is pressed
 * KEY_LAYER_TOGGLE - Switch to other layer, until this key is pressed again. Other KEY_LAYER_PRESS keys can momentarily change layers, but after those are release, the current layer stays at the toggled layer
-* KEY_LAYER_HOLD_OR_TOGGLE - Switch momentarily to other layer if held. Toggle layer on tap
+* KEY_LAYER_TOGGLE_OR_HOLD - Switch momentarily to other layer if held. Toggle layer on tap
 * KEY_WITH_MOD_LCTRL - Press some KEY_NORMAL with Left CTRL
 * KEY_WITH_MOD_RCTRL - Press some KEY_NORMAL with Left CTRL
 * KEY_WITH_MOD_LSHIFT - Press some KEY_NORMAL with Left SHIFT

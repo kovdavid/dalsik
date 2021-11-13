@@ -51,26 +51,26 @@ The supported key types of Dalsik are the following:
     #define KC_A 0x04
     ```
 
-* `#define KEY_DUAL_LCTRL 0x02`
+* `#define KEY_DUAL_MOD_LCTRL 0x02`
 
   * If the key is pressed and a different key is pressed before releasing this one, then this key acts as left CTRL
-    * Pressing `KEY_DUAL_LCTRL` -> Pressing "a" -> Releasing "a" -> Releasing  `KEY_DUAL_LCTRL` sends "CTRL+a"
+    * Pressing `KEY_DUAL_MOD_LCTRL` -> Pressing "a" -> Releasing "a" -> Releasing  `KEY_DUAL_MOD_LCTRL` sends "CTRL+a"
   * If the key is pressed on its own, then it acts as `KEY_NORMAL` with this keys value.
     * So a key `0x02 0x04` act as `KEY_NORMAL - KC_A` when pressed on its own
 
-* `#define KEY_DUAL_RCTRL 0x03`
+* `#define KEY_DUAL_MOD_RCTRL 0x03`
 
-* `#define KEY_DUAL_LSHIFT 0x04`
+* `#define KEY_DUAL_MOD_LSHIFT 0x04`
 
-* `#define KEY_DUAL_RSHIFT 0x05`
+* `#define KEY_DUAL_MOD_RSHIFT 0x05`
 
-* `#define KEY_DUAL_LGUI 0x06`
+* `#define KEY_DUAL_MOD_LGUI 0x06`
 
-* `#define KEY_DUAL_RGUI 0x07`
+* `#define KEY_DUAL_MOD_RGUI 0x07`
 
-* `#define KEY_DUAL_LALT 0x08`
+* `#define KEY_DUAL_MOD_LALT 0x08`
 
-* `#define KEY_DUAL_RALT 0x09`
+* `#define KEY_DUAL_MOD_RALT 0x09`
 
 * `#define KEY_LAYER_PRESS 0x0A`
 
@@ -81,7 +81,7 @@ The supported key types of Dalsik are the following:
 
   * Toggles the keyboard's layer when tapped. The changed layer remains active even after releasing this key. The layer is deactivated, when this key is tapped again.
 
-* `#define KEY_LAYER_HOLD_OR_TOGGLE 0x0C`
+* `#define KEY_LAYER_TOGGLE_OR_HOLD 0x0C`
 
   * Combines `KEY_LAYER_PRESS` and `KEY_LAYER_TOGGLE`.
   * When tapped on its own, this key acts like `KEY_LAYER_TOGGLE`
@@ -146,7 +146,7 @@ The supported key types of Dalsik are the following:
 
 * `#define KEY_DUAL_SINGLE_LCTRL 0x28`
 
-  * `DUAL_SINGLE` keys can act as a modifier (in this case as a `KEY_DUAL_LCTRL`) only, when they are the first keys to be pressed. If such a key is pressed after another key, then the primary key is activated right away.
+  * `DUAL_SINGLE` keys can act as a modifier (in this case as a `KEY_DUAL_MOD_LCTRL`) only, when they are the first keys to be pressed. If such a key is pressed after another key, then the primary key is activated right away.
 
 * `#define KEY_DUAL_SINGLE_RCTRL 0x29`
 

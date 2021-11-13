@@ -1,0 +1,56 @@
+BUILD_ROOT = build/test
+
+CFLAGS =
+CFLAGS += -g
+CFLAGS += -std=gnu++14
+CFLAGS += -w
+CFLAGS += -Wall
+CFLAGS += -Wextra
+CFLAGS += -Wfatal-errors
+CFLAGS += -O0
+CFLAGS += -fdata-sections
+CFLAGS += -fdiagnostics-color=always
+CFLAGS += -ffunction-sections
+CFLAGS += -flto
+CFLAGS += -fno-devirtualize
+CFLAGS += -fno-threadsafe-statics
+CFLAGS += -fpermissive
+CFLAGS += -pedantic
+CFLAGS += -include test/mocks/misc.h
+
+HEADERS = $(dir $(wildcard test/*/ test/*/*/ lib/*/))
+
+COMPILER := $(CXX) $(CFLAGS) $(addprefix  -I,$(HEADERS))
+
+$(BUILD_ROOT):
+	mkdir -p $(BUILD_ROOT)
+
+$(BUILD_ROOT)/%.o: test/%
+	$(COMPILER) -c $< -o $@
+
+$(BUILD_ROOT)/%.o: lib/*/%
+	$(COMPILER) -c $< -o $@
+
+$(BUILD_ROOT)/%.o: test/*/%
+	$(COMPILER) -c $< -o $@
+
+OBJ = \
+	  test_master_report.cpp.o \
+	  mock_eeprom.cpp.o \
+	  dalsik_eeprom.cpp.o \
+	  master_report.cpp.o \
+	  keymap.cpp.o \
+	  array_utils.cpp.o \
+	  HID.cpp.o \
+	  Serial.cpp.o
+
+test_master_report: $(addprefix $(BUILD_ROOT)/, $(OBJ)) | $(BUILD_ROOT)
+	echo ">> Linking $(BUILD_ROOT)/test_master_report"
+	$(COMPILER) $^ -o $(BUILD_ROOT)/test_master_report
+
+test: $(BUILD_ROOT) test_master_report
+	$(BUILD_ROOT)/test_master_report
+
+# https://www.youtube.com/watch?v=NPdagdEOBnI
+# https://github.com/JeremiahK96/auto-makefile/blob/main/Makefile
+# https://gist.github.com/dvdfreitag/70ca95aae0b50cdff7f4cc87649a52ce
