@@ -66,8 +66,8 @@ class MasterReport {
         inline void press_system_key(KeyInfo key_info);
         inline void release_system_key(KeyInfo key_info);
 
-        inline void press_dual_single_key(KeyInfo key_info);
-        inline void press_dual_layer_single_key(KeyInfo key_info);
+        inline void press_single_dual_key(KeyInfo key_info);
+        inline void press_single_dual_layer_key(KeyInfo key_info);
 
         inline void press_dual_key(KeyInfo key_info);
         inline void release_dual_key(KeyInfo key_info);

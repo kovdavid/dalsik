@@ -213,29 +213,29 @@ inline int KeyMap::key_info_compare(KeyInfo key_info1, KeyInfo key_info2) {
 
 inline uint8_t KeyMap::get_dual_key_modifier(KeyInfo key_info) {
     switch (key_info.type) {
-        case KEY_DUAL_SINGLE_LCTRL:
         case KEY_DUAL_LCTRL:
+        case KEY_SINGLE_DUAL_LCTRL:
             return KC_LCTRL;
-        case KEY_DUAL_SINGLE_LSHIFT:
         case KEY_DUAL_LSHIFT:
+        case KEY_SINGLE_DUAL_LSHIFT:
             return KC_LSHIFT;
-        case KEY_DUAL_SINGLE_LALT:
         case KEY_DUAL_LALT:
+        case KEY_SINGLE_DUAL_LALT:
             return KC_LALT;
-        case KEY_DUAL_SINGLE_LGUI:
         case KEY_DUAL_LGUI:
+        case KEY_SINGLE_DUAL_LGUI:
             return KC_LGUI;
-        case KEY_DUAL_SINGLE_RCTRL:
         case KEY_DUAL_RCTRL:
+        case KEY_SINGLE_DUAL_RCTRL:
             return KC_RCTRL;
-        case KEY_DUAL_SINGLE_RSHIFT:
         case KEY_DUAL_RSHIFT:
+        case KEY_SINGLE_DUAL_RSHIFT:
             return KC_RSHIFT;
-        case KEY_DUAL_SINGLE_RALT:
         case KEY_DUAL_RALT:
+        case KEY_SINGLE_DUAL_RALT:
             return KC_RALT;
-        case KEY_DUAL_SINGLE_RGUI:
         case KEY_DUAL_RGUI:
+        case KEY_SINGLE_DUAL_RGUI:
             return KC_RGUI;
     }
     return 0x00;
@@ -244,25 +244,25 @@ inline uint8_t KeyMap::get_dual_key_modifier(KeyInfo key_info) {
 inline uint8_t KeyMap::get_dual_layer_key_layer(KeyInfo key_info) {
     switch (key_info.type) {
         case KEY_DUAL_LAYER_1:
-        case KEY_DUAL_LAYER_SINGLE_1:
+        case KEY_SINGLE_DUAL_LAYER_1:
             return 1;
         case KEY_DUAL_LAYER_2:
-        case KEY_DUAL_LAYER_SINGLE_2:
+        case KEY_SINGLE_DUAL_LAYER_2:
             return 2;
         case KEY_DUAL_LAYER_3:
-        case KEY_DUAL_LAYER_SINGLE_3:
+        case KEY_SINGLE_DUAL_LAYER_3:
             return 3;
         case KEY_DUAL_LAYER_4:
-        case KEY_DUAL_LAYER_SINGLE_4:
+        case KEY_SINGLE_DUAL_LAYER_4:
             return 4;
         case KEY_DUAL_LAYER_5:
-        case KEY_DUAL_LAYER_SINGLE_5:
+        case KEY_SINGLE_DUAL_LAYER_5:
             return 5;
         case KEY_DUAL_LAYER_6:
-        case KEY_DUAL_LAYER_SINGLE_6:
+        case KEY_SINGLE_DUAL_LAYER_6:
             return 6;
         case KEY_DUAL_LAYER_7:
-        case KEY_DUAL_LAYER_SINGLE_7:
+        case KEY_SINGLE_DUAL_LAYER_7:
             return 7;
     }
     return 0;
@@ -302,16 +302,16 @@ inline uint8_t KeyMap::is_dual_key(KeyInfo key_info) {
     return KeyMap::is_type_between(key_info, KEY_DUAL_LCTRL, KEY_DUAL_RALT);
 }
 
-inline uint8_t KeyMap::is_dual_single_key(KeyInfo key_info) {
-    return KeyMap::is_type_between(key_info, KEY_DUAL_SINGLE_LCTRL, KEY_DUAL_SINGLE_RALT);
+inline uint8_t KeyMap::is_single_dual_key(KeyInfo key_info) {
+    return KeyMap::is_type_between(key_info, KEY_SINGLE_DUAL_LCTRL, KEY_SINGLE_DUAL_RALT);
 }
 
 inline uint8_t KeyMap::is_dual_layer_key(KeyInfo key_info) {
     return KeyMap::is_type_between(key_info, KEY_DUAL_LAYER_1, KEY_DUAL_LAYER_7);
 }
 
-inline uint8_t KeyMap::is_dual_layer_single_key(KeyInfo key_info) {
-    return KeyMap::is_type_between(key_info, KEY_DUAL_LAYER_SINGLE_1, KEY_DUAL_LAYER_SINGLE_7);
+inline uint8_t KeyMap::is_single_dual_layer_key(KeyInfo key_info) {
+    return KeyMap::is_type_between(key_info, KEY_SINGLE_DUAL_LAYER_1, KEY_SINGLE_DUAL_LAYER_7);
 }
 
 inline uint8_t KeyMap::is_multimedia_key(KeyInfo key_info) {
@@ -323,54 +323,54 @@ inline uint8_t KeyMap::is_key_with_mod(KeyInfo key_info) {
 }
 
 inline const __FlashStringHelper* KeyMap::key_type_to_string(KeyInfo key_info) {
-         if (key_info.type == KEY_UNSET)                { return F("KEY_UNSET");                }
-    else if (key_info.type == KEY_NORMAL)               { return F("KEY_NORMAL");               }
-    else if (key_info.type == KEY_DUAL_LCTRL)           { return F("KEY_DUAL_LCTRL");           }
-    else if (key_info.type == KEY_DUAL_RCTRL)           { return F("KEY_DUAL_RCTRL");           }
-    else if (key_info.type == KEY_DUAL_LSHIFT)          { return F("KEY_DUAL_LSHIFT");          }
-    else if (key_info.type == KEY_DUAL_RSHIFT)          { return F("KEY_DUAL_RSHIFT");          }
-    else if (key_info.type == KEY_DUAL_LGUI)            { return F("KEY_DUAL_LGUI");            }
-    else if (key_info.type == KEY_DUAL_RGUI)            { return F("KEY_DUAL_RGUI");            }
-    else if (key_info.type == KEY_DUAL_LALT)            { return F("KEY_DUAL_LALT");            }
-    else if (key_info.type == KEY_DUAL_RALT)            { return F("KEY_DUAL_RALT");            }
-    else if (key_info.type == KEY_LAYER_PRESS)          { return F("KEY_LAYER_PRESS");          }
-    else if (key_info.type == KEY_LAYER_TOGGLE)         { return F("KEY_LAYER_TOGGLE");         }
-    else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) { return F("KEY_LAYER_HOLD_OR_TOGGLE"); }
-    else if (key_info.type == KEY_WITH_MOD_LCTRL)       { return F("KEY_WITH_MOD_LCTRL");       }
-    else if (key_info.type == KEY_WITH_MOD_RCTRL)       { return F("KEY_WITH_MOD_RCTRL");       }
-    else if (key_info.type == KEY_WITH_MOD_LSHIFT)      { return F("KEY_WITH_MOD_LSHIFT");      }
-    else if (key_info.type == KEY_WITH_MOD_RSHIFT)      { return F("KEY_WITH_MOD_RSHIFT");      }
-    else if (key_info.type == KEY_WITH_MOD_LGUI)        { return F("KEY_WITH_MOD_LGUI");        }
-    else if (key_info.type == KEY_WITH_MOD_RGUI)        { return F("KEY_WITH_MOD_RGUI");        }
-    else if (key_info.type == KEY_WITH_MOD_LALT)        { return F("KEY_WITH_MOD_LALT");        }
-    else if (key_info.type == KEY_WITH_MOD_RALT)        { return F("KEY_WITH_MOD_RALT");        }
-    else if (key_info.type == KEY_SYSTEM)               { return F("KEY_SYSTEM");               }
-    else if (key_info.type == KEY_MULTIMEDIA_0)         { return F("KEY_MULTIMEDIA_0");         }
-    else if (key_info.type == KEY_MULTIMEDIA_1)         { return F("KEY_MULTIMEDIA_1");         }
-    else if (key_info.type == KEY_MULTIMEDIA_2)         { return F("KEY_MULTIMEDIA_2");         }
-    else if (key_info.type == KEY_TAPDANCE)             { return F("KEY_TAPDANCE");             }
-    else if (key_info.type == KEY_DUAL_LAYER_1)         { return F("KEY_DUAL_LAYER_1");         }
-    else if (key_info.type == KEY_DUAL_LAYER_2)         { return F("KEY_DUAL_LAYER_2");         }
-    else if (key_info.type == KEY_DUAL_LAYER_3)         { return F("KEY_DUAL_LAYER_3");         }
-    else if (key_info.type == KEY_DUAL_LAYER_4)         { return F("KEY_DUAL_LAYER_4");         }
-    else if (key_info.type == KEY_DUAL_LAYER_5)         { return F("KEY_DUAL_LAYER_5");         }
-    else if (key_info.type == KEY_DUAL_LAYER_6)         { return F("KEY_DUAL_LAYER_6");         }
-    else if (key_info.type == KEY_DUAL_LAYER_7)         { return F("KEY_DUAL_LAYER_7");         }
-    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_1)  { return F("KEY_DUAL_LAYER_SINGLE_1");  }
-    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_2)  { return F("KEY_DUAL_LAYER_SINGLE_2");  }
-    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_3)  { return F("KEY_DUAL_LAYER_SINGLE_3");  }
-    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_4)  { return F("KEY_DUAL_LAYER_SINGLE_4");  }
-    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_5)  { return F("KEY_DUAL_LAYER_SINGLE_5");  }
-    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_6)  { return F("KEY_DUAL_LAYER_SINGLE_6");  }
-    else if (key_info.type == KEY_DUAL_LAYER_SINGLE_7)  { return F("KEY_DUAL_LAYER_SINGLE_7");  }
-    else if (key_info.type == KEY_DUAL_SINGLE_LCTRL)    { return F("KEY_DUAL_SINGLE_LCTRL");    }
-    else if (key_info.type == KEY_DUAL_SINGLE_RCTRL)    { return F("KEY_DUAL_SINGLE_RCTRL");    }
-    else if (key_info.type == KEY_DUAL_SINGLE_LSHIFT)   { return F("KEY_DUAL_SINGLE_LSHIFT");   }
-    else if (key_info.type == KEY_DUAL_SINGLE_RSHIFT)   { return F("KEY_DUAL_SINGLE_RSHIFT");   }
-    else if (key_info.type == KEY_DUAL_SINGLE_LGUI)     { return F("KEY_DUAL_SINGLE_LGUI");     }
-    else if (key_info.type == KEY_DUAL_SINGLE_RGUI)     { return F("KEY_DUAL_SINGLE_RGUI");     }
-    else if (key_info.type == KEY_DUAL_SINGLE_LALT)     { return F("KEY_DUAL_SINGLE_LALT");     }
-    else if (key_info.type == KEY_DUAL_SINGLE_RALT)     { return F("KEY_DUAL_SINGLE_RALT");     }
-    else if (key_info.type == KEY_TRANSPARENT)          { return F("KEY_TRANSPARENT");          }
-    else                                                { return F("KEY_TYPE_UNKNOWN");         }
+         if (key_info.type == KEY_UNSET)                  { return F("KEY_UNSET");                }
+    else if (key_info.type == KEY_NORMAL)                 { return F("KEY_NORMAL");               }
+    else if (key_info.type == KEY_DUAL_LCTRL)             { return F("KEY_DUAL_LCTRL");           }
+    else if (key_info.type == KEY_DUAL_RCTRL)             { return F("KEY_DUAL_RCTRL");           }
+    else if (key_info.type == KEY_DUAL_LSHIFT)            { return F("KEY_DUAL_LSHIFT");          }
+    else if (key_info.type == KEY_DUAL_RSHIFT)            { return F("KEY_DUAL_RSHIFT");          }
+    else if (key_info.type == KEY_DUAL_LGUI)              { return F("KEY_DUAL_LGUI");            }
+    else if (key_info.type == KEY_DUAL_RGUI)              { return F("KEY_DUAL_RGUI");            }
+    else if (key_info.type == KEY_DUAL_LALT)              { return F("KEY_DUAL_LALT");            }
+    else if (key_info.type == KEY_DUAL_RALT)              { return F("KEY_DUAL_RALT");            }
+    else if (key_info.type == KEY_LAYER_PRESS)            { return F("KEY_LAYER_PRESS");          }
+    else if (key_info.type == KEY_LAYER_TOGGLE)           { return F("KEY_LAYER_TOGGLE");         }
+    else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE)   { return F("KEY_LAYER_HOLD_OR_TOGGLE"); }
+    else if (key_info.type == KEY_WITH_MOD_LCTRL)         { return F("KEY_WITH_MOD_LCTRL");       }
+    else if (key_info.type == KEY_WITH_MOD_RCTRL)         { return F("KEY_WITH_MOD_RCTRL");       }
+    else if (key_info.type == KEY_WITH_MOD_LSHIFT)        { return F("KEY_WITH_MOD_LSHIFT");      }
+    else if (key_info.type == KEY_WITH_MOD_RSHIFT)        { return F("KEY_WITH_MOD_RSHIFT");      }
+    else if (key_info.type == KEY_WITH_MOD_LGUI)          { return F("KEY_WITH_MOD_LGUI");        }
+    else if (key_info.type == KEY_WITH_MOD_RGUI)          { return F("KEY_WITH_MOD_RGUI");        }
+    else if (key_info.type == KEY_WITH_MOD_LALT)          { return F("KEY_WITH_MOD_LALT");        }
+    else if (key_info.type == KEY_WITH_MOD_RALT)          { return F("KEY_WITH_MOD_RALT");        }
+    else if (key_info.type == KEY_SYSTEM)                 { return F("KEY_SYSTEM");               }
+    else if (key_info.type == KEY_MULTIMEDIA_0)           { return F("KEY_MULTIMEDIA_0");         }
+    else if (key_info.type == KEY_MULTIMEDIA_1)           { return F("KEY_MULTIMEDIA_1");         }
+    else if (key_info.type == KEY_MULTIMEDIA_2)           { return F("KEY_MULTIMEDIA_2");         }
+    else if (key_info.type == KEY_TAPDANCE)               { return F("KEY_TAPDANCE");             }
+    else if (key_info.type == KEY_DUAL_LAYER_1)           { return F("KEY_DUAL_LAYER_1");         }
+    else if (key_info.type == KEY_DUAL_LAYER_2)           { return F("KEY_DUAL_LAYER_2");         }
+    else if (key_info.type == KEY_DUAL_LAYER_3)           { return F("KEY_DUAL_LAYER_3");         }
+    else if (key_info.type == KEY_DUAL_LAYER_4)           { return F("KEY_DUAL_LAYER_4");         }
+    else if (key_info.type == KEY_DUAL_LAYER_5)           { return F("KEY_DUAL_LAYER_5");         }
+    else if (key_info.type == KEY_DUAL_LAYER_6)           { return F("KEY_DUAL_LAYER_6");         }
+    else if (key_info.type == KEY_DUAL_LAYER_7)           { return F("KEY_DUAL_LAYER_7");         }
+    else if (key_info.type == KEY_SINGLE_DUAL_LAYER_1)    { return F("KEY_SINGLE_DUAL_LAYER_1");  }
+    else if (key_info.type == KEY_SINGLE_DUAL_LAYER_2)    { return F("KEY_SINGLE_DUAL_LAYER_2");  }
+    else if (key_info.type == KEY_SINGLE_DUAL_LAYER_3)    { return F("KEY_SINGLE_DUAL_LAYER_3");  }
+    else if (key_info.type == KEY_SINGLE_DUAL_LAYER_4)    { return F("KEY_SINGLE_DUAL_LAYER_4");  }
+    else if (key_info.type == KEY_SINGLE_DUAL_LAYER_5)    { return F("KEY_SINGLE_DUAL_LAYER_5");  }
+    else if (key_info.type == KEY_SINGLE_DUAL_LAYER_6)    { return F("KEY_SINGLE_DUAL_LAYER_6");  }
+    else if (key_info.type == KEY_SINGLE_DUAL_LAYER_7)    { return F("KEY_SINGLE_DUAL_LAYER_7");  }
+    else if (key_info.type == KEY_SINGLE_DUAL_LCTRL)      { return F("KEY_SINGLE_DUAL_LCTRL");    }
+    else if (key_info.type == KEY_SINGLE_DUAL_RCTRL)      { return F("KEY_SINGLE_DUAL_RCTRL");    }
+    else if (key_info.type == KEY_SINGLE_DUAL_LSHIFT)     { return F("KEY_SINGLE_DUAL_LSHIFT");   }
+    else if (key_info.type == KEY_SINGLE_DUAL_RSHIFT)     { return F("KEY_SINGLE_DUAL_RSHIFT");   }
+    else if (key_info.type == KEY_SINGLE_DUAL_LGUI)       { return F("KEY_SINGLE_DUAL_LGUI");     }
+    else if (key_info.type == KEY_SINGLE_DUAL_RGUI)       { return F("KEY_SINGLE_DUAL_RGUI");     }
+    else if (key_info.type == KEY_SINGLE_DUAL_LALT)       { return F("KEY_SINGLE_DUAL_LALT");     }
+    else if (key_info.type == KEY_SINGLE_DUAL_RALT)       { return F("KEY_SINGLE_DUAL_RALT");     }
+    else if (key_info.type == KEY_TRANSPARENT)            { return F("KEY_TRANSPARENT");          }
+    else                                                  { return F("KEY_TYPE_UNKNOWN");         }
 }

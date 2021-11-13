@@ -104,12 +104,12 @@ void MasterReport::press(KeyInfo key_info) {
         this->press_system_key(key_info);
     } else if (KeyMap::is_dual_key(key_info)) {
         this->press_dual_key(key_info);
-    } else if (KeyMap::is_dual_single_key(key_info)) {
-        this->press_dual_single_key(key_info);
+    } else if (KeyMap::is_single_dual_key(key_info)) {
+        this->press_single_dual_key(key_info);
     } else if (KeyMap::is_dual_layer_key(key_info)) {
         this->press_dual_layer_key(key_info);
-    } else if (KeyMap::is_dual_layer_single_key(key_info)) {
-        this->press_dual_layer_single_key(key_info);
+    } else if (KeyMap::is_single_dual_layer_key(key_info)) {
+        this->press_single_dual_layer_key(key_info);
     } else if (KeyMap::is_multimedia_key(key_info)) {
         this->press_multimedia_key(key_info);
     } else if (KeyMap::is_key_with_mod(key_info)) {
@@ -138,9 +138,9 @@ void MasterReport::release(KeyInfo key_info) {
         this->release_tapdance_key(key_info);
     } else if (key_info.type == KEY_SYSTEM)  {
         this->release_system_key(key_info);
-    } else if (KeyMap::is_dual_key(key_info) || KeyMap::is_dual_single_key(key_info)) {
+    } else if (KeyMap::is_dual_key(key_info) || KeyMap::is_single_dual_key(key_info)) {
         this->release_dual_key(key_info);
-    } else if (KeyMap::is_dual_layer_key(key_info) || KeyMap::is_dual_layer_single_key(key_info)) {
+    } else if (KeyMap::is_dual_layer_key(key_info) || KeyMap::is_single_dual_layer_key(key_info)) {
         this->release_dual_layer_key(key_info);
     } else if (KeyMap::is_multimedia_key(key_info)) {
         this->release_multimedia_key(key_info);
@@ -207,7 +207,7 @@ inline void MasterReport::press_dual_key(KeyInfo key_info) {
     }
 }
 
-inline void MasterReport::press_dual_single_key(KeyInfo key_info) {
+inline void MasterReport::press_single_dual_key(KeyInfo key_info) {
     this->dual_key_state.last_press_ts = millis();
     this->dual_key_state.key_info = key_info;
 
@@ -258,7 +258,7 @@ inline void MasterReport::press_dual_layer_key(KeyInfo key_info) {
     }
 }
 
-inline void MasterReport::press_dual_layer_single_key(KeyInfo key_info) {
+inline void MasterReport::press_single_dual_layer_key(KeyInfo key_info) {
     this->dual_layer_key_state.last_press_ts = millis();
     this->dual_layer_key_state.key_info = key_info;
 

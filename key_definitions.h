@@ -37,21 +37,21 @@
 #define KEY_DUAL_LAYER_5         0x1E /* D(LAYER_5,  */
 #define KEY_DUAL_LAYER_6         0x1F /* D(LAYER_6,  */
 #define KEY_DUAL_LAYER_7         0x20 /* D(LAYER_7,  */
-#define KEY_DUAL_LAYER_SINGLE_1  0x21 /* DS(LAYER_1, */
-#define KEY_DUAL_LAYER_SINGLE_2  0x22 /* DS(LAYER_2, */
-#define KEY_DUAL_LAYER_SINGLE_3  0x23 /* DS(LAYER_3, */
-#define KEY_DUAL_LAYER_SINGLE_4  0x24 /* DS(LAYER_4, */
-#define KEY_DUAL_LAYER_SINGLE_5  0x25 /* DS(LAYER_5, */
-#define KEY_DUAL_LAYER_SINGLE_6  0x26 /* DS(LAYER_6, */
-#define KEY_DUAL_LAYER_SINGLE_7  0x27 /* DS(LAYER_7, */
-#define KEY_DUAL_SINGLE_LCTRL    0x28 /* DS(LCTRL,   */
-#define KEY_DUAL_SINGLE_RCTRL    0x29 /* DS(RCTRL,   */
-#define KEY_DUAL_SINGLE_LSHIFT   0x2A /* DS(LSHIFT,  */
-#define KEY_DUAL_SINGLE_RSHIFT   0x2B /* DS(RSHIFT,  */
-#define KEY_DUAL_SINGLE_LGUI     0x2C /* DS(LGUI,    */
-#define KEY_DUAL_SINGLE_RGUI     0x2D /* DS(RGUI,    */
-#define KEY_DUAL_SINGLE_LALT     0x2E /* DS(LALT,    */
-#define KEY_DUAL_SINGLE_RALT     0x2F /* DS(RALT,    */
+#define KEY_SINGLE_DUAL_LAYER_1  0x21 /* DS(LAYER_1, */
+#define KEY_SINGLE_DUAL_LAYER_2  0x22 /* DS(LAYER_2, */
+#define KEY_SINGLE_DUAL_LAYER_3  0x23 /* DS(LAYER_3, */
+#define KEY_SINGLE_DUAL_LAYER_4  0x24 /* DS(LAYER_4, */
+#define KEY_SINGLE_DUAL_LAYER_5  0x25 /* DS(LAYER_5, */
+#define KEY_SINGLE_DUAL_LAYER_6  0x26 /* DS(LAYER_6, */
+#define KEY_SINGLE_DUAL_LAYER_7  0x27 /* DS(LAYER_7, */
+#define KEY_SINGLE_DUAL_LCTRL    0x28 /* DS(LCTRL,   */
+#define KEY_SINGLE_DUAL_RCTRL    0x29 /* DS(RCTRL,   */
+#define KEY_SINGLE_DUAL_LSHIFT   0x2A /* DS(LSHIFT,  */
+#define KEY_SINGLE_DUAL_RSHIFT   0x2B /* DS(RSHIFT,  */
+#define KEY_SINGLE_DUAL_LGUI     0x2C /* DS(LGUI,    */
+#define KEY_SINGLE_DUAL_RGUI     0x2D /* DS(RGUI,    */
+#define KEY_SINGLE_DUAL_LALT     0x2E /* DS(LALT,    */
+#define KEY_SINGLE_DUAL_RALT     0x2F /* DS(RALT,    */
 #define KEY_TRANSPARENT          0xFF /* TRANS       */
 
 #define ALIAS_SYS_POWER_OFF KC_SYSTEM(0x81)
