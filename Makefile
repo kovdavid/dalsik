@@ -1,11 +1,14 @@
+DEVICE=$(shell ls /dev/ttyACM*)
+
+# crt-t + q => quit tio session
 tio:
-	tio -l /tmp/tio.log /dev/ttyACM0
+	tio -m INLCRNL -l /tmp/tio.log $(DEVICE)
 
 upload:
-	arduino --board sparkfun:avr:promicro:cpu=16MHzatmega32U4 --upload dalsik.ino --verbose --port /dev/ttyACM0
+	arduino --board SparkFun:avr:promicro:cpu=16MHzatmega32U4 --upload dalsik.ino --verbose --port $(DEVICE)
 
 verify:
-	arduino --board sparkfun:avr:promicro:cpu=16MHzatmega32U4 --verify dalsik.ino --verbose --port /dev/ttyACM0
+	arduino --board SparkFun:avr:promicro:cpu=16MHzatmega32U4 --verify dalsik.ino --verbose --port $(DEVICE)
 
 clear_keymap:
 	./utils/cmd_clear_keymap.pl
