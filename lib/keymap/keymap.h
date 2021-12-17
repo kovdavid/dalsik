@@ -1,6 +1,6 @@
-#ifndef KEYMAP_H
-#define KEYMAP_H
+#pragma once
 
+#include <Arduino.h>
 #include "dalsik.h"
 #include "key_definitions.h"
 
@@ -54,8 +54,8 @@ class KeyMap {
         uint8_t keyboard_side;
         uint8_t layer_history[LAYER_HISTORY_CAPACITY];
 
-        inline uint32_t get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col);
-        inline uint32_t get_tapdance_eeprom_address(uint8_t index, uint8_t tap);
+        uint32_t get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col);
+        uint32_t get_tapdance_eeprom_address(uint8_t index, uint8_t tap);
         KeyInfo get_non_transparent_key(uint8_t row, uint8_t col);
         KeyInfo get_key(uint8_t row, uint8_t col);
     public:
@@ -81,23 +81,21 @@ class KeyMap {
         void eeprom_clear_tapdance();
         void clear();
 
-        inline static uint8_t is_type_between(KeyInfo key_info, uint8_t type1, uint8_t type2);
-        inline static uint8_t is_key_with_mod(KeyInfo key_info);
-        inline static uint8_t is_dual_key(KeyInfo key_info);
-        inline static uint8_t is_single_dual_key(KeyInfo key_info);
-        inline static uint8_t is_dual_layer_key(KeyInfo key_info);
-        inline static uint8_t is_single_dual_layer_key(KeyInfo key_info);
-        inline static uint8_t is_multimedia_key(KeyInfo key_info);
-        inline static int key_info_compare(KeyInfo key_info1, KeyInfo key_info2);
-        inline static uint8_t get_dual_key_modifier(KeyInfo key_info);
-        inline static uint8_t get_dual_layer_key_layer(KeyInfo key_info);
-        inline static uint8_t get_key_with_mod_modifier(KeyInfo key_info);
+        static uint8_t is_type_between(KeyInfo key_info, uint8_t type1, uint8_t type2);
+        static uint8_t is_key_with_mod(KeyInfo key_info);
+        static uint8_t is_dual_key(KeyInfo key_info);
+        static uint8_t is_single_dual_key(KeyInfo key_info);
+        static uint8_t is_dual_layer_key(KeyInfo key_info);
+        static uint8_t is_single_dual_layer_key(KeyInfo key_info);
+        static uint8_t is_multimedia_key(KeyInfo key_info);
+        static int key_info_compare(KeyInfo key_info1, KeyInfo key_info2);
+        static uint8_t get_dual_key_modifier(KeyInfo key_info);
+        static uint8_t get_dual_layer_key_layer(KeyInfo key_info);
+        static uint8_t get_key_with_mod_modifier(KeyInfo key_info);
 
-        inline static KeyInfo init_key_info(uint8_t type, uint8_t key, uint8_t row, uint8_t col);
-        inline static KeyInfo init_key_info_without_coords(uint8_t type, uint8_t key);
+        static KeyInfo init_key_info(uint8_t type, uint8_t key, uint8_t row, uint8_t col);
+        static KeyInfo init_key_info_without_coords(uint8_t type, uint8_t key);
 
         // For Serial.print() usage only
-        inline static const __FlashStringHelper* key_type_to_string(KeyInfo key_info);
+        static const __FlashStringHelper* key_type_to_string(KeyInfo key_info);
 };
-
-#endif

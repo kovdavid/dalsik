@@ -1,3 +1,5 @@
+#include <string.h>
+#include "matrix.h"
 #include "dalsik.h"
 #include "pin_utils.h"
 

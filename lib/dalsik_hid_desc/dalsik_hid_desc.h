@@ -1,10 +1,9 @@
-#ifndef KEYBOARD_HID_DESC_H
-#define KEYBOARD_HID_DESC_H
+#pragma once
 
 #define BASE_KEYBOARD_REPORT_ID       0x01
 #define SYSTEM_KEYBOARD_REPORT_ID     0x02
 #define MULTIMEDIA_KEYBOARD_REPORT_ID 0x03
-//#define MOUSE_REPORT_ID               0x04
+#define MOUSE_REPORT_ID               0x04
 
 #define BASE_HID_REPORT_KEYS 6
 
@@ -80,5 +79,3 @@ const uint8_t KEYBOARD_HID_DESC[] PROGMEM = {
     0x81, 0x00,       //   INPUT (Data,Var,Abs)
     0xc0              // END_COLLECTION
 };
-
-#endif

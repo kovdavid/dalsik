@@ -1,5 +1,4 @@
-#ifndef RING_BUFFER_H
-#define RING_BUFFER_H
+#pragma once
 
 #define BUFFER_LENGTH 10
 
@@ -15,5 +14,3 @@ class RingBuffer {
         uint8_t get_next_elem();
         uint8_t has_data();
 };
-
-#endif

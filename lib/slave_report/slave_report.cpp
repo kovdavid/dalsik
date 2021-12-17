@@ -1,8 +1,7 @@
 #include "dalsik.h"
 #include "matrix.h"
 #include "dalsik_serial.h"
-
-inline static uint8_t parity(uint8_t d);
+#include "slave_report.h"
 
 void SlaveReport::send_changed_key(ChangedKeyCoords coords) {
     if (coords.type == EVENT_NONE) {
@@ -12,6 +11,13 @@ void SlaveReport::send_changed_key(ChangedKeyCoords coords) {
     uint8_t slave_data = SlaveReport::encode_slave_report_data(coords);
 
     DalsikSerial::slave_send(slave_data);
+}
+
+inline uint8_t parity(uint8_t d) {
+    d ^= (d >> 4);
+    d ^= (d >> 2);
+    d ^= (d >> 1);
+    return d & 0x1;
 }
 
 // We use 1B to send type, row and col from ChangedKeyCoords + 2 parity
@@ -58,11 +64,4 @@ ChangedKeyCoords SlaveReport::decode_slave_report_data(uint8_t data) {
     } else {
         return ChangedKeyCoords { EVENT_NONE, 0, 0 };
     }
-}
-
-inline static uint8_t parity(uint8_t d) {
-    d ^= (d >> 4);
-    d ^= (d >> 2);
-    d ^= (d >> 1);
-    return d & 0x1;
 }

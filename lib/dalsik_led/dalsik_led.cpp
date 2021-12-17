@@ -1,5 +1,7 @@
+#include <Arduino.h>
 #include <avr/io.h>
 #include "dalsik.h"
+#include "dalsik_led.h"
 
 // LED ws2812
 // "0" -> HI[0.35] LO[0.80] ->  6cycle high + 13cycle low = 19cycle

@@ -1,5 +1,4 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#pragma once
 
 #include "dalsik.h"
 
@@ -28,5 +27,3 @@ class Matrix {
         Matrix();
         ChangedKeyCoords scan();
 };
-
-#endif

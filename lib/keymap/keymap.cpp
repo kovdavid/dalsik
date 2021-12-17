@@ -1,4 +1,6 @@
-#include "EEPROM.h"
+#include <Arduino.h>
+#include <string.h>
+#include <EEPROM.h>
 #include "dalsik.h"
 #include "keymap.h"
 #include "array_utils.h"
@@ -111,11 +113,11 @@ void KeyMap::toggle_layer(uint8_t layer) {
     }
 }
 
-inline uint32_t KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col) {
+uint32_t KeyMap::get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col) {
     return sizeof(EEPROM_KeyInfo)*( layer*KEY_COUNT + row*2*ONE_SIDE_COL_PIN_COUNT + col );
 }
 
-inline uint32_t KeyMap::get_tapdance_eeprom_address(uint8_t index, uint8_t tap) {
+uint32_t KeyMap::get_tapdance_eeprom_address(uint8_t index, uint8_t tap) {
     return TAPDANCE_EEPROM_OFFSET + sizeof(EEPROM_KeyInfo)*( index*MAX_TAPDANCE_TAPS + tap-1 );
 }
 
@@ -205,13 +207,13 @@ void KeyMap::eeprom_clear_tapdance() {
     }
 }
 
-inline int KeyMap::key_info_compare(KeyInfo key_info1, KeyInfo key_info2) {
+int KeyMap::key_info_compare(KeyInfo key_info1, KeyInfo key_info2) {
     EEPROM_KeyInfo k1 = EEPROM_KeyInfo { key_info1.type, key_info1.key };
     EEPROM_KeyInfo k2 = EEPROM_KeyInfo { key_info2.type, key_info2.key };
     return memcmp(&k1, &k2, sizeof(EEPROM_KeyInfo));
 }
 
-inline uint8_t KeyMap::get_dual_key_modifier(KeyInfo key_info) {
+uint8_t KeyMap::get_dual_key_modifier(KeyInfo key_info) {
     switch (key_info.type) {
         case KEY_DUAL_LCTRL:
         case KEY_SINGLE_DUAL_LCTRL:
@@ -241,7 +243,7 @@ inline uint8_t KeyMap::get_dual_key_modifier(KeyInfo key_info) {
     return 0x00;
 }
 
-inline uint8_t KeyMap::get_dual_layer_key_layer(KeyInfo key_info) {
+uint8_t KeyMap::get_dual_layer_key_layer(KeyInfo key_info) {
     switch (key_info.type) {
         case KEY_DUAL_LAYER_1:
         case KEY_SINGLE_DUAL_LAYER_1:
@@ -268,7 +270,7 @@ inline uint8_t KeyMap::get_dual_layer_key_layer(KeyInfo key_info) {
     return 0;
 }
 
-inline uint8_t KeyMap::get_key_with_mod_modifier(KeyInfo key_info) {
+uint8_t KeyMap::get_key_with_mod_modifier(KeyInfo key_info) {
     switch (key_info.type) {
         case KEY_WITH_MOD_LCTRL:  return KC_LCTRL;
         case KEY_WITH_MOD_LSHIFT: return KC_LSHIFT;
@@ -282,15 +284,15 @@ inline uint8_t KeyMap::get_key_with_mod_modifier(KeyInfo key_info) {
     return 0x00;
 }
 
-inline KeyInfo KeyMap::init_key_info(uint8_t type, uint8_t key, uint8_t row, uint8_t col) {
+KeyInfo KeyMap::init_key_info(uint8_t type, uint8_t key, uint8_t row, uint8_t col) {
     return KeyInfo { type, key, row, col };
 }
 
-inline KeyInfo KeyMap::init_key_info_without_coords(uint8_t type, uint8_t key) {
+KeyInfo KeyMap::init_key_info_without_coords(uint8_t type, uint8_t key) {
     return KeyInfo { type, key, ROW_UNKNOWN, COL_UNKNOWN };
 }
 
-inline uint8_t KeyMap::is_type_between(KeyInfo key_info, uint8_t type1, uint8_t type2) {
+uint8_t KeyMap::is_type_between(KeyInfo key_info, uint8_t type1, uint8_t type2) {
     uint8_t type = key_info.type;
     if (type >= type1 && type <= type2) {
         return 1;
@@ -298,31 +300,31 @@ inline uint8_t KeyMap::is_type_between(KeyInfo key_info, uint8_t type1, uint8_t 
     return 0;
 }
 
-inline uint8_t KeyMap::is_dual_key(KeyInfo key_info) {
+uint8_t KeyMap::is_dual_key(KeyInfo key_info) {
     return KeyMap::is_type_between(key_info, KEY_DUAL_LCTRL, KEY_DUAL_RALT);
 }
 
-inline uint8_t KeyMap::is_single_dual_key(KeyInfo key_info) {
+uint8_t KeyMap::is_single_dual_key(KeyInfo key_info) {
     return KeyMap::is_type_between(key_info, KEY_SINGLE_DUAL_LCTRL, KEY_SINGLE_DUAL_RALT);
 }
 
-inline uint8_t KeyMap::is_dual_layer_key(KeyInfo key_info) {
+uint8_t KeyMap::is_dual_layer_key(KeyInfo key_info) {
     return KeyMap::is_type_between(key_info, KEY_DUAL_LAYER_1, KEY_DUAL_LAYER_7);
 }
 
-inline uint8_t KeyMap::is_single_dual_layer_key(KeyInfo key_info) {
+uint8_t KeyMap::is_single_dual_layer_key(KeyInfo key_info) {
     return KeyMap::is_type_between(key_info, KEY_SINGLE_DUAL_LAYER_1, KEY_SINGLE_DUAL_LAYER_7);
 }
 
-inline uint8_t KeyMap::is_multimedia_key(KeyInfo key_info) {
+uint8_t KeyMap::is_multimedia_key(KeyInfo key_info) {
     return KeyMap::is_type_between(key_info, KEY_MULTIMEDIA_0, KEY_MULTIMEDIA_2);
 }
 
-inline uint8_t KeyMap::is_key_with_mod(KeyInfo key_info) {
+uint8_t KeyMap::is_key_with_mod(KeyInfo key_info) {
     return KeyMap::is_type_between(key_info, KEY_WITH_MOD_LCTRL, KEY_WITH_MOD_RALT);
 }
 
-inline const __FlashStringHelper* KeyMap::key_type_to_string(KeyInfo key_info) {
+const __FlashStringHelper* KeyMap::key_type_to_string(KeyInfo key_info) {
          if (key_info.type == KEY_UNSET)                  { return F("KEY_UNSET");                }
     else if (key_info.type == KEY_NORMAL)                 { return F("KEY_NORMAL");               }
     else if (key_info.type == KEY_DUAL_LCTRL)             { return F("KEY_DUAL_LCTRL");           }

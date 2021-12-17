@@ -1,5 +1,4 @@
-#ifndef MASTER_REPORT_H
-#define MASTER_REPORT_H
+#pragma once
 
 #include "matrix.h"
 #include "keymap.h"
@@ -116,5 +115,3 @@ class MasterReport {
         void handle_master_changed_key(ChangedKeyCoords coords);
         void handle_slave_changed_key(ChangedKeyCoords coords);
 };
-
-#endif

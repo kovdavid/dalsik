@@ -12,11 +12,20 @@ acutest:
 tio:
 	tio -m INLCRNL -l /tmp/tio.log $(DEVICE)
 
-upload:
-	arduino --board $(BOARD) --upload dalsik.ino --verbose --port $(DEVICE)
-
 verify:
+	make -C src
+
+upload:
+	make -C src
+
+clean:
+	rm -rf build/
+
+old_verify:
 	arduino --board $(BOARD) --verify dalsik.ino --verbose --port $(DEVICE)
+
+old_upload:
+	arduino --board $(BOARD) --upload dalsik.ino --verbose --port $(DEVICE)
 
 clear_keymap:
 	./utils/cmd_clear_keymap.pl

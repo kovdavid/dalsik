@@ -1,4 +1,5 @@
 #include <util/atomic.h>
+#include "ring_buffer.h"
 
 RingBuffer::RingBuffer() {
     for (uint8_t i = 0; i < BUFFER_LENGTH; i++) {

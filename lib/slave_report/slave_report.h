@@ -1,6 +1,6 @@
-#ifndef SLAVE_REPORT_H
-#define SLAVE_REPORT_H
+#pragma once
 
+#include "dalsik.h"
 #include "matrix.h"
 
 namespace SlaveReport {
@@ -8,5 +8,3 @@ namespace SlaveReport {
     uint8_t encode_slave_report_data(ChangedKeyCoords coords);
     ChangedKeyCoords decode_slave_report_data(uint8_t data);
 }
-
-#endif

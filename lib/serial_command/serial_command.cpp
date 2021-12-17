@@ -1,6 +1,11 @@
 #include "dalsik.h"
 #include "keymap.h"
 #include "serial_command.h"
+#include "serial_command.h"
+
+static uint8_t execute_command(KeyMap* keymap);
+static void serial_print_key(KeyMap* keymap, uint8_t layer, uint8_t row, uint8_t col);
+static void serial_print_tapdance_key(KeyMap* keymap, uint8_t index, uint8_t tap);
 
 char cmd_buffer[CMD_LENGTH] = {0};
 uint8_t cmd_buffer_index = 0;

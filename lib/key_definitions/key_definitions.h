@@ -1,5 +1,4 @@
-#ifndef KEYDEFINITIONS_H
-#define KEYDEFINITIONS_H
+#pragma once
 
 // INTERNAL_NAME BYTE_VALUE /* SHORTCUT */
 // Keys with arguments have SHORTCUT ending with '(' or ','
@@ -299,5 +298,3 @@
 #define KC_RSHIFT           0xE5
 #define KC_RALT             0xE6
 #define KC_RGUI             0xE7
-
-#endif

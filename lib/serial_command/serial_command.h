@@ -1,5 +1,4 @@
-#ifndef SERIALCOMMAND_H
-#define SERIALCOMMAND_H
+#pragma once
 
 #include "keymap.h"
 #include "master_report.h"
@@ -32,5 +31,3 @@ static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 namespace SerialCommand {
     void process_command(KeyMap* keymap);
 }
-
-#endif

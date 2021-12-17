@@ -1,5 +1,4 @@
-#ifndef DALSIK_H
-#define DALSIK_H
+#pragma once
 
 #include "pin_utils.h"
 
@@ -26,11 +25,14 @@
 // 1 - determine at the next key_press (modifier) or timeout (normal key) or release of the dual key (also normal key)
 #define LAZY_DUAL_KEYS 1
 
+namespace Dalsik {
+    void setup();
+    void loop();
+}
+
 const uint8_t ROW_PINS[ROW_PIN_COUNT] = {
     PIN_D(7), PIN_E(6), PIN_B(4), PIN_B(5)
 };
 const uint8_t COL_PINS[ONE_SIDE_COL_PIN_COUNT] = {
     PIN_F(6), PIN_F(7), PIN_B(1), PIN_B(3), PIN_B(2), PIN_B(6)
 };
-
-#endif

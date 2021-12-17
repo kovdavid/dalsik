@@ -1,3 +1,4 @@
+#include "master_report.h"
 #include "matrix.h"
 #include "HID.h"
 #include "dalsik_hid_desc.h"
@@ -51,7 +52,7 @@ void MasterReport::handle_master_changed_key(ChangedKeyCoords coords) {
     }
 }
 
-inline void MasterReport::handle_slave_changed_key(ChangedKeyCoords coords) {
+void MasterReport::handle_slave_changed_key(ChangedKeyCoords coords) {
     KeyInfo key_info = this->keymap->get_slave_key(coords.row, coords.col);
     if (coords.type == EVENT_KEY_PRESS) {
         this->handle_key_press(key_info);

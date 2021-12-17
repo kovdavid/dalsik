@@ -1,3 +1,6 @@
+#include <stdint.h>
+#include "array_utils.h"
+
 void append_uniq_to_uint8_array(uint8_t* array, uint8_t array_size, uint8_t elem) {
     for (uint8_t i = 0; i < array_size-1; i++) {
         if (array[i] == elem) {

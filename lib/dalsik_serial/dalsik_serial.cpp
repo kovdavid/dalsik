@@ -11,6 +11,13 @@
 #include "dalsik_serial.h"
 #include "dalsik.h"
 
+inline static void serial_set_interrupt();
+inline static void serial_delay();
+inline static void serial_half_delay();
+inline static uint8_t serial_master_read();
+
+RingBuffer serial_buffer;
+
 void DalsikSerial::master_init(void) {
     PinUtils::pinmode_input_pullup(SERIAL_PIN);
     serial_set_interrupt();
@@ -18,6 +25,14 @@ void DalsikSerial::master_init(void) {
 
 void DalsikSerial::slave_init(void) {
     PinUtils::pinmode_output_high(SERIAL_PIN);
+}
+
+uint8_t DalsikSerial::has_data() {
+    return serial_buffer.has_data();
+}
+
+uint8_t DalsikSerial::get_next_elem() {
+    return serial_buffer.get_next_elem();
 }
 
 void DalsikSerial::slave_send(uint8_t data) {
@@ -86,7 +101,7 @@ inline static void serial_half_delay() {
 
 ISR(SERIAL_PIN_INTERRUPT) {
     uint8_t slave_data = serial_master_read();
-    DalsikSerial::serial_buffer.append_elem(slave_data);
+    serial_buffer.append_elem(slave_data);
     // Clear pending interrupts for INTF0 (which were registered during serial_master_read)
     EIFR |= (1 << SERIAL_PIN_INTERRUPT_FLAG);
 }

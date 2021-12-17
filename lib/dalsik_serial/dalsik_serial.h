@@ -3,8 +3,7 @@
  * https://github.com/qmk/qmk_firmware/blob/master/keyboards/lets_split/serial.c
  */
 
-#ifndef DALSIK_SERIAL_H
-#define DALSIK_SERIAL_H
+#pragma once
 
 #include "pin_utils.h"
 #include "ring_buffer.h"
@@ -17,11 +16,9 @@
 #define SERIAL_DELAY 50
 
 namespace DalsikSerial {
-    RingBuffer serial_buffer;
-
     void master_init();
     void slave_init();
     void slave_send(uint8_t data);
-};
-
-#endif
+    uint8_t has_data();
+    uint8_t get_next_elem();
+}

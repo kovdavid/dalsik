@@ -1,9 +1,11 @@
+#include <Arduino.h>
 #include "matrix.h"
 #include "keymap.h"
 #include "master_report.h"
 #include "slave_report.h"
 #include "dalsik_serial.h"
 #include "serial_command.h"
+#include "dalsik.h"
 #include "pin_utils.h"
 #include <avr/io.h>
 
@@ -15,13 +17,36 @@ MasterReport master_report(&keymap);
 uint8_t is_master = 0;
 unsigned long prev_millis = millis();
 
+static inline void handle_slave_data(uint8_t data) {
+    ChangedKeyCoords coords = SlaveReport::decode_slave_report_data(data);
+
+#if DEBUG
+    Serial.print("Slave ChangedKeyCoords <");
+    if (coords.type == EVENT_KEY_PRESS) {
+        Serial.print("PRE");
+    } else {
+        Serial.print("REL");
+    }
+    Serial.print("|ROW:");
+    Serial.print(coords.row);
+    Serial.print("|COL:");
+    Serial.print(coords.col);
+    Serial.print(">");
+    Serial.print(" now:");
+    Serial.print(prev_millis);
+    Serial.print("\n");
+#endif
+
+    master_report.handle_slave_changed_key(coords);
+}
+
 uint8_t usb_connected() {
    USBCON |= (1 << OTGPADE); //enables VBUS pad
    delayMicroseconds(5);
    return (USBSTA & (1 << VBUS)); //checks state of VBUS
 }
 
-void setup() {
+void Dalsik::setup() {
     // Disable JTAG, so we can use PORTF
     MCUCR |= _BV(JTD);
     MCUCR |= _BV(JTD);
@@ -53,7 +78,7 @@ void setup() {
     delay(100);
 }
 
-void loop() {
+void Dalsik::loop() {
 #if ON_OFF_PIN
     while (!PinUtils::read_pin(ON_OFF_PIN));
 #endif
@@ -63,8 +88,8 @@ void loop() {
             SerialCommand::process_command(&keymap);
         }
 
-        while (DalsikSerial::serial_buffer.has_data()) {
-            uint8_t slave_data = DalsikSerial::serial_buffer.get_next_elem();
+        while (DalsikSerial::has_data()) {
+            uint8_t slave_data = DalsikSerial::get_next_elem();
             handle_slave_data(slave_data);
         }
     }
@@ -106,27 +131,4 @@ void loop() {
     } else {
         SlaveReport::send_changed_key(coords);
     }
-}
-
-inline void handle_slave_data(uint8_t data) {
-    ChangedKeyCoords coords = SlaveReport::decode_slave_report_data(data);
-
-#if DEBUG
-    Serial.print("Slave ChangedKeyCoords <");
-    if (coords.type == EVENT_KEY_PRESS) {
-        Serial.print("PRE");
-    } else {
-        Serial.print("REL");
-    }
-    Serial.print("|ROW:");
-    Serial.print(coords.row);
-    Serial.print("|COL:");
-    Serial.print(coords.col);
-    Serial.print(">");
-    Serial.print(" now:");
-    Serial.print(prev_millis);
-    Serial.print("\n");
-#endif
-
-    master_report.handle_slave_changed_key(coords);
 }
