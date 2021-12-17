@@ -1,14 +1,22 @@
 DEVICE=$(shell ls /dev/ttyACM*)
+BOARD=SparkFun:avr:promicro:cpu=16MHzatmega32U4
+
+Arduino-Makefile:
+	git submodule add --force https://github.com/WeAreLeka/Arduino-Makefile Arduino-Makefile
+
+acutest:
+	mkdir -p test/acutest
+	wget -O test/acutest/acutest.h https://raw.githubusercontent.com/mity/acutest/master/include/acutest.h
 
 # crt-t + q => quit tio session
 tio:
 	tio -m INLCRNL -l /tmp/tio.log $(DEVICE)
 
 upload:
-	arduino --board SparkFun:avr:promicro:cpu=16MHzatmega32U4 --upload dalsik.ino --verbose --port $(DEVICE)
+	arduino --board $(BOARD) --upload dalsik.ino --verbose --port $(DEVICE)
 
 verify:
-	arduino --board SparkFun:avr:promicro:cpu=16MHzatmega32U4 --verify dalsik.ino --verbose --port $(DEVICE)
+	arduino --board $(BOARD) --verify dalsik.ino --verbose --port $(DEVICE)
 
 clear_keymap:
 	./utils/cmd_clear_keymap.pl
@@ -18,3 +26,6 @@ set_keymap:
 
 render_keymap:
 	./utils/cmd_get_keymap.pl | ./utils/render_keymap.pl
+
+ctags:
+	ctags -f tags -R --extra=q .
