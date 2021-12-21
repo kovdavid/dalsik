@@ -86,6 +86,6 @@ class MasterReport {
         MasterReport(KeyMap* keymap);
 
         void key_timeout_check();
-        void handle_master_changed_key(ChangedKeyCoords coords);
-        void handle_slave_changed_key(ChangedKeyCoords coords);
+        void handle_master_changed_key(ChangedKeyEvent event);
+        void handle_slave_changed_key(ChangedKeyEvent event);
 };

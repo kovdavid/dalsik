@@ -39,20 +39,20 @@ void MasterReport::clear() {
     this->keymap->clear();
 }
 
-void MasterReport::handle_master_changed_key(ChangedKeyCoords coords) {
-    KeyInfo key_info = this->keymap->get_master_key(coords.row, coords.col);
-    if (coords.type == EVENT_KEY_PRESS) {
+void MasterReport::handle_master_changed_key(ChangedKeyEvent event) {
+    KeyInfo key_info = this->keymap->get_master_key(event.coords.row, event.coords.col);
+    if (event.type == EVENT_KEY_PRESS) {
         this->handle_key_press(key_info);
-    } else if (coords.type == EVENT_KEY_RELEASE) {
+    } else if (event.type == EVENT_KEY_RELEASE) {
         this->handle_key_release(key_info);
     }
 }
 
-void MasterReport::handle_slave_changed_key(ChangedKeyCoords coords) {
-    KeyInfo key_info = this->keymap->get_slave_key(coords.row, coords.col);
-    if (coords.type == EVENT_KEY_PRESS) {
+void MasterReport::handle_slave_changed_key(ChangedKeyEvent event) {
+    KeyInfo key_info = this->keymap->get_slave_key(event.coords.row, event.coords.col);
+    if (event.type == EVENT_KEY_PRESS) {
         this->handle_key_press(key_info);
-    } else if (coords.type == EVENT_KEY_RELEASE) {
+    } else if (event.type == EVENT_KEY_RELEASE) {
         this->handle_key_release(key_info);
     }
 }

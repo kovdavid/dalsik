@@ -35,6 +35,11 @@ typedef struct {
 } EEPROM_KeyInfo;
 
 typedef struct {
+    uint8_t row;
+    uint8_t col;
+} KeyCoords;
+
+typedef struct {
     uint8_t type;
     uint8_t key;
     uint8_t row;
@@ -47,9 +52,8 @@ typedef struct {
 
 typedef struct {
     uint8_t type;
-    uint8_t row;
-    uint8_t col;
-} ChangedKeyCoords;
+    KeyCoords coords;
+} ChangedKeyEvent;
 
 #define DUAL_MODE_NOT_PRESSED     0x00
 #define DUAL_MODE_PENDING         0x01

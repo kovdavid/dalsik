@@ -21,7 +21,7 @@ Matrix::Matrix() {
 }
 
 // duration: 168us when no change is detected
-ChangedKeyCoords Matrix::scan() {
+ChangedKeyEvent Matrix::scan() {
     for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
         PinUtils::pinmode_output_low(ROW_PINS[row]);
 
@@ -37,10 +37,12 @@ ChangedKeyCoords Matrix::scan() {
                 this->keystate[row][col] = debounced_input;
                 PinUtils::pinmode_input_pullup(ROW_PINS[row]);
 
+                KeyCoords coords = { row, col };
+
                 if (debounced_input == DEBOUNCE_MAX) {
-                    return ChangedKeyCoords { EVENT_KEY_PRESS, row, col };
+                    return ChangedKeyEvent { EVENT_KEY_PRESS, coords };
                 } else {
-                    return ChangedKeyCoords { EVENT_KEY_RELEASE, row, col };
+                    return ChangedKeyEvent { EVENT_KEY_RELEASE, coords };
                 }
             }
         }
@@ -48,7 +50,7 @@ ChangedKeyCoords Matrix::scan() {
         PinUtils::pinmode_input_pullup(ROW_PINS[row]);
     }
 
-    return ChangedKeyCoords { EVENT_NONE, 0x00, 0x00 };
+    return ChangedKeyEvent { EVENT_NONE, KeyCoords { 0x00, 0x00 } };
 }
 
 uint8_t Matrix::debounce_input(uint8_t row, uint8_t col, uint8_t input) {

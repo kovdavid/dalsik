@@ -18,26 +18,26 @@ uint8_t is_master = 0;
 unsigned long prev_millis = millis();
 
 static inline void handle_slave_data(uint8_t data) {
-    ChangedKeyCoords coords = SlaveReport::decode_slave_report_data(data);
+    ChangedKeyEvent event = SlaveReport::decode_slave_report_data(data);
 
 #if DEBUG
-    Serial.print("Slave ChangedKeyCoords <");
-    if (coords.type == EVENT_KEY_PRESS) {
+    Serial.print("Slave ChangedKeyEvent <");
+    if (event.type == EVENT_KEY_PRESS) {
         Serial.print("PRE");
     } else {
         Serial.print("REL");
     }
     Serial.print("|ROW:");
-    Serial.print(coords.row);
+    Serial.print(event.coords.row);
     Serial.print("|COL:");
-    Serial.print(coords.col);
+    Serial.print(event.coords.col);
     Serial.print(">");
     Serial.print(" now:");
     Serial.print(prev_millis);
     Serial.print("\n");
 #endif
 
-    master_report.handle_slave_changed_key(coords);
+    master_report.handle_slave_changed_key(event);
 }
 
 uint8_t usb_connected() {
@@ -104,22 +104,22 @@ void Dalsik::loop() {
 
     master_report.key_timeout_check(); // check once every millisecond
 
-    ChangedKeyCoords coords = matrix.scan();
-    if (coords.type == EVENT_NONE) {
+    ChangedKeyEvent event = matrix.scan();
+    if (event.type == EVENT_NONE) {
         return;
     }
 
 #if DEBUG
-    Serial.print("Master ChangedKeyCoords <");
-    if (coords.type == EVENT_KEY_PRESS) {
+    Serial.print("Master ChangedKeyEvent <");
+    if (event.type == EVENT_KEY_PRESS) {
         Serial.print("PRE");
     } else {
         Serial.print("REL");
     }
     Serial.print("|ROW:");
-    Serial.print(coords.row);
+    Serial.print(event.coords.row);
     Serial.print("|COL:");
-    Serial.print(coords.col);
+    Serial.print(cevent.oords.col);
     Serial.print(">");
     Serial.print(" now:");
     Serial.print(prev_millis);
@@ -127,8 +127,8 @@ void Dalsik::loop() {
 #endif
 
     if (is_master) {
-        master_report.handle_master_changed_key(coords);
+        master_report.handle_master_changed_key(event);
     } else {
-        SlaveReport::send_changed_key(coords);
+        SlaveReport::send_changed_key(event);
     }
 }
