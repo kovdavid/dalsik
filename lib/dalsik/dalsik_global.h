@@ -63,7 +63,7 @@ typedef struct {
 typedef struct {
     uint8_t mode;
     KeyInfo key_info;
-    unsigned long last_press_ts;
+    millis last_press_ts;
 } DualKeyState;
 
 #define HOLD_OR_TOGGLE_NOT_PRESSED 0x00
