@@ -93,7 +93,7 @@ void MasterReport::press(KeyInfo key_info) {
         this->press_layer_key(key_info.key);
     } else if (key_info.type == KEY_LAYER_TOGGLE) {
         this->press_toggle_layer_key(key_info.key);
-    } else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) {
+    } else if (key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
         this->press_layer_hold_or_toggle(key_info);
     } else if (key_info.type == KEY_TAPDANCE) {
         this->press_tapdance_key(key_info);
@@ -129,7 +129,7 @@ void MasterReport::release(KeyInfo key_info) {
         this->release_layer_key(key_info.key);
     } else if (key_info.type == KEY_LAYER_TOGGLE) {
         // do nothing; toggle_layer key has only effect on press
-    } else if (key_info.type == KEY_LAYER_HOLD_OR_TOGGLE) {
+    } else if (key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
         this->release_layer_hold_or_toggle(key_info);
     } else if (key_info.type == KEY_TAPDANCE) {
         this->release_tapdance_key(key_info);

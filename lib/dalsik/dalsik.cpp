@@ -15,7 +15,7 @@ KeyMap keymap;
 MasterReport master_report(&keymap);
 
 uint8_t is_master = 0;
-millis prev_millis = millis();
+millisec prev_millis = millis();
 
 static inline void handle_slave_data(uint8_t data) {
     ChangedKeyEvent event = SlaveReport::decode_slave_report_data(data);
@@ -96,7 +96,7 @@ void Dalsik::loop() {
 
     // By making matrix scanning only once every millisecond, we can make
     // the time-dependent debounce logic more predictable
-    millis now_ms = millis();
+    millisec now_ms = millis();
     if (prev_millis == now_ms) {
         return;
     }

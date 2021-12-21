@@ -1,57 +1,75 @@
 #pragma once
 
 // INTERNAL_NAME BYTE_VALUE /* SHORTCUT */
-// Keys with arguments have SHORTCUT ending with '(' or ','
+// Keys with arguments have `SHORTCUT` ending with '(' or ','
 
-#define KEY_UNSET                0x00 /* KC_NO       */
-#define KEY_NORMAL               0x01 /* KC(         */
-#define KEY_DUAL_LCTRL           0x02 /* D(LCTRL,    */
-#define KEY_DUAL_RCTRL           0x03 /* D(RCTRL,    */
-#define KEY_DUAL_LSHIFT          0x04 /* D(LSHIFT,   */
-#define KEY_DUAL_RSHIFT          0x05 /* D(RSHIFT,   */
-#define KEY_DUAL_LGUI            0x06 /* D(LGUI,     */
-#define KEY_DUAL_RGUI            0x07 /* D(RGUI,     */
-#define KEY_DUAL_LALT            0x08 /* D(LALT,     */
-#define KEY_DUAL_RALT            0x09 /* D(RALT,     */
-#define KEY_LAYER_PRESS          0x0A /* LP(         */
-#define KEY_LAYER_TOGGLE         0x0B /* LT(         */
-#define KEY_LAYER_HOLD_OR_TOGGLE 0x0C /* LHT(        */
-#define KEY_WITH_MOD_LCTRL       0x0D /* LCTRL(      */
-#define KEY_WITH_MOD_RCTRL       0x0E /* RCTRL(      */
-#define KEY_WITH_MOD_LSHIFT      0x0F /* LSHIFT(     */
-#define KEY_WITH_MOD_RSHIFT      0x10 /* RSHIFT(     */
-#define KEY_WITH_MOD_LGUI        0x11 /* LGUI(       */
-#define KEY_WITH_MOD_RGUI        0x12 /* RGUI(       */
-#define KEY_WITH_MOD_LALT        0x13 /* LALT(       */
-#define KEY_WITH_MOD_RALT        0x14 /* RALT(       */
-#define KEY_SYSTEM               0x15 /* KC_SYSTEM(  */
-#define KEY_MULTIMEDIA_0         0x16 /* KC_M0(      */
-#define KEY_MULTIMEDIA_1         0x17 /* KC_M1(      */
-#define KEY_MULTIMEDIA_2         0x18 /* KC_M2(      */
-#define KEY_TAPDANCE             0x19 /* TD(         */
-#define KEY_DUAL_LAYER_1         0x1A /* D(LAYER_1,  */
-#define KEY_DUAL_LAYER_2         0x1B /* D(LAYER_2,  */
-#define KEY_DUAL_LAYER_3         0x1C /* D(LAYER_3,  */
-#define KEY_DUAL_LAYER_4         0x1D /* D(LAYER_4,  */
-#define KEY_DUAL_LAYER_5         0x1E /* D(LAYER_5,  */
-#define KEY_DUAL_LAYER_6         0x1F /* D(LAYER_6,  */
-#define KEY_DUAL_LAYER_7         0x20 /* D(LAYER_7,  */
-#define KEY_SINGLE_DUAL_LAYER_1  0x21 /* DS(LAYER_1, */
-#define KEY_SINGLE_DUAL_LAYER_2  0x22 /* DS(LAYER_2, */
-#define KEY_SINGLE_DUAL_LAYER_3  0x23 /* DS(LAYER_3, */
-#define KEY_SINGLE_DUAL_LAYER_4  0x24 /* DS(LAYER_4, */
-#define KEY_SINGLE_DUAL_LAYER_5  0x25 /* DS(LAYER_5, */
-#define KEY_SINGLE_DUAL_LAYER_6  0x26 /* DS(LAYER_6, */
-#define KEY_SINGLE_DUAL_LAYER_7  0x27 /* DS(LAYER_7, */
-#define KEY_SINGLE_DUAL_LCTRL    0x28 /* DS(LCTRL,   */
-#define KEY_SINGLE_DUAL_RCTRL    0x29 /* DS(RCTRL,   */
-#define KEY_SINGLE_DUAL_LSHIFT   0x2A /* DS(LSHIFT,  */
-#define KEY_SINGLE_DUAL_RSHIFT   0x2B /* DS(RSHIFT,  */
-#define KEY_SINGLE_DUAL_LGUI     0x2C /* DS(LGUI,    */
-#define KEY_SINGLE_DUAL_RGUI     0x2D /* DS(RGUI,    */
-#define KEY_SINGLE_DUAL_LALT     0x2E /* DS(LALT,    */
-#define KEY_SINGLE_DUAL_RALT     0x2F /* DS(RALT,    */
-#define KEY_TRANSPARENT          0xFF /* TRANS       */
+#define KEY_UNSET                  0x00 /* KC_NO       */
+#define KEY_NORMAL                 0x01 /* KC(         */
+#define KEY_LAYER_PRESS            0x02 /* LP(         */
+#define KEY_LAYER_TOGGLE           0x03 /* LT(         */
+#define KEY_LAYER_TOGGLE_OR_HOLD   0x04 /* LHT(        */
+#define KEY_WITH_MOD_LCTRL         0x05 /* LCTRL(      */
+#define KEY_WITH_MOD_RCTRL         0x06 /* RCTRL(      */
+#define KEY_WITH_MOD_LSHIFT        0x07 /* LSHIFT(     */
+#define KEY_WITH_MOD_RSHIFT        0x08 /* RSHIFT(     */
+#define KEY_WITH_MOD_LGUI          0x09 /* LGUI(       */
+#define KEY_WITH_MOD_RGUI          0x0A /* RGUI(       */
+#define KEY_WITH_MOD_LALT          0x0B /* LALT(       */
+#define KEY_WITH_MOD_RALT          0x0C /* RALT(       */
+#define KEY_SYSTEM                 0x0D /* KC_SYSTEM(  */
+#define KEY_MULTIMEDIA_0           0x0E /* KC_M0(      */
+#define KEY_MULTIMEDIA_1           0x0F /* KC_M1(      */
+#define KEY_MULTIMEDIA_2           0x10 /* KC_M2(      */
+#define KEY_TAPDANCE               0x11 /* TD(         */
+
+#define KEY_DUAL_MOD_LCTRL         0xA0 /* D(LCTRL,    */
+#define KEY_DUAL_MOD_RCTRL         0xA1 /* D(RCTRL,    */
+#define KEY_DUAL_MOD_LSHIFT        0xA2 /* D(LSHIFT,   */
+#define KEY_DUAL_MOD_RSHIFT        0xA3 /* D(RSHIFT,   */
+#define KEY_DUAL_MOD_LGUI          0xA4 /* D(LGUI,     */
+#define KEY_DUAL_MOD_RGUI          0xA5 /* D(RGUI,     */
+#define KEY_DUAL_MOD_LALT          0xA6 /* D(LALT,     */
+#define KEY_DUAL_MOD_RALT          0xA7 /* D(RALT,     */
+#define KEY_SINGLE_DUAL_MOD_LCTRL  0xA8 /* DS(LCTRL,   */
+#define KEY_SINGLE_DUAL_MOD_RCTRL  0xA9 /* DS(RCTRL,   */
+#define KEY_SINGLE_DUAL_MOD_LSHIFT 0xAA /* DS(LSHIFT,  */
+#define KEY_SINGLE_DUAL_MOD_RSHIFT 0xAB /* DS(RSHIFT,  */
+#define KEY_SINGLE_DUAL_MOD_LGUI   0xAC /* DS(LGUI,    */
+#define KEY_SINGLE_DUAL_MOD_RGUI   0xAD /* DS(RGUI,    */
+#define KEY_SINGLE_DUAL_MOD_LALT   0xAE /* DS(LALT,    */
+#define KEY_SINGLE_DUAL_MOD_RALT   0xAF /* DS(RALT,    */
+#define KEY_TIMED_DUAL_MOD_LCTRL   0xB0 /* DT(LCTRL,   */
+#define KEY_TIMED_DUAL_MOD_RCTRL   0xB1 /* DT(RCTRL,   */
+#define KEY_TIMED_DUAL_MOD_LSHIFT  0xB2 /* DT(LSHIFT,  */
+#define KEY_TIMED_DUAL_MOD_RSHIFT  0xB3 /* DT(RSHIFT,  */
+#define KEY_TIMED_DUAL_MOD_LGUI    0xB4 /* DT(LGUI,    */
+#define KEY_TIMED_DUAL_MOD_RGUI    0xB5 /* DT(RGUI,    */
+#define KEY_TIMED_DUAL_MOD_LALT    0xB6 /* DT(LALT,    */
+#define KEY_TIMED_DUAL_MOD_RALT    0xB7 /* DT(RALT,    */
+
+#define KEY_DUAL_LAYER_1           0xB8 /* D(LAYER_1,  */
+#define KEY_DUAL_LAYER_2           0xB9 /* D(LAYER_2,  */
+#define KEY_DUAL_LAYER_3           0xBA /* D(LAYER_3,  */
+#define KEY_DUAL_LAYER_4           0xBB /* D(LAYER_4,  */
+#define KEY_DUAL_LAYER_5           0xBC /* D(LAYER_5,  */
+#define KEY_DUAL_LAYER_6           0xBD /* D(LAYER_6,  */
+#define KEY_DUAL_LAYER_7           0xBE /* D(LAYER_7,  */
+#define KEY_SINGLE_DUAL_LAYER_1    0xBF /* DS(LAYER_1, */
+#define KEY_SINGLE_DUAL_LAYER_2    0xC0 /* DS(LAYER_2, */
+#define KEY_SINGLE_DUAL_LAYER_3    0xC1 /* DS(LAYER_3, */
+#define KEY_SINGLE_DUAL_LAYER_4    0xC2 /* DS(LAYER_4, */
+#define KEY_SINGLE_DUAL_LAYER_5    0xC3 /* DS(LAYER_5, */
+#define KEY_SINGLE_DUAL_LAYER_6    0xC4 /* DS(LAYER_6, */
+#define KEY_SINGLE_DUAL_LAYER_7    0xC5 /* DS(LAYER_7, */
+#define KEY_TIMED_DUAL_LAYER_1     0xC6 /* DT(LAYER_1, */
+#define KEY_TIMED_DUAL_LAYER_2     0xC7 /* DT(LAYER_2, */
+#define KEY_TIMED_DUAL_LAYER_3     0xC8 /* DT(LAYER_3, */
+#define KEY_TIMED_DUAL_LAYER_4     0xC9 /* DT(LAYER_4, */
+#define KEY_TIMED_DUAL_LAYER_5     0xCA /* DT(LAYER_5, */
+#define KEY_TIMED_DUAL_LAYER_6     0xCB /* DT(LAYER_6, */
+#define KEY_TIMED_DUAL_LAYER_7     0xCC /* DT(LAYER_7, */
+
+#define KEY_TRANSPARENT            0xFF /* TRANS       */
 
 #define ALIAS_SYS_POWER_OFF KC_SYSTEM(0x81)
 #define ALIAS_SYS_SLEEP     KC_SYSTEM(0x82)

@@ -29,6 +29,8 @@
 #define KEYBOARD_SIDE_LEFT  0x00
 #define KEYBOARD_SIDE_RIGHT 0x01
 
+typedef unsigned long millisec;
+
 typedef struct {
     uint8_t type;
     uint8_t key;
@@ -63,7 +65,7 @@ typedef struct {
 typedef struct {
     uint8_t mode;
     KeyInfo key_info;
-    millis last_press_ts;
+    millisec last_press_ts;
 } DualKeyState;
 
 #define HOLD_OR_TOGGLE_NOT_PRESSED 0x00

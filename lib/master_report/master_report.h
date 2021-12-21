@@ -81,7 +81,7 @@ class MasterReport {
 
         uint8_t active_tapdance_key_count;
         uint8_t last_tapdance_index;
-        millis last_tapdance_press_ts;
+        millisec last_tapdance_press_ts;
     public:
         MasterReport(KeyMap* keymap);
 
