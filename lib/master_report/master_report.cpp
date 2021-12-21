@@ -1,16 +1,12 @@
-#include "master_report.h"
-#include "matrix.h"
-#include "HID.h"
-#include "dalsik_hid_desc.h"
+#include "Arduino.h"
+#include "dalsik.h"
+#include "dalsik_hid.h"
 #include "keymap.h"
 #include "array_utils.h"
-#include "dalsik.h"
-
-extern const uint8_t KEYBOARD_HID_DESC[] PROGMEM;
+#include "master_report.h"
 
 MasterReport::MasterReport(KeyMap* keymap) {
-    static HIDSubDescriptor node(KEYBOARD_HID_DESC, sizeof(KEYBOARD_HID_DESC));
-    HID().AppendDescriptor(&node);
+    DalsikHid::init_descriptor();
 
     this->keymap = keymap;
     this->clear();
@@ -575,7 +571,7 @@ void MasterReport::send_base_hid_report() {
     this->print_base_report_to_serial();
 #endif
     void *report = &(this->base_hid_report);
-    HID().SendReport(BASE_KEYBOARD_REPORT_ID, report, sizeof(BaseHIDReport));
+    DalsikHid::send_report(BASE_KEYBOARD_REPORT_ID, report, sizeof(BaseHIDReport));
 }
 
 void MasterReport::send_system_hid_report() {
@@ -583,7 +579,7 @@ void MasterReport::send_system_hid_report() {
     this->print_system_report_to_serial();
 #endif
     void *report = &(this->system_hid_report);
-    HID().SendReport(SYSTEM_KEYBOARD_REPORT_ID, report, sizeof(SystemHIDReport));
+    DalsikHid::send_report(SYSTEM_KEYBOARD_REPORT_ID, report, sizeof(SystemHIDReport));
 }
 
 void MasterReport::send_multimedia_hid_report() {
@@ -591,5 +587,5 @@ void MasterReport::send_multimedia_hid_report() {
     this->print_multimedia_report_to_serial();
 #endif
     void *report = &(this->multimedia_hid_report);
-    HID().SendReport(MULTIMEDIA_KEYBOARD_REPORT_ID, report, sizeof(MultimediaHIDReport));
+    DalsikHid::send_report(MULTIMEDIA_KEYBOARD_REPORT_ID, report, sizeof(MultimediaHIDReport));
 }

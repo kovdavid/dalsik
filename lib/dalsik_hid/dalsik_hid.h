@@ -1,5 +1,7 @@
 #pragma once
 
+#include "HID.h"
+
 #define BASE_KEYBOARD_REPORT_ID       0x01
 #define SYSTEM_KEYBOARD_REPORT_ID     0x02
 #define MULTIMEDIA_KEYBOARD_REPORT_ID 0x03
@@ -79,3 +81,14 @@ const uint8_t KEYBOARD_HID_DESC[] PROGMEM = {
     0x81, 0x00,       //   INPUT (Data,Var,Abs)
     0xc0              // END_COLLECTION
 };
+
+namespace DalsikHid {
+    inline void init_descriptor() {
+        static HIDSubDescriptor node(KEYBOARD_HID_DESC, sizeof(KEYBOARD_HID_DESC));
+        HID().AppendDescriptor(&node);
+    }
+
+    inline void send_report(uint8_t id, const void* data, int len) {
+        HID().SendReport(id, data, len);
+    }
+}

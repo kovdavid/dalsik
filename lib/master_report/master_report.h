@@ -3,7 +3,7 @@
 #include "dalsik.h"
 #include "matrix.h"
 #include "keymap.h"
-#include "dalsik_hid_desc.h"
+#include "dalsik_hid.h"
 
 class MasterReport {
     private:
