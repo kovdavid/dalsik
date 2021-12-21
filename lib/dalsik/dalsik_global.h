@@ -68,14 +68,14 @@ typedef struct {
     millisec last_press_ts;
 } DualKeyState;
 
-#define HOLD_OR_TOGGLE_NOT_PRESSED 0x00
-#define HOLD_OR_TOGGLE_PENDING     0x01
-#define HOLD_OR_TOGGLE_HOLD_LAYER  0x02
+#define TOGGLE_OR_HOLD_NOT_PRESSED 0x00
+#define TOGGLE_OR_HOLD_PENDING     0x01
+#define TOGGLE_OR_HOLD_HOLD_LAYER  0x02
 
 typedef struct {
     uint8_t mode;
     KeyInfo key_info;
-} LayerHoldOrToggleState;
+} LayerToggleOrHoldState;
 
 // EEPROM - 2B/key; 48keys; 8layers; 2*48*8 = 768B
 // keymap : 0-767

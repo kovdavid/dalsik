@@ -25,7 +25,7 @@ void MasterReport::clear() {
     memset(&(this->multimedia_hid_report), 0, sizeof(MultimediaHIDReport));
     memset(&(this->dual_key_state), 0, sizeof(DualKeyState));
     memset(&(this->dual_layer_key_state), 0, sizeof(DualKeyState));
-    memset(&(this->hold_or_toggle_state), 0, sizeof(LayerHoldOrToggleState));
+    memset(&(this->toggle_or_hold_state), 0, sizeof(LayerToggleOrHoldState));
 
     this->num_keys_pressed = 0;
 
@@ -84,7 +84,7 @@ void MasterReport::press(KeyInfo key_info) {
 #endif
 
     this->press_hook_for_dual_keys(&key_info);
-    this->press_hook_for_layer_hold_or_toggle(&key_info);
+    this->press_hook_for_layer_toggle_or_hold(&key_info);
     this->press_hook_for_tapdance_keys(key_info);
 
     if (key_info.type == KEY_NORMAL) {
@@ -94,7 +94,7 @@ void MasterReport::press(KeyInfo key_info) {
     } else if (key_info.type == KEY_LAYER_TOGGLE) {
         this->press_toggle_layer_key(key_info.key);
     } else if (key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
-        this->press_layer_hold_or_toggle(key_info);
+        this->press_layer_toggle_or_hold(key_info);
     } else if (key_info.type == KEY_TAPDANCE) {
         this->press_tapdance_key(key_info);
     } else if (key_info.type == KEY_SYSTEM)  {
@@ -130,7 +130,7 @@ void MasterReport::release(KeyInfo key_info) {
     } else if (key_info.type == KEY_LAYER_TOGGLE) {
         // do nothing; toggle_layer key has only effect on press
     } else if (key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
-        this->release_layer_hold_or_toggle(key_info);
+        this->release_layer_toggle_or_hold(key_info);
     } else if (key_info.type == KEY_TAPDANCE) {
         this->release_tapdance_key(key_info);
     } else if (key_info.type == KEY_SYSTEM)  {
@@ -339,29 +339,29 @@ inline void MasterReport::press_hook_for_dual_keys(KeyInfo* current_ki) {
     }
 }
 
-inline void MasterReport::press_layer_hold_or_toggle(KeyInfo key_info) {
-    if (this->hold_or_toggle_state.mode == HOLD_OR_TOGGLE_NOT_PRESSED) {
-        this->hold_or_toggle_state.key_info = key_info;
+inline void MasterReport::press_layer_toggle_or_hold(KeyInfo key_info) {
+    if (this->toggle_or_hold_state.mode == TOGGLE_OR_HOLD_NOT_PRESSED) {
+        this->toggle_or_hold_state.key_info = key_info;
         if (this->num_keys_pressed > 1) {
-            this->hold_or_toggle_state.mode = HOLD_OR_TOGGLE_HOLD_LAYER;
+            this->toggle_or_hold_state.mode = TOGGLE_OR_HOLD_HOLD_LAYER;
             this->keymap->set_layer(key_info.key);
         } else {
-            this->hold_or_toggle_state.mode = HOLD_OR_TOGGLE_PENDING;
+            this->toggle_or_hold_state.mode = TOGGLE_OR_HOLD_PENDING;
         }
     } else {
         this->keymap->set_layer(key_info.key);
     }
 }
 
-inline void MasterReport::release_layer_hold_or_toggle(KeyInfo key_info) {
-    if (KeyMap::key_info_compare(key_info, this->hold_or_toggle_state.key_info) == 0) {
-        if (this->hold_or_toggle_state.mode == HOLD_OR_TOGGLE_HOLD_LAYER) {
+inline void MasterReport::release_layer_toggle_or_hold(KeyInfo key_info) {
+    if (KeyMap::key_info_compare(key_info, this->toggle_or_hold_state.key_info) == 0) {
+        if (this->toggle_or_hold_state.mode == TOGGLE_OR_HOLD_HOLD_LAYER) {
             this->keymap->remove_layer(key_info.key);
         } else {
             this->keymap->toggle_layer(key_info.key);
         }
 
-        memset(&(this->hold_or_toggle_state), 0, sizeof(LayerHoldOrToggleState));
+        memset(&(this->toggle_or_hold_state), 0, sizeof(LayerToggleOrHoldState));
     } else {
         this->keymap->remove_layer(key_info.key);
     }
@@ -381,10 +381,10 @@ inline void MasterReport::release_system_key(KeyInfo key_info) {
     }
 }
 
-inline void MasterReport::press_hook_for_layer_hold_or_toggle(KeyInfo* current_ki) {
-    if (this->hold_or_toggle_state.mode == HOLD_OR_TOGGLE_PENDING) {
-        this->hold_or_toggle_state.mode = HOLD_OR_TOGGLE_HOLD_LAYER;
-        this->keymap->set_layer(this->hold_or_toggle_state.key_info.key);
+inline void MasterReport::press_hook_for_layer_toggle_or_hold(KeyInfo* current_ki) {
+    if (this->toggle_or_hold_state.mode == TOGGLE_OR_HOLD_PENDING) {
+        this->toggle_or_hold_state.mode = TOGGLE_OR_HOLD_HOLD_LAYER;
+        this->keymap->set_layer(this->toggle_or_hold_state.key_info.key);
         this->keymap->reload_key_info_by_row_col(current_ki);
     }
 }
