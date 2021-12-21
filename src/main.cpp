@@ -5,6 +5,7 @@
 #include <string.h>
 #include "array_utils.h"
 #include "dalsik.h"
+#include "dalsik_global.h"
 #include "dalsik_hid_desc.h"
 #include "dalsik_led.h"
 #include "dalsik_serial.h"

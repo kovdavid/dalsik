@@ -8,31 +8,7 @@
 // keymap : 0-767
 // tapdance keys : 800-899
 
-typedef struct {
-    uint8_t type;
-    uint8_t key;
-} EEPROM_KeyInfo;
-
-typedef struct {
-    uint8_t type;
-    uint8_t key;
-    uint8_t row;
-    uint8_t col;
-} KeyInfo;
-
-#define MAX_LAYER_COUNT 8
-#define LAYER_HISTORY_CAPACITY 5
-#define MAX_TAPDANCE_KEYS 16
-#define MAX_TAPDANCE_TAPS 3
 #define TAPDANCE_EEPROM_OFFSET (sizeof(EEPROM_KeyInfo)*MAX_LAYER_COUNT*KEY_COUNT)
-
-#define ROW_UNKNOWN 255
-#define COL_UNKNOWN 255
-
-#define KEYBOARD_SIDE_LEFT  0x00
-#define KEYBOARD_SIDE_RIGHT 0x01
-
-#define KEY_COUNT ROW_PIN_COUNT * 2 * ONE_SIDE_COL_PIN_COUNT
 
 #ifdef LED_PIN
 const uint32_t LED_LAYER_COLORS[MAX_LAYER_COUNT] = {

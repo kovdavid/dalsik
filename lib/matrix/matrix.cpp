@@ -3,9 +3,14 @@
 #include "dalsik.h"
 #include "pin_utils.h"
 
+// Cherry claims bouncing to be <5ms
+#define DEBOUNCE_MAX 0x05
+#define DEBOUNCE_MIN 0x00
+#define DEBOUNCE_CHANGING 0xFF
+
 Matrix::Matrix() {
-    memset(this->keystate, 0, sizeof(uint8_t)*ROW_PIN_COUNT*ONE_SIDE_COL_PIN_COUNT);
-    memset(this->debounce, 0, sizeof(uint8_t)*ROW_PIN_COUNT*ONE_SIDE_COL_PIN_COUNT);
+    memset(this->keystate, 0, sizeof(uint8_t)*ONE_SIDE_KEYS);
+    memset(this->debounce, 0, sizeof(uint8_t)*ONE_SIDE_KEYS);
 
     for (uint8_t row = 0; row < ROW_PIN_COUNT; row++) {
         PinUtils::pinmode_input_pullup(ROW_PINS[row]);

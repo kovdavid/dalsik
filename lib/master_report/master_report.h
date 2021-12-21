@@ -1,35 +1,9 @@
 #pragma once
 
+#include "dalsik.h"
 #include "matrix.h"
 #include "keymap.h"
 #include "dalsik_hid_desc.h"
-
-#define DUAL_MODE_NOT_PRESSED     0x00
-#define DUAL_MODE_PENDING         0x01
-#define DUAL_MODE_PRESS_KEY       0x02
-#define DUAL_MODE_HOLD_MODIFIER   0x03
-#define DUAL_MODE_HOLD_LAYER      0x04
-
-typedef struct {
-    uint8_t mode;
-    KeyInfo key_info;
-    unsigned long last_press_ts;
-} DualKeyState;
-
-#define HOLD_OR_TOGGLE_NOT_PRESSED 0x00
-#define HOLD_OR_TOGGLE_PENDING     0x01
-#define HOLD_OR_TOGGLE_HOLD_LAYER  0x02
-
-typedef struct {
-    uint8_t mode;
-    KeyInfo key_info;
-} LayerHoldOrToggleState;
-
-typedef struct {
-    uint8_t key_reported;
-    uint8_t key_pressed;
-    uint8_t tap_count;
-} TapDanceState;
 
 class MasterReport {
     private:
