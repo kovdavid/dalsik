@@ -1,7 +1,12 @@
 #pragma once
 
 #include <stdint.h>
-#include "pin_utils.h"
+
+#define PIN_B(x) (0x30+x)
+#define PIN_C(x) (0x60+x)
+#define PIN_D(x) (0x90+x)
+#define PIN_E(x) (0xC0+x)
+#define PIN_F(x) (0xF0+x)
 
 #define ROW_PIN_COUNT 4
 #define ONE_SIDE_COL_PIN_COUNT 6
