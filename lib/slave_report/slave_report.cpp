@@ -47,11 +47,11 @@ uint8_t SlaveReport::encode_slave_report_data(ChangedKeyEvent event) {
 }
 
 ChangedKeyEvent SlaveReport::decode_slave_report_data(uint8_t data) {
-    ChangedKeyEvent coords;
+    ChangedKeyEvent event;
 
-    coords.type = (data & 0x80) ? EVENT_KEY_PRESS : EVENT_KEY_RELEASE;
-    coords.coords.row  = (data >> 5) & 0x03;
-    coords.coords.col  = (data >> 2) & 0x07;
+    event.type = (data & 0x80) ? EVENT_KEY_PRESS : EVENT_KEY_RELEASE;
+    event.coords.row = (data >> 5) & 0x03;
+    event.coords.col = (data >> 2) & 0x07;
 
     uint8_t p1 = (data >> 1) & 0x01;
     uint8_t p2 = (data >> 0) & 0x01;
@@ -60,7 +60,7 @@ ChangedKeyEvent SlaveReport::decode_slave_report_data(uint8_t data) {
     uint8_t calc_p2 = parity(data & 0x7C);
 
     if (p1 == calc_p1 && p2 == calc_p2) {
-        return coords;
+        return event;
     } else {
         return ChangedKeyEvent { EVENT_NONE, KeyCoords { 0, 0 } };
     }
