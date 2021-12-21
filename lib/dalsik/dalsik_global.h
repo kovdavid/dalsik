@@ -42,8 +42,7 @@ typedef struct {
 typedef struct {
     uint8_t type;
     uint8_t key;
-    uint8_t row;
-    uint8_t col;
+    KeyCoords coords;
 } KeyInfo;
 
 #define EVENT_NONE 0x00

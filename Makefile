@@ -1,6 +1,8 @@
 DEVICE=$(shell ls /dev/ttyACM*)
 BOARD=SparkFun:avr:promicro:cpu=16MHzatmega32U4
 
+clean_verify: clean verify
+
 verify:
 	make -C src
 

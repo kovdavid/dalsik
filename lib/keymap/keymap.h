@@ -30,16 +30,16 @@ class KeyMap {
         uint8_t keyboard_side;
         uint8_t layer_history[LAYER_HISTORY_CAPACITY];
 
-        uint32_t get_eeprom_address(uint8_t layer, uint8_t row, uint8_t col);
+        uint32_t get_eeprom_address(uint8_t layer, KeyCoords c);
         uint32_t get_tapdance_eeprom_address(uint8_t index, uint8_t tap);
-        KeyInfo get_non_transparent_key(uint8_t row, uint8_t col);
-        KeyInfo get_key(uint8_t row, uint8_t col);
+        KeyInfo get_non_transparent_key(KeyCoords c);
+        KeyInfo get_key(KeyCoords c);
     public:
         KeyMap(void);
 
-        KeyInfo get_master_key(uint8_t row, uint8_t col);
-        KeyInfo get_slave_key(uint8_t row, uint8_t col);
-        KeyInfo get_key_from_layer(uint8_t layer, uint8_t row, uint8_t col);
+        KeyInfo get_master_key(KeyCoords c);
+        KeyInfo get_slave_key(KeyCoords c);
+        KeyInfo get_key_from_layer(uint8_t layer, KeyCoords c);
         KeyInfo get_tapdance_key(uint8_t index, uint8_t tap);
         void reload_key_info_by_row_col(KeyInfo* ki);
 
@@ -69,7 +69,8 @@ class KeyMap {
         static uint8_t get_dual_layer_key_layer(KeyInfo key_info);
         static uint8_t get_key_with_mod_modifier(KeyInfo key_info);
 
-        static KeyInfo init_key_info(uint8_t type, uint8_t key, uint8_t row, uint8_t col);
+        static KeyInfo init_key_info(uint8_t type, uint8_t key, KeyCoords c);
+        static KeyInfo init_key_info(EEPROM_KeyInfo eeprom_key, KeyCoords c);
         static KeyInfo init_key_info_without_coords(uint8_t type, uint8_t key);
 
         // For Serial.print() usage only
