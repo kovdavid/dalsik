@@ -4,12 +4,6 @@
 #include "dalsik.h"
 #include "key_definitions.h"
 
-// EEPROM - 2B/key; 48keys; 8layers; 2*48*8 = 768B
-// keymap : 0-767
-// tapdance keys : 800-899
-
-#define TAPDANCE_EEPROM_OFFSET (sizeof(EEPROM_KeyInfo)*MAX_LAYER_COUNT*KEY_COUNT)
-
 #ifdef LED_PIN
 const uint32_t LED_LAYER_COLORS[MAX_LAYER_COUNT] = {
     0x00000000, // Layer 0 - default (LED off)
@@ -30,15 +24,13 @@ class KeyMap {
         uint8_t keyboard_side;
         uint8_t layer_history[LAYER_HISTORY_CAPACITY];
 
-        uint32_t get_eeprom_address(uint8_t layer, KeyCoords c);
-        uint32_t get_tapdance_eeprom_address(uint8_t index, uint8_t tap);
         KeyInfo get_non_transparent_key(KeyCoords c);
         KeyInfo get_key(KeyCoords c);
     public:
         KeyMap(void);
 
-        KeyInfo get_master_key(KeyCoords c);
-        KeyInfo get_slave_key(KeyCoords c);
+        KeyInfo get_master_key(KeyCoords coords);
+        KeyInfo get_slave_key(KeyCoords coords);
         KeyInfo get_key_from_layer(uint8_t layer, KeyCoords c);
         KeyInfo get_tapdance_key(uint8_t index, uint8_t tap);
         void reload_key_info_by_row_col(KeyInfo* ki);

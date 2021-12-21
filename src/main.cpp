@@ -1,10 +1,10 @@
 #include <Arduino.h>
 #include <HID.h>
-#include <EEPROM.h>
 #include <stdint.h>
 #include <string.h>
 #include "array_utils.h"
 #include "dalsik.h"
+#include "dalsik_eeprom.h"
 #include "dalsik_global.h"
 #include "dalsik_hid.h"
 #include "dalsik_led.h"

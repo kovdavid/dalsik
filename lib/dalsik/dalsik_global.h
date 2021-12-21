@@ -75,6 +75,12 @@ typedef struct {
     KeyInfo key_info;
 } LayerHoldOrToggleState;
 
+// EEPROM - 2B/key; 48keys; 8layers; 2*48*8 = 768B
+// keymap : 0-767
+// tapdance keys : 800-899
+
+#define TAPDANCE_EEPROM_OFFSET (sizeof(EEPROM_KeyInfo)*MAX_LAYER_COUNT*KEY_COUNT)
+
 typedef struct {
     uint8_t key_reported;
     uint8_t key_pressed;
