@@ -1,28 +1,7 @@
 #pragma once
 
+#include "dalsik.h"
 #include "HID.h"
-
-#define BASE_KEYBOARD_REPORT_ID       0x01
-#define SYSTEM_KEYBOARD_REPORT_ID     0x02
-#define MULTIMEDIA_KEYBOARD_REPORT_ID 0x03
-#define MOUSE_REPORT_ID               0x04
-
-#define BASE_HID_REPORT_KEYS 6
-
-typedef struct {
-    uint8_t modifiers;
-    uint8_t reserved;
-    uint8_t keys[BASE_HID_REPORT_KEYS];
-} BaseHIDReport;
-
-typedef struct {
-    uint8_t key;
-} SystemHIDReport;
-
-typedef struct {
-    uint8_t key;
-    uint8_t prefix;
-} MultimediaHIDReport;
 
 const uint8_t KEYBOARD_HID_DESC[] PROGMEM = {
     //  Base Keyboard

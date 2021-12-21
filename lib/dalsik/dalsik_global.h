@@ -84,3 +84,25 @@ const uint8_t ROW_PINS[ROW_PIN_COUNT] = {
 const uint8_t COL_PINS[ONE_SIDE_COL_PIN_COUNT] = {
     PIN_F(6), PIN_F(7), PIN_B(1), PIN_B(3), PIN_B(2), PIN_B(6)
 };
+
+#define BASE_KEYBOARD_REPORT_ID       0x01
+#define SYSTEM_KEYBOARD_REPORT_ID     0x02
+#define MULTIMEDIA_KEYBOARD_REPORT_ID 0x03
+#define MOUSE_REPORT_ID               0x04
+
+#define BASE_HID_REPORT_KEYS 6
+
+typedef struct {
+    uint8_t modifiers;
+    uint8_t reserved;
+    uint8_t keys[BASE_HID_REPORT_KEYS];
+} BaseHIDReport;
+
+typedef struct {
+    uint8_t key;
+} SystemHIDReport;
+
+typedef struct {
+    uint8_t key;
+    uint8_t prefix;
+} MultimediaHIDReport;
