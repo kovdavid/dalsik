@@ -1,6 +1,12 @@
 DEVICE=$(shell ls /dev/ttyACM*)
 BOARD=SparkFun:avr:promicro:cpu=16MHzatmega32U4
 
+verify:
+	make -C src
+
+upload:
+	make -C src upload
+
 Arduino-Makefile:
 	git submodule add --force https://github.com/WeAreLeka/Arduino-Makefile Arduino-Makefile
 
@@ -11,12 +17,6 @@ acutest:
 # crt-t + q => quit tio session
 tio:
 	tio -m INLCRNL -l /tmp/tio.log $(DEVICE)
-
-verify:
-	make -C src
-
-upload:
-	make -C src
 
 clean:
 	rm -rf build/

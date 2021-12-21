@@ -27,7 +27,7 @@ BOARD_SUB         = atmega32u4
 
 ### MONITOR_PORT
 ### The port your board is connected to. Using an '*' tries all the ports and finds the right one.
-MONITOR_PORT      = /dev/tty.usbmodem*
+MONITOR_PORT      = /dev/ttyACM*
 
 ### MONITOR_BAUDRATE
 ### It must be set to Serial baudrate value you are using.
@@ -40,6 +40,7 @@ MONITOR_BAUDRATE  = 115200
 ### AVRDUDE
 ### Path to avrdude directory.
 AVRDUDE          = /usr/bin/avrdude
+AVRDUDE_CONF     = /etc/avrdude.conf
 
 ### CFLAGS_STD
 CFLAGS_STD        = -std=gnu11
