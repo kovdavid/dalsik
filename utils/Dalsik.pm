@@ -15,7 +15,7 @@ our $key_to_byte = {};
 our $byte_to_key = {};
 our $aliases = {};
 
-my $file = "$Bin/../key_definitions.h";
+my $file = "$Bin/../lib/key_definitions/key_definitions.h";
 open my $fh, "<", $file or die "Could not open $file: $!";
 while (my $line = <$fh>) {
     chomp $line;
