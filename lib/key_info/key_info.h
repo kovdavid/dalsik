@@ -100,6 +100,11 @@ class KeyInfo {
                 this->is_any_dual_mod_key()
                 || this->is_any_dual_layer_key();
         }
+        uint8_t is_any_solo_dual_key() {
+            return
+                this->is_solo_dual_mod_key()
+                || this->is_solo_dual_layer_key();
+        }
         uint8_t is_multimedia_key() {
             return this->is_type_between(KEY_MULTIMEDIA_0, KEY_MULTIMEDIA_2);
         }

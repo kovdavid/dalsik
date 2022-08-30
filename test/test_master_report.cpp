@@ -396,6 +396,41 @@ void test_dual_layer_key_2(void) {
     BREP_COMP(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
+// When pressing a solo dual layer key as the first key, it should trigger
+// a new layer
+void test_dual_layer_key_3(void) {
+    KeyMap keymap;
+    MasterReport master_report(&keymap);
+
+    millisec now = 100;
+
+    master_report.handle_master_changed_key({ P, solo_dual_layer_1 }, now++);
+    HID_SIZE_CHECK(0);
+
+    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// When pressing a solo dual layer key NOT as the first key, it should trigger
+// the secondary key instead of layer press immediately
+void test_dual_layer_key_4(void) {
+    KeyMap keymap;
+    MasterReport master_report(&keymap);
+
+    millisec now = 100;
+
+    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    master_report.handle_master_changed_key({ P, solo_dual_layer_1 }, now++);
+    HID_SIZE_CHECK(2);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    // BREP_COMP(1, { 0x00, 0x00, KC_A, KC_H, 0x00, 0x00, 0x00, 0x00 });
+}
+
 TEST_LIST = {
     { "test_normal_key_1", test_normal_key_1 },
     { "test_normal_key_2", test_normal_key_2 },
@@ -410,5 +445,7 @@ TEST_LIST = {
     { "test_dual_mod_key_8", test_dual_mod_key_8 },
     { "test_dual_layer_key_1", test_dual_layer_key_1 },
     { "test_dual_layer_key_2", test_dual_layer_key_2 },
+    { "test_dual_layer_key_3", test_dual_layer_key_3 },
+    { "test_dual_layer_key_4", test_dual_layer_key_4 },
     { NULL, NULL }
 };

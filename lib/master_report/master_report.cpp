@@ -191,7 +191,7 @@ inline void MasterReport::release_key_with_mod(KeyInfo key_info) {
 // Dual key {{{
 inline void MasterReport::press_dual_key(PressedKey *pk) {
     if (pk->state == STATE_NOT_PROCESSED) {
-        if (pk->key_index > 0 && pk->key_info.is_solo_dual_mod_key()) {
+        if (pk->key_index > 0 && pk->key_info.is_any_solo_dual_key()) {
             // Not the first key
             this->press_normal_key(pk->key_info);
             pk->state = STATE_PRIMARY_KEY;
@@ -237,7 +237,7 @@ inline void MasterReport::release_dual_key(PressedKey *pk) {
 // Dual layer key {{{
 inline void MasterReport::press_dual_layer_key(PressedKey *pk) {
     if (pk->state == STATE_NOT_PROCESSED) {
-        if (pk->key_index > 0 && pk->key_info.is_solo_dual_mod_key()) {
+        if (pk->key_index > 0 && pk->key_info.is_any_solo_dual_key()) {
             // Not the first key
             this->press_normal_key(pk->key_info);
             pk->state = STATE_PRIMARY_KEY;
