@@ -5,12 +5,9 @@ use strict;
 use warnings;
 use FindBin qw[ $Bin ];
 
-our $modifier_to_byte = {};
-our $byte_to_modifier = {};
 our $key_types_array = [];
-our $type_to_alias = {};
 our $type_to_byte = {};
-our $byte_to_type = {};
+our $byte_to_alias = {};
 our $key_to_byte = {};
 our $byte_to_key = {};
 our $aliases = {};
@@ -20,19 +17,14 @@ open my $fh, "<", $file or die "Could not open $file: $!";
 while (my $line = <$fh>) {
     chomp $line;
 
-    if ($line =~ m/^#define MODIFIER_(\w+)\s+(\S+)/) {
-        my $modifier = $1;
-        my $byte = hex($2);
-        $modifier_to_byte->{$modifier} = $byte;
-        $byte_to_modifier->{$byte} = $modifier;
-    } elsif ($line =~ m/^#define KEY_/) {
+    if ($line =~ m/^#define KEY_/) {
         my (undef, $key_type, $byte_str, undef, $alias, undef) = split(/\s+/, $line);
         my $byte = hex($byte_str);
+
         push @{ $key_types_array }, $alias;
         $type_to_byte->{$key_type} = $byte;
         $type_to_byte->{$alias} = $byte;
-        $byte_to_type->{$byte} = $alias;
-        $type_to_alias->{$key_type} = $alias;
+        $byte_to_alias->{$byte} = $alias;
     } elsif ($line =~ m/^#define KC_(\S+)\s+(\S+)/) {
         my $key = $1;
         my $byte = hex($2);
@@ -109,7 +101,7 @@ sub _keystr_to_type_and_arg {
 sub type_and_key_to_str {
     my ($type, $key) = @_;
 
-    my $type_alias = $type_to_alias->{$type};
+    my $type_alias = $byte_to_alias->{hex($type)};
     if (!defined($type_alias)) {
         die "Could not get type alias for type $type";
     }
