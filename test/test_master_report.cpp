@@ -48,6 +48,9 @@ KeyCoords normal_KC_B = { 1, 2 };
 KeyCoords dual_ctrl_KC_C = { 1, 3 };
 KeyCoords dual_shift_KC_D = { 1, 4 };
 
+KeyCoords dual_layer_1 = { 1, 7 };
+KeyCoords solo_dual_layer_1 = { 1, 8 };
+
 // Simple press test with short delay between events
 void test_normal_key_1(void) {
     KeyMap keymap;
@@ -358,6 +361,41 @@ void test_dual_mod_key_8(void) {
     BREP_COMP(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
+// When tapping the dual layer key, the secondary key should trigger
+void test_dual_layer_key_1(void) {
+    KeyMap keymap;
+    MasterReport master_report(&keymap);
+
+    millisec now = 100;
+
+    master_report.handle_master_changed_key({ P, dual_layer_1 }, now++);
+    HID_SIZE_CHECK(0);
+
+    master_report.handle_master_changed_key({ R, dual_layer_1 }, now++);
+    HID_SIZE_CHECK(2);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_G, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// When pressing a different key after the dual layer key, we should
+// move to given layer. So for the key `normal_KC_A` we want to trigger
+// KC_E, as it is defined on layer 1
+void test_dual_layer_key_2(void) {
+    KeyMap keymap;
+    MasterReport master_report(&keymap);
+
+    millisec now = 100;
+
+    master_report.handle_master_changed_key({ P, dual_layer_1 }, now++);
+    HID_SIZE_CHECK(0);
+
+    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
 TEST_LIST = {
     { "test_normal_key_1", test_normal_key_1 },
     { "test_normal_key_2", test_normal_key_2 },
@@ -370,5 +408,7 @@ TEST_LIST = {
     { "test_dual_mod_key_6", test_dual_mod_key_6 },
     { "test_dual_mod_key_7", test_dual_mod_key_7 },
     { "test_dual_mod_key_8", test_dual_mod_key_8 },
+    { "test_dual_layer_key_1", test_dual_layer_key_1 },
+    { "test_dual_layer_key_2", test_dual_layer_key_2 },
     { NULL, NULL }
 };

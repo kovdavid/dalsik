@@ -373,6 +373,7 @@ inline void MasterReport::run_press_hook(uint8_t key_index, millisec now) {
     PressedKey *pk = &(this->pressed_keys.keys[key_index]);
     KeyInfo key_info = pk->key_info;
 
+
     if (pk->state != STATE_PENDING) {
         return;
     }
@@ -388,11 +389,13 @@ inline void MasterReport::run_press_hook(uint8_t key_index, millisec now) {
 
         // Reload the rest of the keys as of this layer were applied
         // when they were pressed
-        for (uint8_t i = key_index; i < PRESSED_KEY_BUFFER; i++) {
+        for (uint8_t i = key_index + 1; i < PRESSED_KEY_BUFFER; i++) {
             PressedKey *pk = &(this->pressed_keys.keys[i]);
+
             if (!pk->timestamp || pk->state != STATE_NOT_PROCESSED) {
                 break;
             }
+
             this->keymap->reload_by_coords(&(pk->key_info));
         }
     }

@@ -17,6 +17,11 @@ static uint8_t* get_eeprom_data() {
     SET_KEY(0, 1, 5, KEY_TIMED_DUAL_MOD_LSHIFT, KC_E);
     SET_KEY(0, 1, 6, KEY_TIMED_DUAL_MOD_LCTRL, KC_F);
 
+    SET_KEY(0, 1, 7, KEY_DUAL_LAYER_1, KC_G);
+    SET_KEY(0, 1, 8, KEY_SOLO_DUAL_LAYER_1, KC_H);
+
+    SET_KEY(1, 1, 1, KEY_NORMAL, KC_E);
+
     return data;
 }
 
