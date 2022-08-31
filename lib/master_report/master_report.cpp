@@ -445,11 +445,9 @@ inline bool MasterReport::run_release_hook(
             this->send_hid_report();
         }
     } else {
-        if (cond) {
-            if (
-                key_info.is_timed_dual_mod_key()
-                || key_info.is_timed_dual_layer_key()
-            ) {
+        // This is prepared for timed dual keys, which are not implemented yet
+        if (0 && cond) {
+            if (key_info.is_any_timed_dual_key()) {
                 return 0;
             }
 

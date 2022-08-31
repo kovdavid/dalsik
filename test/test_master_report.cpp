@@ -361,6 +361,30 @@ void test_dual_mod_key_8(void) {
     BREP_COMP(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
+void test_dual_mod_key_9(void) {
+    KeyMap keymap;
+    MasterReport master_report(&keymap);
+
+    millisec now = 100;
+
+    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    master_report.handle_master_changed_key({ P, dual_shift_KC_D }, now++);
+    HID_SIZE_CHECK(1);
+
+    master_report.handle_master_changed_key({ R, normal_KC_A }, now++);
+    HID_SIZE_CHECK(2);
+
+    master_report.handle_master_changed_key({ R, dual_shift_KC_D }, now++);
+    HID_SIZE_CHECK(4);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(2, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
 // When tapping the dual layer key, the secondary key should trigger
 void test_dual_layer_key_1(void) {
     KeyMap keymap;
@@ -443,6 +467,7 @@ TEST_LIST = {
     { "test_dual_mod_key_6", test_dual_mod_key_6 },
     { "test_dual_mod_key_7", test_dual_mod_key_7 },
     { "test_dual_mod_key_8", test_dual_mod_key_8 },
+    { "test_dual_mod_key_9", test_dual_mod_key_9 },
     { "test_dual_layer_key_1", test_dual_layer_key_1 },
     { "test_dual_layer_key_2", test_dual_layer_key_2 },
     { "test_dual_layer_key_3", test_dual_layer_key_3 },
