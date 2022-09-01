@@ -30,20 +30,26 @@ void MasterReport::clear() {
 // Handle changed key {{{
 void MasterReport::handle_master_changed_key(ChangedKeyEvent e, millisec now) {
     KeyInfo key_info = this->keymap->get_master_key(e.coords);
-    if (e.type == EVENT_KEY_PRESS) {
-        this->handle_key_press(key_info, now);
-    } else if (e.type == EVENT_KEY_RELEASE) {
-        this->handle_key_release(key_info, now);
-    }
+    this->handle_changed_key(e, key_info, now);
 }
 
 void MasterReport::handle_slave_changed_key(ChangedKeyEvent e, millisec now) {
     KeyInfo key_info = this->keymap->get_slave_key(e.coords);
+    this->handle_changed_key(e, key_info, now);
+}
+
+void MasterReport::handle_changed_key(
+    ChangedKeyEvent e, KeyInfo key_info, millisec now
+) {
     if (e.type == EVENT_KEY_PRESS) {
         this->handle_key_press(key_info, now);
     } else if (e.type == EVENT_KEY_RELEASE) {
         this->handle_key_release(key_info, now);
     }
+
+#if DEBUG_MASTER_REPORT_STATE
+    this->print();
+#endif
 }
 // }}}
 

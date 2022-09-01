@@ -47,6 +47,7 @@ class MasterReport {
 
         void print();
     private:
+        void handle_changed_key(ChangedKeyEvent e, KeyInfo key_info, millisec now);
         void print_base_report_to_serial();
         void print_system_report_to_serial();
         void print_multimedia_report_to_serial();

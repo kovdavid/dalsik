@@ -6,6 +6,10 @@
 #define DEBUG 0
 #endif
 
+#ifndef DEBUG_MASTER_REPORT_STATE
+#define DEBUG_MASTER_REPORT_STATE 0
+#endif
+
 #ifndef DEBUG_KEYREPORT_BASE
 #define DEBUG_KEYREPORT_BASE 0
 #endif
