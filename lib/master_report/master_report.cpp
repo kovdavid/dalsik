@@ -500,6 +500,7 @@ inline void MasterReport::remove_from_pressed_keys(PressedKey *pk) {
 
     for (uint8_t i = pk->key_index; i < last_index; i++) {
         this->pressed_keys.keys[i] = this->pressed_keys.keys[i+1];
+        this->pressed_keys.keys[i].key_index = i;
     }
 
     memset(&(this->pressed_keys.keys[last_index]), 0, sizeof(PressedKey));
@@ -598,6 +599,8 @@ void MasterReport::print() {
 
         Serial.print("  -[");
         Serial.print(i);
+        Serial.print("/");
+        Serial.print(this->pressed_keys.keys[i].key_index);
         Serial.print("] - KeyInfo[T:");
         Serial.print(key_info.type);
         Serial.print(",K:");

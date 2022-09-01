@@ -452,7 +452,43 @@ void test_dual_layer_key_4(void) {
     HID_SIZE_CHECK(2);
 
     BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    // BREP_COMP(1, { 0x00, 0x00, KC_A, KC_H, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, KC_A, KC_H, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// There was an issue with the `key_index` value in the PressedKeys
+// structure after calling `remove_from_pressed_keys` - the value was not updated.
+// That caused in this test to the dual_shift_KC_D key to be stuck even after
+// releasing it.
+void test_stuck_key(void) {
+    KeyMap keymap;
+    MasterReport master_report(&keymap);
+
+    millisec now = 100;
+
+    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    master_report.handle_master_changed_key({ P, normal_KC_B }, now++);
+    HID_SIZE_CHECK(2);
+
+    master_report.handle_master_changed_key({ R, normal_KC_A }, now++);
+    HID_SIZE_CHECK(3);
+
+    master_report.handle_master_changed_key({ P, dual_shift_KC_D }, now++);
+    HID_SIZE_CHECK(3);
+
+    master_report.handle_master_changed_key({ R, normal_KC_B }, now++);
+    HID_SIZE_CHECK(4);
+
+    master_report.handle_master_changed_key({ R, dual_shift_KC_D }, now++);
+    HID_SIZE_CHECK(6);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, KC_A, KC_B, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(2, { 0x00, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(4, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 TEST_LIST = {
@@ -472,5 +508,6 @@ TEST_LIST = {
     { "test_dual_layer_key_2", test_dual_layer_key_2 },
     { "test_dual_layer_key_3", test_dual_layer_key_3 },
     { "test_dual_layer_key_4", test_dual_layer_key_4 },
+    { "test_stuck_key", test_stuck_key },
     { NULL, NULL }
 };
