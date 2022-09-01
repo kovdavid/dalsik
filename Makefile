@@ -18,7 +18,7 @@ acutest:
 
 # crt-t + q => quit tio session
 tio:
-	tio -m INLCRNL -l /tmp/tio.log $(DEVICE)
+	tio --map INLCRNL --log-file /tmp/tio.log $(DEVICE)
 
 clean:
 	rm -rf build/

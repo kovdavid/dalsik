@@ -28,9 +28,9 @@ static inline void handle_slave_data(uint8_t data, millisec now) {
         Serial.print("REL");
     }
     Serial.print("|ROW:");
-    Serial.print(event.row);
+    Serial.print(event.coords.row);
     Serial.print("|COL:");
-    Serial.print(event.col);
+    Serial.print(event.coords.col);
     Serial.print(">");
     Serial.print(" now:");
     Serial.print(prev_millis);
@@ -118,9 +118,9 @@ void Dalsik::loop() {
         Serial.print("REL");
     }
     Serial.print("|ROW:");
-    Serial.print(event.row);
+    Serial.print(event.coords.row);
     Serial.print("|COL:");
-    Serial.print(event.col);
+    Serial.print(event.coords.col);
     Serial.print(">");
     Serial.print(" now:");
     Serial.print(now);
