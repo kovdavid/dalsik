@@ -70,6 +70,9 @@ class MasterReport {
         inline void press_normal_key(KeyInfo key_info);
         inline void release_normal_key(KeyInfo key_info);
 
+        inline void press_one_shot_modifier_key(PressedKey *pk);
+        inline void release_one_shot_modifier_key(PressedKey *pk);
+
         inline void press_layer_key(uint8_t layer);
         inline void release_layer_key(uint8_t layer);
 
@@ -98,6 +101,7 @@ class MasterReport {
         inline void remove_from_pressed_keys(PressedKey *pk);
         inline bool delay_key_press(PressedKey *pk);
 
+        uint8_t one_shot_modifiers;
         BaseHIDReport base_hid_report;
         BaseHIDReport last_base_hid_report;
         SystemHIDReport system_hid_report;

@@ -16,6 +16,7 @@ MasterReport::MasterReport(KeyMap* keymap) {
     memset(&(this->last_system_hid_report), 0, sizeof(SystemHIDReport));
     memset(&(this->last_multimedia_hid_report), 0, sizeof(MultimediaHIDReport));
     this->key_press_counter = 0;
+    this->one_shot_modifiers = 0x00;
 }
 
 void MasterReport::clear() {
@@ -95,12 +96,16 @@ void MasterReport::handle_key_release(KeyInfo key_info, millisec now) {
 inline void MasterReport::press_normal_key(KeyInfo key_info) {
     uint8_t key = key_info.key;
 
-    if (KC_LCTRL <= key && key <= KC_RGUI) {
+    if (KC_LCTRL <= key && key <= KC_RGUI) { // Modifier
         // For 'Left Shift' 0xE1 bitmask is 0x0000_0010
         uint8_t modifier_bit = key & 0x0F;
         uint8_t bitmask = 1 << modifier_bit;
         this->base_hid_report.modifiers |= bitmask;
-    } else { // key
+    } else { // Normal key
+        if (this->one_shot_modifiers) {
+            this->base_hid_report.modifiers |= this->one_shot_modifiers;
+            this->one_shot_modifiers = 0x00;
+        }
         append_uniq_to_uint8_array(
             this->base_hid_report.keys, BASE_HID_REPORT_KEYS, key
         );
@@ -119,6 +124,43 @@ inline void MasterReport::release_normal_key(KeyInfo key_info) {
         remove_uniq_from_uint8_array(
             this->base_hid_report.keys, BASE_HID_REPORT_KEYS, key
         );
+    }
+}
+// }}}
+// One-shot modifier key {{{
+inline void MasterReport::press_one_shot_modifier_key(PressedKey *pk) {
+    if (pk->state == STATE_NOT_PROCESSED) {
+        if (pk->key_index > 0) {
+            // Not the first key
+            uint8_t modifier = pk->key_info.key;
+            this->press_normal_key(
+                KeyInfo(KEY_NORMAL, modifier, pk->key_info.coords)
+            );
+            pk->state = STATE_PRIMARY_KEY;
+        } else {
+            pk->state = STATE_PENDING;
+        }
+    } else if (pk->state == STATE_PENDING) {
+        // If a different key is pressed, act as modifier
+        uint8_t modifier = pk->key_info.key;
+        this->press_normal_key(
+            KeyInfo(KEY_NORMAL, modifier, pk->key_info.coords)
+        );
+        pk->state = STATE_PRIMARY_KEY;
+    }
+}
+inline void MasterReport::release_one_shot_modifier_key(PressedKey *pk) {
+    if (pk->state == STATE_PRIMARY_KEY) {
+        uint8_t modifier = pk->key_info.key;
+        this->release_normal_key(
+            KeyInfo(KEY_NORMAL, modifier, pk->key_info.coords)
+        );
+    } else if (pk->state == STATE_PENDING) {
+        // No other key was pressed after this one, act as one-shot modifier
+        uint8_t modifier = pk->key_info.key & 0x0F;
+        uint8_t bitmask = 1 << modifier;
+
+        this->one_shot_modifiers ^= bitmask;
     }
 }
 // }}}
@@ -325,6 +367,8 @@ void MasterReport::press(PressedKey *pk, millisec now) {
         this->press_dual_key(pk);
     } else if (key_info.is_any_dual_layer_key()) {
         this->press_dual_layer_key(pk);
+    } else if (key_info.type == KEY_ONE_SHOT_MODIFIER) {
+        this->press_one_shot_modifier_key(pk);
     }
 }
 
@@ -340,6 +384,8 @@ void MasterReport::release(PressedKey *pk, millisec now) {
         this->release_dual_key(pk);
     } else if (key_info.is_any_dual_layer_key()) {
         this->release_dual_layer_key(pk);
+    } else if (key_info.type == KEY_ONE_SHOT_MODIFIER) {
+        this->release_one_shot_modifier_key(pk);
     } else {
         pk->state = STATE_RELEASED;
 
@@ -404,6 +450,8 @@ inline void MasterReport::run_press_hook(uint8_t key_index, millisec now) {
 
             this->keymap->reload_by_coords(&(pk->key_info));
         }
+    } else if (key_info.type == KEY_ONE_SHOT_MODIFIER) {
+        this->press_one_shot_modifier_key(pk);
     }
 }
 

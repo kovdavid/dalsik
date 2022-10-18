@@ -1,7 +1,7 @@
 #pragma once
 
-// INTERNAL_NAME BYTE_VALUE /* SHORTCUT */
-// Keys with arguments have `SHORTCUT` ending with '(' or ','
+// INTERNAL_NAME BYTE_VALUE /* ALIAS */
+// Keys with arguments have their `ALIAS` ending with '(' or ','
 
 #define KEY_UNSET                  0x00 /* KC_NO       */
 #define KEY_NORMAL                 0x01 /* KC(         */
@@ -21,6 +21,7 @@
 #define KEY_MULTIMEDIA_1           0x0F /* KC_M1(      */
 #define KEY_MULTIMEDIA_2           0x10 /* KC_M2(      */
 #define KEY_TAPDANCE               0x11 /* TD(         */
+#define KEY_ONE_SHOT_MODIFIER      0x12 /* OSM(        */
 
 #define KEY_DUAL_MOD_LCTRL         0xA0 /* D(LCTRL,    */
 #define KEY_DUAL_MOD_RCTRL         0xA1 /* D(RCTRL,    */

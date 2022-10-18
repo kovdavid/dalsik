@@ -50,6 +50,7 @@ KeyCoords dual_shift_KC_D = { 1, 4 };
 
 KeyCoords dual_layer_1 = { 1, 7 };
 KeyCoords solo_dual_layer_1 = { 1, 8 };
+KeyCoords one_shot_ctrl = { 1, 9 };
 
 // Simple press test with short delay between events
 void test_normal_key_1(void) {
@@ -491,6 +492,85 @@ void test_stuck_key(void) {
     BREP_COMP(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
+// Test that the one-shot CTRL modifier is sent with the KC_A key
+void test_one_shot_modifier(void) {
+    KeyMap keymap;
+    MasterReport master_report(&keymap);
+
+    millisec now = 100;
+
+    master_report.handle_master_changed_key({ P, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(0);
+
+    master_report.handle_master_changed_key({ R, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(0);
+
+    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    BREP_COMP(0, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// Test that after the second press of the one-shot modifier the CTRL modifier
+// is toggled off, so when pressing KC_A, it is not sent
+void test_one_shot_modifier_toggle(void) {
+    KeyMap keymap;
+    MasterReport master_report(&keymap);
+
+    millisec now = 100;
+
+    master_report.handle_master_changed_key({ P, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(0);
+
+    master_report.handle_master_changed_key({ R, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(0);
+
+    master_report.handle_master_changed_key({ P, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(0);
+
+    master_report.handle_master_changed_key({ R, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(0);
+
+    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// When a one-shot modifier is held with a different key, it is registered
+// as a normal modifier - i.e. with the second press of KC_A it is not sent
+// any more
+void test_one_shot_modifier_hold(void) {
+    KeyMap keymap;
+    MasterReport master_report(&keymap);
+
+    millisec now = 100;
+
+    master_report.handle_master_changed_key({ P, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(0);
+
+    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    master_report.handle_master_changed_key({ R, normal_KC_A }, now++);
+    HID_SIZE_CHECK(2);
+
+    master_report.handle_master_changed_key({ R, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(3);
+
+    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(4);
+
+    master_report.handle_master_changed_key({ R, normal_KC_A }, now++);
+    HID_SIZE_CHECK(5);
+
+    BREP_COMP(0, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(2, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(3, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(4, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
 TEST_LIST = {
     { "test_normal_key_1", test_normal_key_1 },
     { "test_normal_key_2", test_normal_key_2 },
@@ -509,5 +589,8 @@ TEST_LIST = {
     { "test_dual_layer_key_3", test_dual_layer_key_3 },
     { "test_dual_layer_key_4", test_dual_layer_key_4 },
     { "test_stuck_key", test_stuck_key },
+    { "test_one_shot_modifier", test_one_shot_modifier },
+    { "test_one_shot_modifier_toggle", test_one_shot_modifier_toggle },
+    { "test_one_shot_modifier_hold", test_one_shot_modifier_hold },
     { NULL, NULL }
 };
