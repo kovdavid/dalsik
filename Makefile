@@ -1,5 +1,4 @@
 DEVICE=$(shell ls /dev/ttyACM*)
-BOARD=SparkFun:avr:promicro:cpu=16MHzatmega32U4
 
 clean_verify: clean verify
 
@@ -16,18 +15,12 @@ acutest:
 	mkdir -p test/acutest
 	wget -O test/acutest/acutest.h https://raw.githubusercontent.com/mity/acutest/master/include/acutest.h
 
-# crt-t + q => quit tio session
+# ctrl-t + q => quit tio session
 tio:
 	tio --map INLCRNL --log-file /tmp/tio.log $(DEVICE)
 
 clean:
 	rm -rf build/
-
-old_verify:
-	arduino --board $(BOARD) --verify dalsik.ino --verbose --port $(DEVICE)
-
-old_upload:
-	arduino --board $(BOARD) --upload dalsik.ino --verbose --port $(DEVICE)
 
 test:
 	make -f Makefile.unittest test
