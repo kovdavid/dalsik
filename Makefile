@@ -9,7 +9,7 @@ upload:
 	make -C src upload
 
 Arduino-Makefile:
-	git submodule add --force https://github.com/WeAreLeka/Arduino-Makefile Arduino-Makefile
+	git submodule add --force https://github.com/DavsX/Arduino-Makefile Arduino-Makefile
 
 acutest:
 	mkdir -p test/acutest
