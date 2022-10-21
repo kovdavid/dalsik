@@ -583,13 +583,23 @@ void MasterReport::key_timeout_check(millisec now) {
     // that has timeouted, we activate the primary key
     PressedKey *pk = &(this->pressed_keys.keys[this->pressed_keys.count-1]);
 
+    if (pk->state != STATE_PENDING) {
+        return;
+    }
+
     if (
-        pk->state == STATE_PENDING
-        && pk->key_info.is_any_dual_key()
+        pk->key_info.is_any_dual_key()
         && pk->timestamp + DUAL_MODE_TIMEOUT_MS < now
     ) {
         pk->state = STATE_PRIMARY_KEY;
         this->press_normal_key(pk->key_info);
+        this->send_hid_report();
+    }
+    if (
+        pk->key_info.type == KEY_ONE_SHOT_MODIFIER
+        && pk->timestamp + ONE_SHOT_MODIFIER_TIMEOUT_MS < now
+    ) {
+        this->press_one_shot_modifier_key(pk);
         this->send_hid_report();
     }
 }

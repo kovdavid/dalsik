@@ -29,6 +29,8 @@
 #define TAPDANCE_TIMEOUT_MS 300
 // Trigger timed dual key secondary action (modifier, layer press) after X ms
 #define TIMED_DUAL_KEY_THRESHOLD_MS 300
+// Trigger the modifier on the one-shot modifier key if it is held longer than X ms
+#define ONE_SHOT_MODIFIER_TIMEOUT_MS 300
 
 namespace Dalsik {
     void setup();

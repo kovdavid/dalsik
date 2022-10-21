@@ -571,6 +571,29 @@ void test_one_shot_modifier_hold(void) {
     BREP_COMP(4, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
+// When a one-shot modifier is held for longer than ONE_SHOT_MODIFIER_TIMEOUT_MS,
+// activate the modifier (useful for e.g. CTRL+mouse click)
+void test_one_shot_modifier_timeout(void) {
+    KeyMap keymap;
+    MasterReport master_report(&keymap);
+
+    millisec now = 100;
+
+    master_report.handle_master_changed_key({ P, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(0);
+
+    // Not yet...
+    now += ONE_SHOT_MODIFIER_TIMEOUT_MS - 1;
+    master_report.key_timeout_check(now);
+    HID_SIZE_CHECK(0);
+
+    now++;
+    master_report.key_timeout_check(now);
+    HID_SIZE_CHECK(1);
+
+    BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
 TEST_LIST = {
     { "test_normal_key_1", test_normal_key_1 },
     { "test_normal_key_2", test_normal_key_2 },
@@ -592,5 +615,6 @@ TEST_LIST = {
     { "test_one_shot_modifier", test_one_shot_modifier },
     { "test_one_shot_modifier_toggle", test_one_shot_modifier_toggle },
     { "test_one_shot_modifier_hold", test_one_shot_modifier_hold },
+    { "test_one_shot_modifier_timeout", test_one_shot_modifier_timeout },
     { NULL, NULL }
 };
