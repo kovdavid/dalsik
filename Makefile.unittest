@@ -35,21 +35,20 @@ $(BUILD_ROOT)/%.o: test/*/%
 	$(COMPILER) -c $< -o $@
 
 OBJ = \
-	  test_master_report.cpp.o \
+	  test_keyboard.cpp.o \
 	  mock_eeprom.cpp.o \
 	  dalsik_eeprom.cpp.o \
-	  master_report.cpp.o \
-	  keymap.cpp.o \
+	  keyboard.cpp.o \
 	  array_utils.cpp.o \
 	  HID.cpp.o \
 	  Serial.cpp.o
 
-test_master_report: $(addprefix $(BUILD_ROOT)/, $(OBJ)) | $(BUILD_ROOT)
-	echo ">> Linking $(BUILD_ROOT)/test_master_report"
-	$(COMPILER) $^ -o $(BUILD_ROOT)/test_master_report
+test_keyboard: $(addprefix $(BUILD_ROOT)/, $(OBJ)) | $(BUILD_ROOT)
+	echo ">> Linking $(BUILD_ROOT)/test_keyboard"
+	$(COMPILER) $^ -o $(BUILD_ROOT)/test_keyboard
 
-test: $(BUILD_ROOT) test_master_report
-	$(BUILD_ROOT)/test_master_report
+test: $(BUILD_ROOT) test_keyboard
+	$(BUILD_ROOT)/test_keyboard
 
 # https://www.youtube.com/watch?v=NPdagdEOBnI
 # https://github.com/JeremiahK96/auto-makefile/blob/main/Makefile

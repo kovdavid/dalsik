@@ -1,7 +1,6 @@
 #include "acutest.h"
 #include "dalsik.h"
-#include "keymap.h"
-#include "master_report.h"
+#include "keyboard.h"
 #include "key_definitions.h"
 #include "HID.h"
 #include "Serial.h"
@@ -17,8 +16,7 @@ bool compare_base_report(size_t index, BaseHIDReport expected) {
 
 #define RESET_TEST(msg) \
     HID().base_hid_reports.clear(); \
-    keymap = KeyMap(); \
-    master_report = MasterReport(&keymap);
+    keyboard = Keyboard();
 
 #define HID_SIZE_CHECK(expected) \
     TEST_CHECK(HID().base_hid_reports.size() == expected); \
@@ -54,26 +52,25 @@ KeyCoords one_shot_ctrl = { 1, 9 };
 
 // Simple press test with short delay between events
 void test_normal_key_1(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
-    master_report.handle_master_changed_key({ R, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
     HID_SIZE_CHECK(2);
 
     BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
     BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(3);
 
     now += SEC(10);
 
-    master_report.handle_master_changed_key({ R, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
     HID_SIZE_CHECK(4);
 
     BREP_COMP(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -82,17 +79,16 @@ void test_normal_key_1(void) {
 
 // Simple press test with long delay between events
 void test_normal_key_2(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
     now += SEC(10);
 
-    master_report.handle_master_changed_key({ R, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
     HID_SIZE_CHECK(2);
 
     BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -101,21 +97,20 @@ void test_normal_key_2(void) {
 
 // Multiple normal keys pressed at once
 void test_normal_key_3(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
-    master_report.handle_master_changed_key({ P, normal_KC_B }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_B }, now++);
     HID_SIZE_CHECK(2);
 
-    master_report.handle_master_changed_key({ R, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
     HID_SIZE_CHECK(3);
 
-    master_report.handle_master_changed_key({ R, normal_KC_B }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_B }, now++);
     HID_SIZE_CHECK(4);
 
     BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -129,15 +124,14 @@ void test_normal_key_3(void) {
 // After pressing the key, we don't send anything yet, as we don't know
 // if we will send the primary or secondary key yet
 void test_dual_mod_key_1(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ R, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ R, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(2);
 
     BREP_COMP(0, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -148,25 +142,24 @@ void test_dual_mod_key_1(void) {
 // After DUAL_MODE_TIMEOUT_MS ellapses from the pressing of the key, we
 // activate KC_C
 void test_dual_mod_key_2(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
 
     // Not yet...
     now += DUAL_MODE_TIMEOUT_MS - 1;
-    master_report.key_timeout_check(now);
+    keyboard.key_timeout_check(now);
     HID_SIZE_CHECK(0);
 
     // Fire KC_C
     now++;
-    master_report.key_timeout_check(now);
+    keyboard.key_timeout_check(now);
     HID_SIZE_CHECK(1);
 
-    master_report.handle_master_changed_key({ R, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ R, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(2);
 
     BREP_COMP(0, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -177,21 +170,20 @@ void test_dual_mod_key_2(void) {
 // The press of a normal key should trigger CTRL+B, as at the time the
 // dual key is still in STATE_PENDING
 void test_dual_mod_key_3(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ P, normal_KC_B    }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_B    }, now++);
     HID_SIZE_CHECK(2);
 
-    master_report.handle_master_changed_key({ R, normal_KC_B    }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_B    }, now++);
     HID_SIZE_CHECK(3);
 
-    master_report.handle_master_changed_key({ R, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ R, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(4);
 
     BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -204,25 +196,24 @@ void test_dual_mod_key_3(void) {
 // The delay should trigger the primary key of the dual key, therefor it won't
 // function as a modifier (CTRL) anymore. We expect to send K+B
 void test_dual_mod_key_4(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
 
     now += DUAL_MODE_TIMEOUT_MS;
-    master_report.key_timeout_check(now);
+    keyboard.key_timeout_check(now);
     HID_SIZE_CHECK(1);
 
-    master_report.handle_master_changed_key({ P, normal_KC_B }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_B }, now++);
     HID_SIZE_CHECK(2);
 
-    master_report.handle_master_changed_key({ R, normal_KC_B }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_B }, now++);
     HID_SIZE_CHECK(3);
 
-    master_report.handle_master_changed_key({ R, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ R, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(4);
 
     BREP_COMP(0, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -234,21 +225,20 @@ void test_dual_mod_key_4(void) {
 // Dual mod key with a normal key, but we release the dual key first.
 // Should still send CTRL+B
 void test_dual_mod_key_5(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ P, normal_KC_B    }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_B    }, now++);
     HID_SIZE_CHECK(2);
 
-    master_report.handle_master_changed_key({ R, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ R, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(3);
 
-    master_report.handle_master_changed_key({ R, normal_KC_B    }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_B    }, now++);
     HID_SIZE_CHECK(4);
 
     BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -262,27 +252,26 @@ void test_dual_mod_key_5(void) {
 // After pressing the normal key, we trigger the modifier on the second.
 // We expect CTRL+SHIFT+B
 void test_dual_mod_key_6(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ P, dual_shift_KC_D }, now++);
+    keyboard.handle_changed_key({ P, dual_shift_KC_D }, now++);
     HID_SIZE_CHECK(1);
 
-    master_report.handle_master_changed_key({ P, normal_KC_B }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_B }, now++);
     HID_SIZE_CHECK(3);
 
-    master_report.handle_master_changed_key({ R, normal_KC_B }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_B }, now++);
     HID_SIZE_CHECK(4);
 
-    master_report.handle_master_changed_key({ R, dual_shift_KC_D }, now++);
+    keyboard.handle_changed_key({ R, dual_shift_KC_D }, now++);
     HID_SIZE_CHECK(5);
 
-    master_report.handle_master_changed_key({ R, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ R, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(6);
 
     BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -299,31 +288,30 @@ void test_dual_mod_key_6(void) {
 // sending CTRL+D. Then we press a normal key, which should send CTRL+B
 // We expect CTRL+SHIFT+B
 void test_dual_mod_key_7(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ P, dual_shift_KC_D }, now++);
+    keyboard.handle_changed_key({ P, dual_shift_KC_D }, now++);
     HID_SIZE_CHECK(1);
 
     now += DUAL_MODE_TIMEOUT_MS;
-    master_report.key_timeout_check(now);
+    keyboard.key_timeout_check(now);
     HID_SIZE_CHECK(2);
 
-    master_report.handle_master_changed_key({ P, normal_KC_B }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_B }, now++);
     HID_SIZE_CHECK(3);
 
-    master_report.handle_master_changed_key({ R, normal_KC_B }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_B }, now++);
     HID_SIZE_CHECK(4);
 
-    master_report.handle_master_changed_key({ R, dual_shift_KC_D }, now++);
+    keyboard.handle_changed_key({ R, dual_shift_KC_D }, now++);
     HID_SIZE_CHECK(5);
 
-    master_report.handle_master_changed_key({ R, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ R, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(6);
 
     BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -339,21 +327,20 @@ void test_dual_mod_key_7(void) {
 // and leave the second one in STATE_PENDING. After releasing the second one
 // we trigger the primary key on it
 void test_dual_mod_key_8(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ P, dual_shift_KC_D }, now++);
+    keyboard.handle_changed_key({ P, dual_shift_KC_D }, now++);
     HID_SIZE_CHECK(1);
 
-    master_report.handle_master_changed_key({ R, dual_shift_KC_D }, now++);
+    keyboard.handle_changed_key({ R, dual_shift_KC_D }, now++);
     HID_SIZE_CHECK(3);
 
-    master_report.handle_master_changed_key({ R, dual_ctrl_KC_C }, now++);
+    keyboard.handle_changed_key({ R, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(4);
 
     BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -363,21 +350,20 @@ void test_dual_mod_key_8(void) {
 }
 
 void test_dual_mod_key_9(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
-    master_report.handle_master_changed_key({ P, dual_shift_KC_D }, now++);
+    keyboard.handle_changed_key({ P, dual_shift_KC_D }, now++);
     HID_SIZE_CHECK(1);
 
-    master_report.handle_master_changed_key({ R, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
     HID_SIZE_CHECK(2);
 
-    master_report.handle_master_changed_key({ R, dual_shift_KC_D }, now++);
+    keyboard.handle_changed_key({ R, dual_shift_KC_D }, now++);
     HID_SIZE_CHECK(4);
 
     BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -388,15 +374,14 @@ void test_dual_mod_key_9(void) {
 
 // When tapping the dual layer key, the secondary key should trigger
 void test_dual_layer_key_1(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, dual_layer_1 }, now++);
+    keyboard.handle_changed_key({ P, dual_layer_1 }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ R, dual_layer_1 }, now++);
+    keyboard.handle_changed_key({ R, dual_layer_1 }, now++);
     HID_SIZE_CHECK(2);
 
     BREP_COMP(0, { 0x00, 0x00, KC_G, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -407,15 +392,14 @@ void test_dual_layer_key_1(void) {
 // move to given layer. So for the key `normal_KC_A` we want to trigger
 // KC_E, as it is defined on layer 1
 void test_dual_layer_key_2(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, dual_layer_1 }, now++);
+    keyboard.handle_changed_key({ P, dual_layer_1 }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
     BREP_COMP(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -424,15 +408,14 @@ void test_dual_layer_key_2(void) {
 // When pressing a solo dual layer key as the first key, it should trigger
 // a new layer
 void test_dual_layer_key_3(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, solo_dual_layer_1 }, now++);
+    keyboard.handle_changed_key({ P, solo_dual_layer_1 }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
     BREP_COMP(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -441,15 +424,14 @@ void test_dual_layer_key_3(void) {
 // When pressing a solo dual layer key NOT as the first key, it should trigger
 // the secondary key instead of layer press immediately
 void test_dual_layer_key_4(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
-    master_report.handle_master_changed_key({ P, solo_dual_layer_1 }, now++);
+    keyboard.handle_changed_key({ P, solo_dual_layer_1 }, now++);
     HID_SIZE_CHECK(2);
 
     BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -461,27 +443,26 @@ void test_dual_layer_key_4(void) {
 // That caused in this test to the dual_shift_KC_D key to be stuck even after
 // releasing it.
 void test_stuck_key(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
-    master_report.handle_master_changed_key({ P, normal_KC_B }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_B }, now++);
     HID_SIZE_CHECK(2);
 
-    master_report.handle_master_changed_key({ R, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
     HID_SIZE_CHECK(3);
 
-    master_report.handle_master_changed_key({ P, dual_shift_KC_D }, now++);
+    keyboard.handle_changed_key({ P, dual_shift_KC_D }, now++);
     HID_SIZE_CHECK(3);
 
-    master_report.handle_master_changed_key({ R, normal_KC_B }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_B }, now++);
     HID_SIZE_CHECK(4);
 
-    master_report.handle_master_changed_key({ R, dual_shift_KC_D }, now++);
+    keyboard.handle_changed_key({ R, dual_shift_KC_D }, now++);
     HID_SIZE_CHECK(6);
 
     BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -494,18 +475,17 @@ void test_stuck_key(void) {
 
 // Test that the one-shot CTRL modifier is sent with the KC_A key
 void test_one_shot_modifier(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, one_shot_ctrl }, now++);
+    keyboard.handle_changed_key({ P, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ R, one_shot_ctrl }, now++);
+    keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
     BREP_COMP(0, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -514,24 +494,23 @@ void test_one_shot_modifier(void) {
 // Test that after the second press of the one-shot modifier the CTRL modifier
 // is toggled off, so when pressing KC_A, it is not sent
 void test_one_shot_modifier_toggle(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, one_shot_ctrl }, now++);
+    keyboard.handle_changed_key({ P, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ R, one_shot_ctrl }, now++);
+    keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ P, one_shot_ctrl }, now++);
+    keyboard.handle_changed_key({ P, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ R, one_shot_ctrl }, now++);
+    keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
     BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -541,27 +520,26 @@ void test_one_shot_modifier_toggle(void) {
 // as a normal modifier - i.e. with the second press of KC_A it is not sent
 // any more
 void test_one_shot_modifier_hold(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, one_shot_ctrl }, now++);
+    keyboard.handle_changed_key({ P, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(0);
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
-    master_report.handle_master_changed_key({ R, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
     HID_SIZE_CHECK(2);
 
-    master_report.handle_master_changed_key({ R, one_shot_ctrl }, now++);
+    keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(3);
 
-    master_report.handle_master_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(4);
 
-    master_report.handle_master_changed_key({ R, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
     HID_SIZE_CHECK(5);
 
     BREP_COMP(0, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -574,21 +552,20 @@ void test_one_shot_modifier_hold(void) {
 // When a one-shot modifier is held for longer than ONE_SHOT_MODIFIER_TIMEOUT_MS,
 // activate the modifier (useful for e.g. CTRL+mouse click)
 void test_one_shot_modifier_timeout(void) {
-    KeyMap keymap;
-    MasterReport master_report(&keymap);
+    Keyboard keyboard;
 
     millisec now = 100;
 
-    master_report.handle_master_changed_key({ P, one_shot_ctrl }, now++);
+    keyboard.handle_changed_key({ P, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(0);
 
     // Not yet...
     now += ONE_SHOT_MODIFIER_TIMEOUT_MS - 1;
-    master_report.key_timeout_check(now);
+    keyboard.key_timeout_check(now);
     HID_SIZE_CHECK(0);
 
     now++;
-    master_report.key_timeout_check(now);
+    keyboard.key_timeout_check(now);
     HID_SIZE_CHECK(1);
 
     BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
