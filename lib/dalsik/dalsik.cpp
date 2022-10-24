@@ -1,8 +1,7 @@
 #include <Arduino.h>
 #include "matrix.h"
-#include "keymap.h"
-#include "master_report.h"
-#include "slave_report.h"
+#include "keyboard.h"
+#include "key_event_handler.h"
 #include "dalsik_serial.h"
 #include "serial_command.h"
 #include "dalsik.h"
@@ -10,35 +9,12 @@
 #include <avr/io.h>
 
 Matrix matrix;
-KeyMap keymap;
 
-MasterReport master_report(&keymap);
+Keyboard keyboard;
+KeyEventHandler key_event_handler(&keyboard);
 
 uint8_t is_master = 0;
 millisec prev_millis = 0;
-
-static inline void handle_slave_data(uint8_t data, millisec now) {
-    ChangedKeyEvent event = SlaveReport::decode_slave_report_data(data);
-
-#if DEBUG
-    Serial.print("Slave ChangedKeyEvent <");
-    if (event.type == EVENT_KEY_PRESS) {
-        Serial.print("PRE");
-    } else {
-        Serial.print("REL");
-    }
-    Serial.print("|ROW:");
-    Serial.print(event.coords.row);
-    Serial.print("|COL:");
-    Serial.print(event.coords.col);
-    Serial.print(">");
-    Serial.print(" now:");
-    Serial.print(prev_millis);
-    Serial.print("\n");
-#endif
-
-    master_report.handle_slave_changed_key(event, now);
-}
 
 uint8_t usb_connected() {
    USBCON |= (1 << OTGPADE); //enables VBUS pad
@@ -92,7 +68,7 @@ void Dalsik::loop() {
 
         while (DalsikSerial::has_data()) {
             uint8_t slave_data = DalsikSerial::get_next_elem();
-            handle_slave_data(slave_data, now);
+            key_event_handler.handle_received_data_from_slave(slave_data, now);
         }
     }
 
@@ -103,33 +79,16 @@ void Dalsik::loop() {
     }
     prev_millis = now;
 
-    master_report.key_timeout_check(now); // check once every millisecond
+    keyboard.key_timeout_check(now); // check once every millisecond
 
     ChangedKeyEvent event = matrix.scan();
     if (event.type == EVENT_NONE) {
         return;
     }
 
-#if DEBUG
-    Serial.print("Master ChangedKeyEvent <");
-    if (event.type == EVENT_KEY_PRESS) {
-        Serial.print("PRE");
-    } else {
-        Serial.print("REL");
-    }
-    Serial.print("|ROW:");
-    Serial.print(event.coords.row);
-    Serial.print("|COL:");
-    Serial.print(event.coords.col);
-    Serial.print(">");
-    Serial.print(" now:");
-    Serial.print(now);
-    Serial.print("\n");
-#endif
-
     if (is_master) {
-        master_report.handle_master_changed_key(event, now);
+        key_event_handler.handle_key_event_from_master(event, now);
     } else {
-        SlaveReport::send_changed_key(event);
+        key_event_handler.send_slave_event_to_master(event);
     }
 }

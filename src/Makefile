@@ -53,7 +53,7 @@ CXXFLAGS_STD      = -std=gnu++14
 CXXFLAGS         += -pedantic -Wall -Wextra -Wfatal-errors  ## -Werror
 
 ifdef DALSIK_DEBUG
-CXXFLAGS         += -D DEBUG -D DEBUG_KEYREPORT_BASE -D DEBUG_MASTER_REPORT_STATE
+CXXFLAGS         += -D DEBUG -D DEBUG_KEYREPORT_BASE -D DEBUG_KEYBOARD_STATE
 endif
 
 LDFLAGS          += -fdiagnostics-color
