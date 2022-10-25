@@ -13,7 +13,7 @@ ARDMK_DIR         = $(PROJECT_DIR)/Arduino-Makefile
 
 ### ARDUINO_DIR
 
-### Path to the Arduino application and ressources directory.
+### Path to the Arduino application and resources directory.
 # ARDUINO_DIR       = // set by calling make
 
 ### USER_LIB_PATH
