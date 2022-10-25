@@ -262,7 +262,7 @@ sub handle_kc_key {
 __END__
 
 
-open keyboard_layout_editor.com -> raw_data, click into the input and run:
+open keyboard-layout-editor.com -> raw_data, click into the input and run:
 
 ./utils/render_keymap.pl /clean_daily/keymap.out  | xclip -selection clipboard ; xdotool key super+Tab ; sleep 0.1; xdotool key ctrl+a ; sleep 0.1 ; xdotool key BackSpace ; sleep 0.1 ; xdotool key shift+Insert ; sleep 0.1 ; xdotool key super+Tab
 

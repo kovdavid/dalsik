@@ -108,14 +108,20 @@ KeyInfo Keyboard::get_non_transparent_key(KeyCoords c) {
     }
 }
 
-void Keyboard::reload_key_by_coords(KeyInfo* ki) {
-    if (ki->has_no_coords()) {
-        return; // Missing coords info
-    }
+void Keyboard::reload_keys_on_new_layer(uint8_t key_index) {
+    for (uint8_t i = key_index + 1; i < PRESSED_KEY_BUFFER; i++) {
+        PressedKey *pk = &(this->pressed_keys.keys[i]);
 
-    KeyInfo new_ki = this->get_key(ki->coords);
-    ki->type = new_ki.type;
-    ki->key = new_ki.key;
+        if (!pk->timestamp || pk->state != STATE_NOT_PROCESSED) {
+            break;
+        }
+
+        if (pk->key_info.has_no_coords()) continue; // Missing coords info
+
+        KeyInfo new_ki = this->get_key(pk->key_info.coords);
+        pk->key_info.type = new_ki.type;
+        pk->key_info.key = new_ki.key;
+    }
 }
 
 void Keyboard::set_layer(uint8_t layer) {
@@ -211,7 +217,7 @@ void Keyboard::press(PressedKey *pk, millisec now) {
     } else if (key_info.type == KEY_TAPDANCE) {
         // this->press_tapdance_key(key_info, now); // TODO
     } else if (key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
-        this->press_layer_toggle_or_hold();
+        this->press_layer_toggle_or_hold(pk);
     } else if (key_info.is_any_dual_mod_key()) {
         this->press_dual_key(pk);
     } else if (key_info.is_any_dual_layer_key()) {
@@ -235,6 +241,8 @@ void Keyboard::release(PressedKey *pk, millisec now) {
         this->release_dual_layer_key(pk);
     } else if (key_info.type == KEY_ONE_SHOT_MODIFIER) {
         this->release_one_shot_modifier_key(pk);
+    } else if (key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
+        this->release_layer_toggle_or_hold(pk);
     } else {
         pk->state = STATE_RELEASED;
 
@@ -252,8 +260,6 @@ void Keyboard::release(PressedKey *pk, millisec now) {
             this->release_key_with_mod(key_info);
         } else if (key_info.type == KEY_TAPDANCE) {
             // this->release_tapdance_key(key_info, now); // TODO
-        } else if (key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
-            this->release_layer_toggle_or_hold(pk);
         }
     }
 }
@@ -337,23 +343,12 @@ inline void Keyboard::run_press_hook(uint8_t key_index, millisec now) {
     if (key_info.is_any_dual_mod_key()) {
         this->press_dual_key(pk);
         this->send_hid_report();
-    } else if (
-        key_info.is_any_dual_layer_key()
-        || pk->key_info.type == KEY_LAYER_TOGGLE_OR_HOLD
-    ) {
+    } else if (key_info.is_any_dual_layer_key()) {
         this->press_dual_layer_key(pk);
-
-        // Reload the rest of the keys as of this layer were applied
-        // when they were pressed
-        for (uint8_t i = key_index + 1; i < PRESSED_KEY_BUFFER; i++) {
-            PressedKey *pk = &(this->pressed_keys.keys[i]);
-
-            if (!pk->timestamp || pk->state != STATE_NOT_PROCESSED) {
-                break;
-            }
-
-            this->reload_key_by_coords(&(pk->key_info));
-        }
+        this->reload_keys_on_new_layer(key_index);
+    } else if (pk->key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
+        this->press_layer_toggle_or_hold(pk);
+        this->reload_keys_on_new_layer(key_index);
     } else if (key_info.type == KEY_ONE_SHOT_MODIFIER) {
         this->press_one_shot_modifier_key(pk);
     }
@@ -653,7 +648,14 @@ inline void Keyboard::release_dual_layer_key(PressedKey *pk) {
 // }}}
 
 // Layer toggle or hold {{{
-inline void Keyboard::press_layer_toggle_or_hold() {}
+inline void Keyboard::press_layer_toggle_or_hold(PressedKey *pk) {
+    if (pk->state == STATE_NOT_PROCESSED) {
+        pk->state = STATE_PENDING;
+    } else if (pk->state == STATE_PENDING) {
+        this->press_layer_key(pk->key_info.key);
+        pk->state = STATE_SECONDARY_KEY;
+    }
+}
 inline void Keyboard::release_layer_toggle_or_hold(PressedKey *pk) {
     if (
         // We have not decided what to do with this key, but no other keys
@@ -665,6 +667,7 @@ inline void Keyboard::release_layer_toggle_or_hold(PressedKey *pk) {
     } else {
         this->remove_layer(pk->key_info.key);
     }
+    pk->state = STATE_RELEASED;
 }
 // }}}
 
@@ -749,6 +752,10 @@ void Keyboard::print_internal_state() {
     Serial.print(this->pressed_keys.count);
     Serial.print(" this->key_press_counter:");
     Serial.print(this->key_press_counter);
+    Serial.print(" layer:");
+    Serial.print(this->layer_index);
+    Serial.print(" toggled_layer:");
+    Serial.print(this->toggled_layer_index);
     Serial.print("\n");
     for (uint8_t i = 0; i < this->pressed_keys.count; i++) {
         KeyInfo key_info = this->pressed_keys.keys[i].key_info;

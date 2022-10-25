@@ -74,7 +74,7 @@ class Keyboard {
 
         KeyInfo get_non_transparent_key(KeyCoords c);
         KeyInfo get_key(KeyCoords c);
-        void reload_key_by_coords(KeyInfo* ki);
+        void reload_keys_on_new_layer(uint8_t key_index);
 
         inline void handle_key_press(KeyInfo key_info, millisec now);
         inline void handle_key_release(KeyInfo key_info, millisec now);
@@ -112,7 +112,7 @@ class Keyboard {
         inline void press_key_with_mod(KeyInfo key_info);
         inline void release_key_with_mod(KeyInfo key_info);
 
-        inline void press_layer_toggle_or_hold();
+        inline void press_layer_toggle_or_hold(PressedKey *pk);
         inline void release_layer_toggle_or_hold(PressedKey *pk);
 
         inline void send_hid_report();
@@ -121,7 +121,6 @@ class Keyboard {
         inline PressedKey* find_in_pressed_keys(KeyInfo key_info);
         inline void remove_from_pressed_keys(PressedKey *pk);
 
-        void print_internal_state();
         void print_base_report_to_serial();
         void print_system_report_to_serial();
         void print_multimedia_report_to_serial();
@@ -131,4 +130,6 @@ class Keyboard {
 
         void handle_changed_key(ChangedKeyEvent e, millisec now);
         void key_timeout_check(millisec now);
+
+        void print_internal_state();
 };

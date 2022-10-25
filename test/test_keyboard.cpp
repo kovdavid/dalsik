@@ -49,6 +49,7 @@ KeyCoords dual_shift_KC_D = { 1, 4 };
 KeyCoords dual_layer_1 = { 1, 7 };
 KeyCoords solo_dual_layer_1 = { 1, 8 };
 KeyCoords one_shot_ctrl = { 1, 9 };
+KeyCoords layer_hold_or_toggle = { 1, 10 };
 
 // Simple press test with short delay between events
 void test_normal_key_1(void) {
@@ -571,6 +572,80 @@ void test_one_shot_modifier_timeout(void) {
     BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
+// Test that the layer switch is applied and we send KC_E (layer1)
+void test_layer_hold_or_toggle(void) {
+    Keyboard keyboard;
+
+    millisec now = 100;
+
+    keyboard.handle_changed_key({ P, layer_hold_or_toggle }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ R, layer_hold_or_toggle }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// Test that the second tap on the key toggles the layer off, so we send KC_A
+void test_layer_hold_or_toggle_on_off(void) {
+    Keyboard keyboard;
+
+    millisec now = 100;
+
+    keyboard.handle_changed_key({ P, layer_hold_or_toggle }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ R, layer_hold_or_toggle }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ P, layer_hold_or_toggle }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ R, layer_hold_or_toggle }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// When a LHT key is held while a different key is pressed, the LHT should
+// register as a normal layer key. That is with the first KC_A press we send
+// KC_E (layer 1) and with the second KC_A (layer 0)
+void test_layer_hold_or_toggle_hold(void) {
+    Keyboard keyboard;
+
+    millisec now = 100;
+
+    keyboard.handle_changed_key({ P, layer_hold_or_toggle }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
+    HID_SIZE_CHECK(2);
+
+    keyboard.handle_changed_key({ R, layer_hold_or_toggle }, now++);
+    HID_SIZE_CHECK(2);
+
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(3);
+
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
+    HID_SIZE_CHECK(4);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
 TEST_LIST = {
     { "test_normal_key_1", test_normal_key_1 },
     { "test_normal_key_2", test_normal_key_2 },
@@ -593,5 +668,8 @@ TEST_LIST = {
     { "test_one_shot_modifier_toggle", test_one_shot_modifier_toggle },
     { "test_one_shot_modifier_hold", test_one_shot_modifier_hold },
     { "test_one_shot_modifier_timeout", test_one_shot_modifier_timeout },
+    { "test_layer_hold_or_toggle", test_layer_hold_or_toggle },
+    { "test_layer_hold_or_toggle_on_off", test_layer_hold_or_toggle_on_off },
+    { "test_layer_hold_or_toggle_hold", test_layer_hold_or_toggle_hold },
     { NULL, NULL }
 };
