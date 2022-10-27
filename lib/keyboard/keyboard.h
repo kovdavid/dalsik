@@ -117,7 +117,7 @@ class Keyboard {
 
         inline void send_hid_report();
 
-        inline PressedKey* append_to_pressed_keys(KeyInfo key_info, millisec now);
+        inline PressedKey* add_to_pressed_keys(KeyInfo key_info, millisec now);
         inline PressedKey* find_in_pressed_keys(KeyInfo key_info);
         inline void remove_from_pressed_keys(PressedKey *pk);
 

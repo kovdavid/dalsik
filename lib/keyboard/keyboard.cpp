@@ -161,7 +161,7 @@ inline void Keyboard::handle_key_press(KeyInfo key_info, millisec now) {
     this->held_keys_count++;
     this->key_press_counter++;
 
-    PressedKey *pk = this->append_to_pressed_keys(key_info, now);
+    PressedKey *pk = this->add_to_pressed_keys(key_info, now);
     if (pk == NULL) return;
 
     if (this->held_keys_count > 1) { // Not the first pressed key
@@ -266,26 +266,21 @@ void Keyboard::release(PressedKey *pk, millisec now) {
 // }}}
 
 // this->pressed_keys helpers {{{
-inline PressedKey* Keyboard::append_to_pressed_keys(
-    KeyInfo key_info, millisec now
-) {
-    for (uint8_t key_index = 0; key_index < PRESSED_KEY_BUFFER; key_index++) {
-        if (this->pressed_keys.keys[key_index].timestamp > 0) {
-            continue;
-        }
-        this->pressed_keys.count++;
-
-        PressedKey *pk = &(this->pressed_keys.keys[key_index]);
-        pk->key_info = key_info;
-        pk->timestamp = now;
-        pk->key_press_counter = this->key_press_counter;
-        pk->state = STATE_NOT_PROCESSED;
-        pk->key_index = key_index;
-
-        return pk;
+inline PressedKey* Keyboard::add_to_pressed_keys(KeyInfo key_info, millisec now) {
+    if (this->pressed_keys.count >= PRESSED_KEY_BUFFER) {
+        return NULL;
     }
 
-    return NULL;
+    uint8_t key_index = this->pressed_keys.count++;
+
+    PressedKey *pk = &(this->pressed_keys.keys[key_index]);
+    pk->key_info = key_info;
+    pk->timestamp = now;
+    pk->key_press_counter = this->key_press_counter;
+    pk->state = STATE_NOT_PROCESSED;
+    pk->key_index = key_index;
+
+    return pk;
 }
 
 inline void Keyboard::remove_from_pressed_keys(PressedKey *pk) {
