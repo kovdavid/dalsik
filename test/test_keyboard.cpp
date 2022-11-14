@@ -1,6 +1,7 @@
 #include "acutest.h"
 #include "dalsik.h"
 #include "keyboard.h"
+#include "keymap.h"
 #include "key_definitions.h"
 #include "HID.h"
 #include "Serial.h"
@@ -40,7 +41,7 @@ void dump_hid_reports() {
 #define P EVENT_KEY_PRESS
 #define R EVENT_KEY_RELEASE
 
-// Synchronize with test/mocks/mock_eeprom.cpp!
+// Synchronize with test/mocks/mock_keymap.cpp!
 KeyCoords normal_KC_A = { 1, 1 };
 KeyCoords normal_KC_B = { 1, 2 };
 KeyCoords dual_ctrl_KC_C = { 1, 3 };
@@ -50,6 +51,8 @@ KeyCoords dual_layer_1 = { 1, 7 };
 KeyCoords solo_dual_layer_1 = { 1, 8 };
 KeyCoords one_shot_ctrl = { 1, 9 };
 KeyCoords layer_hold_or_toggle = { 1, 10 };
+
+KeyCoords layer_press_1 = { 1, 11 };
 
 // Simple press test with short delay between events
 void test_normal_key_1(void) {
@@ -646,6 +649,40 @@ void test_layer_hold_or_toggle_hold(void) {
     BREP_COMP(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
+// Test that pressing an LP key changes the layer, so instead of KC_A we get
+// KC_E from layer 1
+void test_layer_press_1(void) {
+    Keyboard keyboard;
+
+    millisec now = 100;
+
+    keyboard.handle_changed_key({ P, layer_press_1 }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// Test that releasing the LP key changes the layer back, so we should get KC_A
+void test_layer_press_2(void) {
+    Keyboard keyboard;
+
+    millisec now = 100;
+
+    keyboard.handle_changed_key({ P, layer_press_1 }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ R, layer_press_1 }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
 TEST_LIST = {
     { "test_normal_key_1", test_normal_key_1 },
     { "test_normal_key_2", test_normal_key_2 },
@@ -671,5 +708,7 @@ TEST_LIST = {
     { "test_layer_hold_or_toggle", test_layer_hold_or_toggle },
     { "test_layer_hold_or_toggle_on_off", test_layer_hold_or_toggle_on_off },
     { "test_layer_hold_or_toggle_hold", test_layer_hold_or_toggle_hold },
+    { "test_layer_press_1", test_layer_press_1 },
+    { "test_layer_press_2", test_layer_press_2 },
     { NULL, NULL }
 };

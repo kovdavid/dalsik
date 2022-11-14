@@ -143,10 +143,6 @@ sub get_cmd {
         return "DALSIK-\x01".chr($args[0]).chr($args[1]).chr($args[2])."\x00\x00";
     } elsif ($cmd eq 'GET_KEYMAP') {
         return "DALSIK-\x02".join("", ("\x00")x5);
-    } elsif ($cmd eq 'SET_KEY') {
-        return "DALSIK-\x03".chr($args[0]).chr($args[1]).chr($args[2]).chr($args[3]).chr($args[4]);
-    } elsif ($cmd eq 'CLEAR_KEYMAP') {
-        return "DALSIK-\x04".join("", ("\x00")x5);
     } elsif ($cmd eq 'NUM_ROWS') {
         return "DALSIK-\x05".join("", ("\x00")x5);
     } elsif ($cmd eq 'NUM_COLS') {
@@ -155,16 +151,10 @@ sub get_cmd {
         return "DALSIK-\x07".join("", ("\x00")x5);
     } elsif ($cmd eq 'GET_LAYER') {
         return "DALSIK-\x08".join("", ("\x00")x5);
-    } elsif ($cmd eq 'CLEAR_TAPDANCE') {
-        return "DALSIK-\x09".join("", ("\x00")x5);
-    } elsif ($cmd eq 'SET_TAPDANCE_KEY') {
-        return "DALSIK-\x0A".chr($args[0]).chr($args[1]).chr($args[2]).chr($args[3])."\x00";
     } elsif ($cmd eq 'GET_TAPDANCE_KEY') {
         return "DALSIK-\x0B".chr($args[0]).chr($args[1])."\x00\x00\x00";
     } elsif ($cmd eq 'GET_TAPDANCE_KEYMAP') {
         return "DALSIK-\x0C".join("", ("\x00")x5);
-    } elsif ($cmd eq 'CLEAR_EEPROM') {
-        return "DALSIK-\x0D".join("", ("\x00")x5);
     } elsif ($cmd eq 'GET_FULL_KEYMAP') {
         return "DALSIK-\x0E".join("", ("\x00")x5);
     } elsif ($cmd eq 'GET_KEYBOARD_SIDE') {

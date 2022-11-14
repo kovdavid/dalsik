@@ -1,319 +1,377 @@
 #pragma once
 
-// INTERNAL_NAME BYTE_VALUE /* ALIAS */
-// Keys with arguments have their `ALIAS` ending with '(' or ','
+// Key types
+enum key_types {
+    KEY_NORMAL = 0x00,
+    KEY_LAYER_PRESS,
+    KEY_LAYER_TOGGLE,
+    KEY_LAYER_TOGGLE_OR_HOLD,
+    KEY_SYSTEM,
+    KEY_MULTIMEDIA_0,
+    KEY_MULTIMEDIA_1,
+    KEY_MULTIMEDIA_2,
+    KEY_TAPDANCE,
+    KEY_ONE_SHOT_MODIFIER,
+    KEY_DUAL_MOD,
+    KEY_SOLO_DUAL_MOD,
+    KEY_TIMED_DUAL_MOD,
+    KEY_DUAL_LAYER,
+    KEY_SOLO_DUAL_LAYER,
+    KEY_TIMED_DUAL_LAYER,
+    KEY_TRANSPARENT = 0xFF,
+};
 
-#define KEY_UNSET                  0x00 /* KC_NO       */
-#define KEY_NORMAL                 0x01 /* KC(         */
-#define KEY_LAYER_PRESS            0x02 /* LP(         */
-#define KEY_LAYER_TOGGLE           0x03 /* LT(         */
-#define KEY_LAYER_TOGGLE_OR_HOLD   0x04 /* LHT(        */
-#define KEY_WITH_MOD_LCTRL         0x05 /* LCTRL(      */
-#define KEY_WITH_MOD_RCTRL         0x06 /* RCTRL(      */
-#define KEY_WITH_MOD_LSHIFT        0x07 /* LSHIFT(     */
-#define KEY_WITH_MOD_RSHIFT        0x08 /* RSHIFT(     */
-#define KEY_WITH_MOD_LGUI          0x09 /* LGUI(       */
-#define KEY_WITH_MOD_RGUI          0x0A /* RGUI(       */
-#define KEY_WITH_MOD_LALT          0x0B /* LALT(       */
-#define KEY_WITH_MOD_RALT          0x0C /* RALT(       */
-#define KEY_SYSTEM                 0x0D /* KC_SYSTEM(  */
-#define KEY_MULTIMEDIA_0           0x0E /* KC_M0(      */
-#define KEY_MULTIMEDIA_1           0x0F /* KC_M1(      */
-#define KEY_MULTIMEDIA_2           0x10 /* KC_M2(      */
-#define KEY_TAPDANCE               0x11 /* TD(         */
-#define KEY_ONE_SHOT_MODIFIER      0x12 /* OSM(        */
+// Copied from QMK
+enum hid_keyboard_keys {
+    KC_NO = 0x00,
+    KC_ROLL_OVER,
+    KC_POST_FAIL,
+    KC_UNDEFINED,
+    KC_A,
+    KC_B,
+    KC_C,
+    KC_D,
+    KC_E,
+    KC_F,
+    KC_G,
+    KC_H,
+    KC_I,
+    KC_J,
+    KC_K,
+    KC_L,
+    KC_M, // 0x10
+    KC_N,
+    KC_O,
+    KC_P,
+    KC_Q,
+    KC_R,
+    KC_S,
+    KC_T,
+    KC_U,
+    KC_V,
+    KC_W,
+    KC_X,
+    KC_Y,
+    KC_Z,
+    KC_1,
+    KC_2,
+    KC_3, // 0x20
+    KC_4,
+    KC_5,
+    KC_6,
+    KC_7,
+    KC_8,
+    KC_9,
+    KC_0,
+    KC_ENTER,
+    KC_ESCAPE,
+    KC_BACKSPACE,
+    KC_TAB,
+    KC_SPACE,
+    KC_MINUS,
+    KC_EQUAL,
+    KC_LEFT_BRACKET,
+    KC_RIGHT_BRACKET, // 0x30
+    KC_BACKSLASH,
+    KC_NONUS_HASH,
+    KC_SEMICOLON,
+    KC_QUOTE,
+    KC_GRAVE,
+    KC_COMMA,
+    KC_DOT,
+    KC_SLASH,
+    KC_CAPS_LOCK,
+    KC_F1,
+    KC_F2,
+    KC_F3,
+    KC_F4,
+    KC_F5,
+    KC_F6,
+    KC_F7, // 0x40
+    KC_F8,
+    KC_F9,
+    KC_F10,
+    KC_F11,
+    KC_F12,
+    KC_PRINT_SCREEN,
+    KC_SCROLL_LOCK,
+    KC_PAUSE,
+    KC_INSERT,
+    KC_HOME,
+    KC_PAGE_UP,
+    KC_DELETE,
+    KC_END,
+    KC_PAGE_DOWN,
+    KC_RIGHT,
+    KC_LEFT, // 0x50
+    KC_DOWN,
+    KC_UP,
+    KC_NUM_LOCK,
+    KC_KP_SLASH,
+    KC_KP_ASTERISK,
+    KC_KP_MINUS,
+    KC_KP_PLUS,
+    KC_KP_ENTER,
+    KC_KP_1,
+    KC_KP_2,
+    KC_KP_3,
+    KC_KP_4,
+    KC_KP_5,
+    KC_KP_6,
+    KC_KP_7,
+    KC_KP_8, // 0x60
+    KC_KP_9,
+    KC_KP_0,
+    KC_KP_DOT,
+    KC_NONUS_BACKSLASH,
+    KC_APPLICATION,
+    KC_KB_POWER,
+    KC_KP_EQUAL,
+    KC_F13,
+    KC_F14,
+    KC_F15,
+    KC_F16,
+    KC_F17,
+    KC_F18,
+    KC_F19,
+    KC_F20,
+    KC_F21, // 0x70
+    KC_F22,
+    KC_F23,
+    KC_F24,
+    KC_EXECUTE,
+    KC_HELP,
+    KC_MENU,
+    KC_SELECT,
+    KC_STOP,
+    KC_AGAIN,
+    KC_UNDO,
+    KC_CUT,
+    KC_COPY,
+    KC_PASTE,
+    KC_FIND,
+    KC_KB_MUTE,
+    KC_KB_VOLUME_UP, // 0x80
+    KC_KB_VOLUME_DOWN,
+    KC_LOCKING_CAPS_LOCK,
+    KC_LOCKING_NUM_LOCK,
+    KC_LOCKING_SCROLL_LOCK,
+    KC_KP_COMMA,
+    KC_KP_EQUAL_AS400,
+    KC_INTERNATIONAL_1,
+    KC_INTERNATIONAL_2,
+    KC_INTERNATIONAL_3,
+    KC_INTERNATIONAL_4,
+    KC_INTERNATIONAL_5,
+    KC_INTERNATIONAL_6,
+    KC_INTERNATIONAL_7,
+    KC_INTERNATIONAL_8,
+    KC_INTERNATIONAL_9,
+    KC_LANGUAGE_1, // 0x90
+    KC_LANGUAGE_2,
+    KC_LANGUAGE_3,
+    KC_LANGUAGE_4,
+    KC_LANGUAGE_5,
+    KC_LANGUAGE_6,
+    KC_LANGUAGE_7,
+    KC_LANGUAGE_8,
+    KC_LANGUAGE_9,
+    KC_ALTERNATE_ERASE,
+    KC_SYSTEM_REQUEST,
+    KC_CANCEL,
+    KC_CLEAR,
+    KC_PRIOR,
+    KC_RETURN,
+    KC_SEPARATOR,
+    KC_OUT, // 0xA0
+    KC_OPER,
+    KC_CLEAR_AGAIN,
+    KC_CRSEL,
+    KC_EXSEL,
+};
 
-#define KEY_DUAL_MOD_LCTRL         0xA0 /* D(LCTRL,    */
-#define KEY_DUAL_MOD_RCTRL         0xA1 /* D(RCTRL,    */
-#define KEY_DUAL_MOD_LSHIFT        0xA2 /* D(LSHIFT,   */
-#define KEY_DUAL_MOD_RSHIFT        0xA3 /* D(RSHIFT,   */
-#define KEY_DUAL_MOD_LGUI          0xA4 /* D(LGUI,     */
-#define KEY_DUAL_MOD_RGUI          0xA5 /* D(RGUI,     */
-#define KEY_DUAL_MOD_LALT          0xA6 /* D(LALT,     */
-#define KEY_DUAL_MOD_RALT          0xA7 /* D(RALT,     */
-#define KEY_SOLO_DUAL_MOD_LCTRL    0xA8 /* DS(LCTRL,   */
-#define KEY_SOLO_DUAL_MOD_RCTRL    0xA9 /* DS(RCTRL,   */
-#define KEY_SOLO_DUAL_MOD_LSHIFT   0xAA /* DS(LSHIFT,  */
-#define KEY_SOLO_DUAL_MOD_RSHIFT   0xAB /* DS(RSHIFT,  */
-#define KEY_SOLO_DUAL_MOD_LGUI     0xAC /* DS(LGUI,    */
-#define KEY_SOLO_DUAL_MOD_RGUI     0xAD /* DS(RGUI,    */
-#define KEY_SOLO_DUAL_MOD_LALT     0xAE /* DS(LALT,    */
-#define KEY_SOLO_DUAL_MOD_RALT     0xAF /* DS(RALT,    */
-#define KEY_TIMED_DUAL_MOD_LCTRL   0xB0 /* DT(LCTRL,   */
-#define KEY_TIMED_DUAL_MOD_RCTRL   0xB1 /* DT(RCTRL,   */
-#define KEY_TIMED_DUAL_MOD_LSHIFT  0xB2 /* DT(LSHIFT,  */
-#define KEY_TIMED_DUAL_MOD_RSHIFT  0xB3 /* DT(RSHIFT,  */
-#define KEY_TIMED_DUAL_MOD_LGUI    0xB4 /* DT(LGUI,    */
-#define KEY_TIMED_DUAL_MOD_RGUI    0xB5 /* DT(RGUI,    */
-#define KEY_TIMED_DUAL_MOD_LALT    0xB6 /* DT(LALT,    */
-#define KEY_TIMED_DUAL_MOD_RALT    0xB7 /* DT(RALT,    */
+#define MOD_CLEAR  0x00
+#define MOD_LCTRL  ((1 << 0) << 8)
+#define MOD_LSHIFT ((1 << 1) << 8)
+#define MOD_LALT   ((1 << 2) << 8)
+#define MOD_LGUI   ((1 << 3) << 8)
+#define MOD_RCTRL  ((1 << 4) << 8)
+#define MOD_RSHIFT ((1 << 5) << 8)
+#define MOD_RALT   ((1 << 6) << 8)
+#define MOD_RGUI   ((1 << 7) << 8)
 
-#define KEY_DUAL_LAYER_1           0xB8 /* D(LAYER_1,  */
-#define KEY_DUAL_LAYER_2           0xB9 /* D(LAYER_2,  */
-#define KEY_DUAL_LAYER_3           0xBA /* D(LAYER_3,  */
-#define KEY_DUAL_LAYER_4           0xBB /* D(LAYER_4,  */
-#define KEY_DUAL_LAYER_5           0xBC /* D(LAYER_5,  */
-#define KEY_DUAL_LAYER_6           0xBD /* D(LAYER_6,  */
-#define KEY_DUAL_LAYER_7           0xBE /* D(LAYER_7,  */
-#define KEY_SOLO_DUAL_LAYER_1      0xBF /* DS(LAYER_1, */
-#define KEY_SOLO_DUAL_LAYER_2      0xC0 /* DS(LAYER_2, */
-#define KEY_SOLO_DUAL_LAYER_3      0xC1 /* DS(LAYER_3, */
-#define KEY_SOLO_DUAL_LAYER_4      0xC2 /* DS(LAYER_4, */
-#define KEY_SOLO_DUAL_LAYER_5      0xC3 /* DS(LAYER_5, */
-#define KEY_SOLO_DUAL_LAYER_6      0xC4 /* DS(LAYER_6, */
-#define KEY_SOLO_DUAL_LAYER_7      0xC5 /* DS(LAYER_7, */
-#define KEY_TIMED_DUAL_LAYER_1     0xC6 /* DT(LAYER_1, */
-#define KEY_TIMED_DUAL_LAYER_2     0xC7 /* DT(LAYER_2, */
-#define KEY_TIMED_DUAL_LAYER_3     0xC8 /* DT(LAYER_3, */
-#define KEY_TIMED_DUAL_LAYER_4     0xC9 /* DT(LAYER_4, */
-#define KEY_TIMED_DUAL_LAYER_5     0xCA /* DT(LAYER_5, */
-#define KEY_TIMED_DUAL_LAYER_6     0xCB /* DT(LAYER_6, */
-#define KEY_TIMED_DUAL_LAYER_7     0xCC /* DT(LAYER_7, */
+#define KEY_TYPE(t) (((uint32_t)t) << 24)
+#define LAYER(l) (((uint32_t)l) << 16)
 
-#define KEY_TRANSPARENT            0xFF /* TRANS       */
+// Key constructor macros
 
-#define ALIAS_SYS_POWER_OFF KC_SYSTEM(0x81)
-#define ALIAS_SYS_SLEEP     KC_SYSTEM(0x82)
-#define ALIAS_SYS_WAKE_UP   KC_SYSTEM(0x83)
+#define KC(code)        ( KEY_TYPE(KEY_NORMAL) | code )
+#define KCM(mod)        ( KEY_TYPE(KEY_NORMAL) | mod  )
+#define LCTRL(key)      ( KEY_TYPE(KEY_NORMAL) | MOD_LCTRL  | key )
+#define RCTRL(key)      ( KEY_TYPE(KEY_NORMAL) | MOD_RCTRL  | key )
+#define LSHIFT(key)     ( KEY_TYPE(KEY_NORMAL) | MOD_LSHIFT | key )
+#define RSHIFT(key)     ( KEY_TYPE(KEY_NORMAL) | MOD_RSHIFT | key )
+#define LGUI(key)       ( KEY_TYPE(KEY_NORMAL) | MOD_LGUI   | key )
+#define RGUI(key)       ( KEY_TYPE(KEY_NORMAL) | MOD_LGUI   | key )
+#define LALT(key)       ( KEY_TYPE(KEY_NORMAL) | MOD_LALT   | key )
+#define RALT(key)       ( KEY_TYPE(KEY_NORMAL) | MOD_LALT   | key )
 
-#define ALIAS_AUDIO_MUTE    KC_M0(0xE2)
-#define ALIAS_AUDIO_VOLUP   KC_M0(0xE9)
-#define ALIAS_AUDIO_VOLDOWN KC_M0(0xEA)
+#define LP(layer)       ( KEY_TYPE(KEY_LAYER_PRESS)          | LAYER(layer) )
+#define LT(layer)       ( KEY_TYPE(KEY_LAYER_TOGGLE)         | LAYER(layer) )
+#define LHT(layer)      ( KEY_TYPE(KEY_LAYER_TOGGLE_OR_HOLD) | LAYER(layer) )
 
-#define ALIAS_LAUNCH_CALCULATOR    KC_M1(0x92)
-#define ALIAS_LAUNCH_WWW           KC_M1(0x94)
-#define ALIAS_LAUNCH_FILE_BROWSER  KC_M1(0x96)
-#define ALIAS_LAUNCH_SCREEN_SAVER  KC_M1(0x9E)
+#define KC_SYSTEM(code) ( KEY_TYPE(KEY_SYSTEM)       | code )
+#define KC_M0(code)     ( KEY_TYPE(KEY_MULTIMEDIA_0) | code )
+#define KC_M1(code)     ( KEY_TYPE(KEY_MULTIMEDIA_1) | code )
+#define KC_M2(code)     ( KEY_TYPE(KEY_MULTIMEDIA_2) | code )
 
-#define KC_NO               0x00
-#define KC_ROLL_OVER        0x01
-#define KC_POST_FAIL        0x02
-#define KC_UNDEFINED        0x03
-#define KC_A                0x04
-#define KC_B                0x05
-#define KC_C                0x06
-#define KC_D                0x07
-#define KC_E                0x08
-#define KC_F                0x09
-#define KC_G                0x0A
-#define KC_H                0x0B
-#define KC_I                0x0C
-#define KC_J                0x0D
-#define KC_K                0x0E
-#define KC_L                0x0F
-#define KC_M                0x10
-#define KC_N                0x11
-#define KC_O                0x12
-#define KC_P                0x13
-#define KC_Q                0x14
-#define KC_R                0x15
-#define KC_S                0x16
-#define KC_T                0x17
-#define KC_U                0x18
-#define KC_V                0x19
-#define KC_W                0x1A
-#define KC_X                0x1B
-#define KC_Y                0x1C
-#define KC_Z                0x1D
-#define KC_1                0x1E
-#define KC_2                0x1F
-#define KC_3                0x20
-#define KC_4                0x21
-#define KC_5                0x22
-#define KC_6                0x23
-#define KC_7                0x24
-#define KC_8                0x25
-#define KC_9                0x26
-#define KC_0                0x27
-#define KC_ENT              0x28
-#define KC_ENTER            0x28
-#define KC_ESC              0x29
-#define KC_ESCAPE           0x29
-#define KC_BSPACE           0x2A
-#define KC_BSPC             0x2A
-#define KC_TAB              0x2B
-#define KC_SPACE            0x2C
-#define KC_SPC              0x2C
-#define KC_MINS             0x2D
-#define KC_MINUS            0x2D
-#define KC_EQL              0x2E
-#define KC_EQUAL            0x2E
-#define KC_LBRACKET         0x2F
-#define KC_LBRC             0x2F
-#define KC_RBRACKET         0x30
-#define KC_RBRC             0x30
-#define KC_BSLASH           0x31
-#define KC_BSLS             0x31
-#define KC_NONUS_HASH       0x32
-#define KC_NUHS             0x32
-#define KC_SCLN             0x33
-#define KC_SCOLON           0x33
-#define KC_QUOT             0x34
-#define KC_QUOTE            0x34
-#define KC_GRAVE            0x35
-#define KC_GRV              0x35
-#define KC_COMM             0x36
-#define KC_COMMA            0x36
-#define KC_DOT              0x37
-#define KC_SLASH            0x38
-#define KC_SLSH             0x38
-#define KC_CAPS             0x39
-#define KC_CAPSLOCK         0x39
-#define KC_CLCK             0x39
-#define KC_F1               0x3A
-#define KC_F2               0x3B
-#define KC_F3               0x3C
-#define KC_F4               0x3D
-#define KC_F5               0x3E
-#define KC_F6               0x3F
-#define KC_F7               0x40
-#define KC_F8               0x41
-#define KC_F9               0x42
-#define KC_F10              0x43
-#define KC_F11              0x44
-#define KC_F12              0x45
-#define KC_PSCR             0x46
-#define KC_PSCREEN          0x46
-#define KC_SCROLLLOCK       0x47
-#define KC_SLCK             0x47
-#define KC_BRK              0x48
-#define KC_PAUS             0x48
-#define KC_PAUSE            0x48
-#define KC_INS              0x49
-#define KC_INSERT           0x49
-#define KC_HOME             0x4A
-#define KC_PGUP             0x4B
-#define KC_DEL              0x4C
-#define KC_DELETE           0x4C
-#define KC_END              0x4D
-#define KC_PGDN             0x4E
-#define KC_PGDOWN           0x4E
-#define KC_RGHT             0x4F
-#define KC_RIGHT            0x4F
-#define KC_LEFT             0x50
-#define KC_DOWN             0x51
-#define KC_UP               0x52
-#define KC_NLCK             0x53
-#define KC_NUMLOCK          0x53
-#define KC_KP_SLASH         0x54
-#define KC_PSLS             0x54
-#define KC_KP_ASTERISK      0x55
-#define KC_PAST             0x55
-#define KC_KP_MINUS         0x56
-#define KC_PMNS             0x56
-#define KC_KP_PLUS          0x57
-#define KC_PPLS             0x57
-#define KC_KP_ENTER         0x58
-#define KC_PENT             0x58
-#define KC_KP_1             0x59
-#define KC_P1               0x59
-#define KC_KP_2             0x5A
-#define KC_P2               0x5A
-#define KC_KP_3             0x5B
-#define KC_P3               0x5B
-#define KC_KP_4             0x5C
-#define KC_P4               0x5C
-#define KC_KP_5             0x5D
-#define KC_P5               0x5D
-#define KC_KP_6             0x5E
-#define KC_P6               0x5E
-#define KC_KP_7             0x5F
-#define KC_P7               0x5F
-#define KC_KP_8             0x60
-#define KC_P8               0x60
-#define KC_KP_9             0x61
-#define KC_P9               0x61
-#define KC_KP_0             0x62
-#define KC_P0               0x62
-#define KC_KP_DOT           0x63
-#define KC_PDOT             0x63
-#define KC_NONUS_BSLASH     0x64
-#define KC_NUBS             0x64
-#define KC_APP              0x65
-#define KC_APPLICATION      0x65
-#define KC_POWER            0x66
-#define KC_KP_EQUAL         0x67
-#define KC_PEQL             0x67
-#define KC_F13              0x68
-#define KC_F14              0x69
-#define KC_F15              0x6A
-#define KC_F16              0x6B
-#define KC_F17              0x6C
-#define KC_F18              0x6D
-#define KC_F19              0x6E
-#define KC_F20              0x6F
-#define KC_F21              0x70
-#define KC_F22              0x71
-#define KC_F23              0x72
-#define KC_F24              0x73
-#define KC_EXEC             0x74
-#define KC_EXECUTE          0x74
-#define KC_HELP             0x75
-#define KC_MENU             0x76
-#define KC_SELECT           0x77
-#define KC_SLCT             0x77
-#define KC_STOP             0x78
-#define KC_AGAIN            0x79
-#define KC_AGIN             0x79
-#define KC_UNDO             0x7A
-#define KC_CUT              0x7B
-#define KC_COPY             0x7C
-#define KC_PASTE            0x7D
-#define KC_PSTE             0x7D
-#define KC_FIND             0x7E
-#define KC_MUTE             0x7F
-#define KC_VOLUP            0x80
-#define KC_VOLDOWN          0x81
-#define KC_LCAP             0x82
-#define KC_LOCKING_CAPS     0x82
-#define KC_LNUM             0x83
-#define KC_LOCKING_NUM      0x83
-#define KC_LOCKING_SCROLL   0x84
-#define KC_LSCR             0x84
-#define KC_KP_COMMA         0x85
-#define KC_PCMM             0x85
-#define KC_KP_EQUAL_AS400   0x86
-#define KC_INT1             0x87
-#define KC_INT2             0x88
-#define KC_INT3             0x89
-#define KC_INT4             0x8A
-#define KC_INT5             0x8B
-#define KC_INT6             0x8C
-#define KC_INT7             0x8D
-#define KC_INT8             0x8E
-#define KC_INT9             0x8F
-#define KC_LANG1            0x90
-#define KC_LANG2            0x91
-#define KC_LANG3            0x92
-#define KC_LANG4            0x93
-#define KC_LANG5            0x94
-#define KC_LANG6            0x95
-#define KC_LANG7            0x96
-#define KC_LANG8            0x97
-#define KC_LANG9            0x98
-#define KC_ALT_ERASE        0x99
-#define KC_ERAS             0x99
-#define KC_SYSREQ           0x9A
-#define KC_CANCEL           0x9B
-#define KC_CLEAR            0x9C
-#define KC_CLR              0x9C
-#define KC_PRIOR            0x9D
-#define KC_RETURN           0x9E
-#define KC_SEPARATOR        0x9F
-#define KC_OUT              0xA0
-#define KC_OPER             0xA1
-#define KC_CLEAR_AGAIN      0xA2
-#define KC_CRSEL            0xA3
-#define KC_EXSEL            0xA4
-#define KC_LCTL             0xE0
-#define KC_LCTRL            0xE0
-#define KC_LSFT             0xE1
-#define KC_LSHIFT           0xE1
-#define KC_LALT             0xE2
-#define KC_LGUI             0xE3
-#define KC_RCTL             0xE4
-#define KC_RCTRL            0xE4
-#define KC_RSFT             0xE5
-#define KC_RSHIFT           0xE5
-#define KC_RALT             0xE6
-#define KC_RGUI             0xE7
+#define TD(index)       ( KEY_TYPE(KEY_TAPDANCE)          | index )
+#define OSM(mod)        ( KEY_TYPE(KEY_ONE_SHOT_MODIFIER) | mod )
+
+#define D(mod, key)     ( KEY_TYPE(KEY_DUAL_MOD)         | mod | key )
+#define DS(mod, key)    ( KEY_TYPE(KEY_SOLO_DUAL_MOD)    | mod | key )
+#define DT(mod, key)    ( KEY_TYPE(KEY_TIMED_DUAL_MOD)   | mod | key )
+
+#define DL(layer, key)  ( KEY_TYPE(KEY_DUAL_LAYER)       | LAYER(layer) | key )
+#define DSL(layer, key) ( KEY_TYPE(KEY_SOLO_DUAL_LAYER)  | LAYER(layer) | key )
+#define DTL(layer, key) ( KEY_TYPE(KEY_TIMED_DUAL_LAYER) | LAYER(layer) | key )
+
+#define XXXXXXX         ( KEY_TYPE(KEY_NORMAL) | KC_NO )
+#define KEY_NO_ACTION   XXXXXXX
+#define _______         KEY_TYPE(KEY_TRANSPARENT)
+
+// Modifiers
+
+#define KC_LCTL    KCM(MOD_LCTRL)
+#define KC_LCTRL   KCM(MOD_LCTRL)
+#define KC_LSFT    KCM(MOD_LSHIFT)
+#define KC_LSHIFT  KCM(MOD_LSHIFT)
+#define KC_LALT    KCM(MOD_LALT)
+#define KC_LGUI    KCM(MOD_LGUI)
+#define KC_RCTL    KCM(MOD_RCTRL)
+#define KC_RCTRL   KCM(MOD_RCTRL)
+#define KC_RSFT    KCM(MOD_RSHIFT)
+#define KC_RSHIFT  KCM(MOD_RSHIFT)
+#define KC_RALT    KCM(MOD_RALT)
+#define KC_RGUI    KCM(MOD_RGUI)
+
+// Aliases
+
+#define KC_SYS_POWER_OFF KC_SYSTEM(0x81)
+#define KC_SYS_SLEEP     KC_SYSTEM(0x82)
+#define KC_SYS_WAKE_UP   KC_SYSTEM(0x83)
+
+#define KC_AUDIO_MUTE    KC_M0(0xE2)
+#define KC_AUDIO_VOLUP   KC_M0(0xE9)
+#define KC_AUDIO_VOLDOWN KC_M0(0xEA)
+
+#define KC_LAUNCH_CALCULATOR    KC_M1(0x92)
+#define KC_LAUNCH_WWW           KC_M1(0x94)
+#define KC_LAUNCH_FILE_BROWSER  KC_M1(0x96)
+#define KC_LAUNCH_SCREEN_SAVER  KC_M1(0x9E)
+
+#define KC_SCR_SVR KC_LAUNCH_SCREEN_SAVER
+#define KC_CALC KC_LAUNCH_CALCULATOR
+#define KC_VOLUP KC_AUDIO_VOLUP
+#define KC_VOLDN KC_AUDIO_VOLDOWN
+#define KC_MUTE KC_AUDIO_MUTE
+
+#define KC_TILDE LSHIFT(KC_GRAVE) // ~
+#define KC_TILD KC_TILDE
+
+#define KC_EXCLAIM LSHIFT(KC_1) // !
+#define KC_EXLM KC_EXCLAIM
+
+#define KC_AT LSHIFT(KC_2) // @
+
+#define KC_HASH LSHIFT(KC_3) // #
+
+#define KC_DOLLAR LSHIFT(KC_4) // $
+#define KC_DLR KC_DOLLAR
+
+#define KC_PERCENT LSHIFT(KC_5) // %
+#define KC_PERC KC_PERCENT
+
+#define KC_CIRCUMFLEX LSHIFT(KC_6) // ^
+#define KC_CIRC KC_CIRCUMFLEX
+
+#define KC_AMPERSAND LSHIFT(KC_7) // &
+#define KC_AMPR KC_AMPERSAND
+
+#define KC_ASTERISK LSHIFT(KC_8) // *
+#define KC_ASTR KC_ASTERISK
+
+#define KC_LEFT_PAREN LSHIFT(KC_9) // (
+#define KC_LPRN KC_LEFT_PAREN
+
+#define KC_RIGHT_PAREN LSHIFT(KC_0) // )
+#define KC_RPRN KC_RIGHT_PAREN
+
+#define KC_UNDERSCORE LSHIFT(KC_MINUS) // _
+#define KC_UNDS KC_UNDERSCORE
+
+#define KC_PLUS LSHIFT(KC_EQUAL) // +
+
+#define KC_LEFT_CURLY_BRACE LSHIFT(KC_LEFT_BRACKET) // {
+#define KC_LCBR KC_LEFT_CURLY_BRACE
+
+#define KC_RIGHT_CURLY_BRACE LSHIFT(KC_RIGHT_BRACKET) // {
+#define KC_RCBR KC_RIGHT_CURLY_BRACE
+
+#define KC_LEFT_ANGLE_BRACKET LSHIFT(KC_COMMA) // <
+#define KC_LABK KC_LEFT_ANGLE_BRACKET
+
+#define KC_RIGHT_ANGLE_BRACKET LSHIFT(KC_DOT) // >
+#define KC_RABK KC_RIGHT_ANGLE_BRACKET
+
+#define KC_COLON LSHIFT(KC_SEMICOLON) // :
+#define KC_COLN KC_COLON
+
+#define KC_PIPE LSHIFT(KC_BACKSLASH) // |
+
+#define KC_QUESTION LSHIFT(KC_SLASH) // ?
+#define KC_QUES KC_QUESTION
+
+#define KC_DOUBLE_QUOTE LSHIFT(KC_QUOTE) // "
+#define KC_DQUO KC_DOUBLE_QUOTE
+
+#define KC_ENT  KC_ENTER
+#define KC_ESC  KC_ESCAPE
+#define KC_BSPC KC_BACKSPACE
+#define KC_SPC  KC_SPACE
+#define KC_MINS KC_MINUS
+#define KC_EQL  KC_EQUAL
+#define KC_LBRC KC_LEFT_BRACKET
+#define KC_RBRC KC_RIGHT_BRACKET
+#define KC_BSLS KC_BACKSLASH
+#define KC_NUHS KC_NONUS_HASH
+#define KC_SCLN KC_SEMICOLON
+#define KC_QUOT KC_QUOTE
+#define KC_GRV  KC_GRAVE
+#define KC_COMM KC_COMMA
+#define KC_SLSH KC_SLASH
+#define KC_NUBS KC_NONUS_BACKSLASH
+
+#define KC_PSCR KC_PRINT_SCREEN
+#define KC_PAUS KC_PAUSE
+#define KC_BRK  KC_PAUSE
+#define KC_INS  KC_INSERT
+#define KC_PGUP KC_PAGE_UP
+#define KC_DEL  KC_DELETE
+#define KC_PGDN KC_PAGE_DOWN
+#define KC_RGHT KC_RIGHT
+#define KC_APP  KC_APPLICATION
+#define KC_EXEC KC_EXECUTE
+#define KC_SLCT KC_SELECT
+#define KC_AGIN KC_AGAIN
+#define KC_PSTE KC_PASTE
+#define KC_ERAS KC_ALTERNATE_ERASE
+#define KC_SYRQ KC_SYSTEM_REQUEST
+#define KC_CNCL KC_CANCEL
+#define KC_CLR  KC_CLEAR
+#define KC_PRIR KC_PRIOR
+#define KC_RETN KC_RETURN
+#define KC_SEPR KC_SEPARATOR
+#define KC_CLAG KC_CLEAR_AGAIN
+#define KC_CRSL KC_CRSEL
+#define KC_EXSL KC_EXSEL

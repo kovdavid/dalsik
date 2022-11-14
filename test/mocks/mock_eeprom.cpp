@@ -3,34 +3,11 @@
 #include "dalsik_eeprom.h"
 #include "key_definitions.h"
 
-#define SET_KEY(layer, row, col, type, key) \
-    data[EEPROM::get_eeprom_address(layer, KeyCoords { row, col }) + 0] = type; \
-    data[EEPROM::get_eeprom_address(layer, KeyCoords { row, col }) + 1] = key;
-
 static uint8_t* get_eeprom_data() {
-    uint8_t* data = (uint8_t*) calloc(E2END+1, sizeof(uint8_t));
-
-    SET_KEY(0, 1, 1, KEY_NORMAL, KC_A);
-    SET_KEY(0, 1, 2, KEY_NORMAL, KC_B);
-    SET_KEY(0, 1, 3, KEY_DUAL_MOD_LCTRL, KC_C);
-    SET_KEY(0, 1, 4, KEY_DUAL_MOD_LSHIFT, KC_D);
-    SET_KEY(0, 1, 5, KEY_TIMED_DUAL_MOD_LSHIFT, KC_E);
-    SET_KEY(0, 1, 6, KEY_TIMED_DUAL_MOD_LCTRL, KC_F);
-
-    SET_KEY(0, 1, 7, KEY_DUAL_LAYER_1, KC_G);
-    SET_KEY(0, 1, 8, KEY_SOLO_DUAL_LAYER_1, KC_H);
-
-    SET_KEY(0, 1, 9, KEY_ONE_SHOT_MODIFIER, KC_LCTRL);
-    SET_KEY(0, 1, 10, KEY_LAYER_TOGGLE_OR_HOLD, 1);
-    SET_KEY(1, 1, 10, KEY_LAYER_TOGGLE_OR_HOLD, 1);
-
-    SET_KEY(1, 1, 1, KEY_NORMAL, KC_E);
-
-    return data;
+    return (uint8_t*) calloc(E2END+1, sizeof(uint8_t));
 }
 
 uint8_t* data = get_eeprom_data();
-
 
 uint8_t eeprom_read_byte(uint8_t* addr) {
     return *(data + (size_t)addr);

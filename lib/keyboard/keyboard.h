@@ -18,11 +18,12 @@ const uint32_t LED_LAYER_COLORS[MAX_LAYER_COUNT] = {
 };
 #endif
 
-#define STATE_NOT_PROCESSED 0x00
-#define STATE_PENDING       0x01
-#define STATE_PRIMARY_KEY   0x02
-#define STATE_SECONDARY_KEY 0x03
-#define STATE_RELEASED      0x04
+#define STATE_NOT_PROCESSED   0x00
+#define STATE_PENDING         0x01
+#define STATE_ACTIVE_KEY      0x02
+#define STATE_ACTIVE_MODIFIER 0x03
+#define STATE_ACTIVE_LAYER    0x04
+#define STATE_RELEASED        0x05
 
 #define PRESSED_KEY_BUFFER 10
 #define INVALID_PRESSED_KEY 255
@@ -103,8 +104,8 @@ class Keyboard {
         inline void press_multimedia_key(KeyInfo key_info);
         inline void release_multimedia_key(KeyInfo key_info);
 
-        inline void press_dual_key(PressedKey *pk);
-        inline void release_dual_key(PressedKey *pk);
+        inline void press_dual_mod_key(PressedKey *pk);
+        inline void release_dual_mod_key(PressedKey *pk);
 
         inline void press_dual_layer_key(PressedKey *pk);
         inline void release_dual_layer_key(PressedKey *pk);

@@ -12,6 +12,7 @@
 #include "key_definitions.h"
 #include "key_event_handler.h"
 #include "key_info.h"
+#include "keymap.h"
 #include "keyboard.h"
 #include "matrix.h"
 #include "pin_utils.h"

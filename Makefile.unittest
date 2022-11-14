@@ -37,6 +37,7 @@ $(BUILD_ROOT)/%.o: test/*/%
 OBJ = \
 	  test_keyboard.cpp.o \
 	  mock_eeprom.cpp.o \
+	  mock_keymap.cpp.o \
 	  dalsik_eeprom.cpp.o \
 	  keyboard.cpp.o \
 	  array_utils.cpp.o \

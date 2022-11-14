@@ -14,6 +14,9 @@
 #define ONE_SIDE_KEYS ROW_PIN_COUNT*ONE_SIDE_COL_PIN_COUNT
 #define KEY_COUNT 2 * ONE_SIDE_KEYS
 
+#define KEYBOARD_ROWS ROW_PIN_COUNT
+#define KEYBOARD_COLS 2 * ONE_SIDE_COL_PIN_COUNT
+
 // Turn off the keyboard with this PIN
 #define ON_OFF_PIN PIN_C(6)
 
@@ -29,11 +32,6 @@
 
 typedef unsigned long millisec;
 
-typedef struct {
-    uint8_t type;
-    uint8_t key;
-} EEPROM_KeyInfo;
-
 #define EVENT_NONE 0x00
 #define EVENT_KEY_PRESS 0x01
 #define EVENT_KEY_RELEASE 0x02
@@ -42,33 +40,6 @@ typedef struct {
     uint8_t type;
     KeyCoords coords;
 } ChangedKeyEvent;
-
-#define DUAL_MODE_NOT_PRESSED     0x00
-#define DUAL_MODE_PENDING         0x01
-#define DUAL_MODE_PRESS_KEY       0x02
-#define DUAL_MODE_HOLD_MODIFIER   0x03
-#define DUAL_MODE_HOLD_LAYER      0x04
-
-typedef struct {
-    uint8_t mode;
-    KeyInfo key_info;
-    millisec last_press_ts;
-} DualKeyState;
-
-#define TOGGLE_OR_HOLD_NOT_PRESSED 0x00
-#define TOGGLE_OR_HOLD_PENDING     0x01
-#define TOGGLE_OR_HOLD_HOLD_LAYER  0x02
-
-typedef struct {
-    uint8_t mode;
-    KeyInfo key_info;
-} LayerToggleOrHoldState;
-
-// EEPROM - 2B/key; 48keys; 8layers; 2*48*8 = 768B
-// keymap : 0-767
-// tapdance keys : 800-899
-
-#define TAPDANCE_EEPROM_OFFSET (sizeof(EEPROM_KeyInfo)*MAX_LAYER_COUNT*KEY_COUNT)
 
 typedef struct {
     uint8_t key_reported;
