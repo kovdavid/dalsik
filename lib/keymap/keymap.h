@@ -8,6 +8,8 @@
 extern const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] PROGMEM;
 extern const uint8_t layer_count;
 
+#define KEYMAP(...) __VA_ARGS__; const uint8_t layer_count = sizeof(keymap) / sizeof(keymap[0]);
+
 namespace KeyMap {
     inline KeyInfo get_key(uint8_t layer, KeyCoords c) {
         if (layer < layer_count) {

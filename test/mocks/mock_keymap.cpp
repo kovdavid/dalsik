@@ -10,7 +10,7 @@
 #define KEY8 LHT(1)
 #define KEY9 LP(1)
 
-const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] = {
+const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] = KEYMAP({
     LAYOUT_4x12(
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
         _______,  KC_A  ,  KC_B  ,  KEY1  ,  KEY2  ,  KEY3  ,  KEY4  ,  KEY5  ,  KEY6  ,  KEY7  ,  KEY8  ,  KEY9  ,
@@ -23,6 +23,4 @@ const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] = {
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
     )
-};
-
-const uint8_t layer_count = sizeof(keymap) / sizeof(keymap[0]);
+});

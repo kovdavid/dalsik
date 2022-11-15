@@ -20,7 +20,7 @@
 #define GUI_PGDN LGUI(KC_PGDN)
 #define SHFT_INS LSHIFT(KC_INS)
 
-const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] PROGMEM = {
+const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] PROGMEM = KEYMAP({
     LAYOUT_4x12(
         KC_TAB,    KC_Q,   KC_W,     KC_E,     KC_R,   KC_T,       KC_Y,     KC_U,   KC_I,     KC_O,    KC_P,       KC_QUOT,
         CTRL_ESC,  KC_A,   KC_S,     KC_D,     KC_F,   KC_G,       KC_H,     KC_J,   KC_K,     KC_L,    L3_SCOLON,  KC_ENTER,
@@ -48,6 +48,4 @@ const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] PROGMEM = {
         _______,  LGUI(KC_Z),  XXXXXXX,   LALT(KC_1),  LALT(KC_2),  KC_MUTE,   XXXXXXX,  KC_HOME,  KC_INS,   KC_END,    XXXXXXX,  _______,
         _______,  _______,     SHFT_INS,  _______,     KC_COMM,     KC_CALC,   KC_BSPC,  _______,  _______,  _______,   _______,  _______
     )
-};
-
-const uint8_t layer_count = sizeof(keymap) / sizeof(keymap[0]);
+});
