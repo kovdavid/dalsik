@@ -64,5 +64,20 @@ LDFLAGS          += -fdiagnostics-color
 CURRENT_DIR       = $(shell basename $(CURDIR))
 OBJDIR            = $(PROJECT_DIR)/build/$(CURRENT_DIR)/$(BOARD_TAG)
 
+### Keymap setting
+ifndef KEYMAP
+$(error KEYMAP environment variable is not set)
+endif
+
+KEYMAP_TARGET = $(OBJDIR)/userlibs/keymap/keymap.cpp.o
+
+COMMON_DEPS = $(KEYMAP_TARGET)
+
 ### path to Arduino.mk, inside the ARDMK_DIR, don't touch.
 include $(ARDMK_DIR)/Arduino.mk
+
+$(KEYMAP_TARGET): $(KEYMAP)
+	@$(MKDIR) $(dir $@)
+	$(CXX) -MMD -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+
+USER_LIB_OBJS += $(KEYMAP_TARGET)

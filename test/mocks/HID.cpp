@@ -1,5 +1,4 @@
 #include "HID.h"
-// #include "dalsik_hid_desc.h"
 
 HIDSubDescriptor::HIDSubDescriptor(
     const void *d UNUSED,

@@ -1,11 +1,11 @@
 #include "Arduino.h"
 #include "array_utils.h"
-#include "dalsik_eeprom.h"
 #include "dalsik_global.h"
 #include "dalsik_hid.h"
 #include "dalsik_led.h"
 #include "key_info.h"
 #include "keyboard.h"
+#include "keymap.h"
 
 Keyboard::Keyboard() {
     DalsikHid::init_descriptor();
@@ -64,8 +64,8 @@ void Keyboard::key_timeout_check(millisec now) {
         pk->key_info.is_any_dual_key()
         && pk->timestamp + DUAL_MODE_TIMEOUT_MS < now
     ) {
-        pk->state = STATE_PRIMARY_KEY;
-        this->press_normal_key(pk->key_info);
+        pk->state = STATE_ACTIVE_KEY;
+        this->press_normal_key(pk->key_info.use_key());
         this->send_hid_report();
     }
     if (
@@ -78,7 +78,7 @@ void Keyboard::key_timeout_check(millisec now) {
 }
 
 KeyInfo Keyboard::get_key(KeyCoords c) {
-    KeyInfo key_info = EEPROM::get_key(this->layer_index, c);
+    KeyInfo key_info = KeyMap::get_key(this->layer_index, c);
 
     if (key_info.type == KEY_TRANSPARENT) { // Get the key from lower layers
         key_info = this->get_non_transparent_key(c);
@@ -94,15 +94,15 @@ KeyInfo Keyboard::get_non_transparent_key(KeyCoords c) {
             continue;
         }
 
-        KeyInfo key_info = EEPROM::get_key(layer, c);
+        KeyInfo key_info = KeyMap::get_key(layer, c);
         if (key_info.type != KEY_TRANSPARENT) {
             return key_info;
         }
     }
 
-    KeyInfo key_info = EEPROM::get_key(0, c);
+    KeyInfo key_info = KeyMap::get_key(0, c);
     if (key_info.type == KEY_TRANSPARENT) {
-        return KeyInfo(KEY_UNSET, 0x00, c);
+        return KeyInfo(KEY_NO_ACTION, c);
     } else {
         return key_info;
     }
@@ -120,6 +120,8 @@ void Keyboard::reload_keys_on_new_layer(uint8_t key_index) {
 
         KeyInfo new_ki = this->get_key(pk->key_info.coords);
         pk->key_info.type = new_ki.type;
+        pk->key_info.layer = new_ki.layer;
+        pk->key_info.mod = new_ki.mod;
         pk->key_info.key = new_ki.key;
     }
 }
@@ -196,30 +198,28 @@ void Keyboard::handle_key_release(KeyInfo key_info, millisec now) {
 void Keyboard::press(PressedKey *pk, millisec now) {
     KeyInfo key_info = pk->key_info;
 
+
     if (key_info.type == KEY_NORMAL) {
         this->press_normal_key(key_info);
-        pk->state = STATE_PRIMARY_KEY;
+        pk->state = STATE_ACTIVE_KEY;
     } else if (key_info.type == KEY_LAYER_PRESS) {
-        this->press_layer_key(key_info.key);
-        pk->state = STATE_PRIMARY_KEY;
+        this->press_layer_key(key_info.layer);
+        pk->state = STATE_ACTIVE_LAYER;
     } else if (key_info.type == KEY_LAYER_TOGGLE) {
         this->press_toggle_layer_key(key_info.key);
-        pk->state = STATE_PRIMARY_KEY;
+        pk->state = STATE_ACTIVE_LAYER;
     } else if (key_info.type == KEY_SYSTEM)  {
         this->press_system_key(key_info);
-        pk->state = STATE_PRIMARY_KEY;
+        pk->state = STATE_ACTIVE_KEY;
     } else if (key_info.is_multimedia_key()) {
         this->press_multimedia_key(key_info);
-        pk->state = STATE_PRIMARY_KEY;
-    } else if (key_info.is_key_with_mod()) {
-        this->press_key_with_mod(key_info);
-        pk->state = STATE_PRIMARY_KEY;
+        pk->state = STATE_ACTIVE_KEY;
     } else if (key_info.type == KEY_TAPDANCE) {
         // this->press_tapdance_key(key_info, now); // TODO
     } else if (key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
         this->press_layer_toggle_or_hold(pk);
     } else if (key_info.is_any_dual_mod_key()) {
-        this->press_dual_key(pk);
+        this->press_dual_mod_key(pk);
     } else if (key_info.is_any_dual_layer_key()) {
         this->press_dual_layer_key(pk);
     } else if (key_info.type == KEY_ONE_SHOT_MODIFIER) {
@@ -236,7 +236,7 @@ void Keyboard::release(PressedKey *pk, millisec now) {
     }
 
     if (key_info.is_any_dual_mod_key()) {
-        this->release_dual_key(pk);
+        this->release_dual_mod_key(pk);
     } else if (key_info.is_any_dual_layer_key()) {
         this->release_dual_layer_key(pk);
     } else if (key_info.type == KEY_ONE_SHOT_MODIFIER) {
@@ -249,15 +249,13 @@ void Keyboard::release(PressedKey *pk, millisec now) {
         if (key_info.type == KEY_NORMAL) {
             this->release_normal_key(key_info);
         } else if (key_info.type == KEY_LAYER_PRESS) {
-            this->release_layer_key(key_info.key);
+            this->release_layer_key(key_info.layer);
         } else if (key_info.type == KEY_LAYER_TOGGLE) {
             // do nothing; toggle_layer key has only effect on press
         } else if (key_info.type == KEY_SYSTEM)  {
             this->release_system_key(key_info);
         } else if (key_info.is_multimedia_key()) {
             this->release_multimedia_key(key_info);
-        } else if (key_info.is_key_with_mod()) {
-            this->release_key_with_mod(key_info);
         } else if (key_info.type == KEY_TAPDANCE) {
             // this->release_tapdance_key(key_info, now); // TODO
         }
@@ -330,13 +328,12 @@ inline void Keyboard::run_press_hook(uint8_t key_index, millisec now) {
     PressedKey *pk = &(this->pressed_keys.keys[key_index]);
     KeyInfo key_info = pk->key_info;
 
-
     if (pk->state != STATE_PENDING) {
         return;
     }
 
     if (key_info.is_any_dual_mod_key()) {
-        this->press_dual_key(pk);
+        this->press_dual_mod_key(pk);
         this->send_hid_report();
     } else if (key_info.is_any_dual_layer_key()) {
         this->press_dual_layer_key(pk);
@@ -415,35 +412,30 @@ inline bool Keyboard::run_release_hook(
 
 // Normal key {{{
 inline void Keyboard::press_normal_key(KeyInfo key_info) {
-    uint8_t key = key_info.key;
+    if (this->one_shot_modifiers) {
+        this->base_hid_report.modifiers |= this->one_shot_modifiers;
+        this->one_shot_modifiers = 0x00;
+    }
 
-    if (KC_LCTRL <= key && key <= KC_RGUI) { // Modifier
-        // For 'Left Shift' 0xE1 bitmask is 0x0000_0010
-        uint8_t modifier_bit = key & 0x0F;
-        uint8_t bitmask = 1 << modifier_bit;
-        this->base_hid_report.modifiers |= bitmask;
-    } else { // Normal key
-        if (this->one_shot_modifiers) {
-            this->base_hid_report.modifiers |= this->one_shot_modifiers;
-            this->one_shot_modifiers = 0x00;
-        }
+    if (key_info.mod) {
+        this->base_hid_report.modifiers |= key_info.mod;
+    }
+
+    if (key_info.key) {
         append_uniq_to_uint8_array(
-            this->base_hid_report.keys, BASE_HID_REPORT_KEYS, key
+            this->base_hid_report.keys, BASE_HID_REPORT_KEYS, key_info.key
         );
     }
 }
 
 inline void Keyboard::release_normal_key(KeyInfo key_info) {
-    uint8_t key = key_info.key;
+    if (key_info.mod) {
+        this->base_hid_report.modifiers &= (key_info.mod ^ 0xFF);
+    }
 
-    if (KC_LCTRL <= key && key <= KC_RGUI) {
-        // For 'Left Shift' 0xE1 bitmask is 0x1111_1101
-        uint8_t modifier_bit = key & 0x0F;
-        uint8_t bitmask = (1 << modifier_bit) ^ 0xFF;
-        this->base_hid_report.modifiers &= bitmask;
-    } else { // key
+    if (key_info.key) {
         remove_uniq_from_uint8_array(
-            this->base_hid_report.keys, BASE_HID_REPORT_KEYS, key
+            this->base_hid_report.keys, BASE_HID_REPORT_KEYS, key_info.key
         );
     }
 }
@@ -452,36 +444,24 @@ inline void Keyboard::release_normal_key(KeyInfo key_info) {
 inline void Keyboard::press_one_shot_modifier_key(PressedKey *pk) {
     if (pk->state == STATE_NOT_PROCESSED) {
         if (pk->key_index > 0) {
-            // Not the first key
-            uint8_t modifier = pk->key_info.key;
-            this->press_normal_key(
-                KeyInfo(KEY_NORMAL, modifier, pk->key_info.coords)
-            );
-            pk->state = STATE_PRIMARY_KEY;
+            // Not the first key, act as modifier
+            this->press_normal_key(pk->key_info.use_mod());
+            pk->state = STATE_ACTIVE_MODIFIER;
         } else {
             pk->state = STATE_PENDING;
         }
     } else if (pk->state == STATE_PENDING) {
         // If a different key is pressed, act as modifier
-        uint8_t modifier = pk->key_info.key;
-        this->press_normal_key(
-            KeyInfo(KEY_NORMAL, modifier, pk->key_info.coords)
-        );
-        pk->state = STATE_PRIMARY_KEY;
+        this->press_normal_key(pk->key_info.use_mod());
+        pk->state = STATE_ACTIVE_MODIFIER;
     }
 }
 inline void Keyboard::release_one_shot_modifier_key(PressedKey *pk) {
-    if (pk->state == STATE_PRIMARY_KEY) {
-        uint8_t modifier = pk->key_info.key;
-        this->release_normal_key(
-            KeyInfo(KEY_NORMAL, modifier, pk->key_info.coords)
-        );
+    if (pk->state == STATE_ACTIVE_MODIFIER) {
+        this->release_normal_key(pk->key_info.use_mod());
     } else if (pk->state == STATE_PENDING) {
         // No other key was pressed after this one, act as one-shot modifier
-        uint8_t modifier = pk->key_info.key & 0x0F;
-        uint8_t bitmask = 1 << modifier;
-
-        this->one_shot_modifiers ^= bitmask;
+        this->one_shot_modifiers ^= pk->key_info.mod;
     }
 }
 // }}}
@@ -539,66 +519,38 @@ inline void Keyboard::release_multimedia_key(KeyInfo key_info) {
     }
 }
 // }}}
-// Key with modifier {{{
-inline void Keyboard::press_key_with_mod(KeyInfo key_info) {
-    uint8_t modifier = key_info.get_key_with_mod_modifier();
-    this->press_normal_key(KeyInfo(KEY_NORMAL, modifier, key_info.coords));
-
-    this->press_normal_key(KeyInfo(KEY_NORMAL, key_info.key, key_info.coords));
-}
-
-inline void Keyboard::release_key_with_mod(KeyInfo key_info) {
-    uint8_t modifier = key_info.get_key_with_mod_modifier();
-    this->release_normal_key(
-        KeyInfo(KEY_NORMAL, modifier, key_info.coords)
-    );
-    this->release_normal_key(
-        KeyInfo(KEY_NORMAL, key_info.key, key_info.coords)
-    );
-}
-// }}}
 // Dual key {{{
-inline void Keyboard::press_dual_key(PressedKey *pk) {
+inline void Keyboard::press_dual_mod_key(PressedKey *pk) {
     if (pk->state == STATE_NOT_PROCESSED) {
         if (pk->key_index > 0 && pk->key_info.is_any_solo_dual_key()) {
             // Not the first key
-            this->press_normal_key(pk->key_info);
-            pk->state = STATE_PRIMARY_KEY;
+            this->press_normal_key(pk->key_info.use_key());
+            pk->state = STATE_ACTIVE_KEY;
         } else {
             pk->state = STATE_PENDING;
         }
     } else if (pk->state == STATE_PENDING) {
-        // The primary key is activated only in release_dual_key
-        uint8_t modifier = pk->key_info.get_dual_key_modifier();
-        this->press_normal_key(
-            KeyInfo(KEY_NORMAL, modifier, pk->key_info.coords)
-        );
-        pk->state = STATE_SECONDARY_KEY;
+        // The primary key is activated only in release_dual_mod_key
+        this->press_normal_key(pk->key_info.use_mod());
+        pk->state = STATE_ACTIVE_MODIFIER;
     }
 }
 
-inline void Keyboard::release_dual_key(PressedKey *pk) {
+inline void Keyboard::release_dual_mod_key(PressedKey *pk) {
     KeyInfo key_info = pk->key_info;
 
-    if (pk->state == STATE_PRIMARY_KEY) {
-        this->release_normal_key(
-            KeyInfo(KEY_NORMAL, key_info.key, key_info.coords)
-        );
+    if (pk->state == STATE_ACTIVE_KEY) {
+        this->release_normal_key(key_info.use_key());
         pk->state = STATE_RELEASED;
-    } else if (pk->state == STATE_SECONDARY_KEY) {
-        uint8_t modifier = key_info.get_dual_key_modifier();
-        this->release_normal_key(
-            KeyInfo(KEY_NORMAL, modifier, key_info.coords)
-        );
+    } else if (pk->state == STATE_ACTIVE_MODIFIER) {
+        this->release_normal_key(key_info.use_mod());
         pk->state = STATE_RELEASED;
     } else if (pk->state == STATE_PENDING || pk->state == STATE_NOT_PROCESSED) {
         // This state is called from run_release_hook. Then release is called
         // and we call release_normal_key
-        this->press_normal_key(
-            KeyInfo(KEY_NORMAL, key_info.key, key_info.coords)
-        );
+        this->press_normal_key(key_info.use_key());
         this->send_hid_report();
-        pk->state = STATE_PRIMARY_KEY;
+        pk->state = STATE_ACTIVE_KEY;
     }
 }
 // }}}
@@ -608,36 +560,30 @@ inline void Keyboard::press_dual_layer_key(PressedKey *pk) {
     if (pk->state == STATE_NOT_PROCESSED) {
         if (pk->key_index > 0 && pk->key_info.is_any_solo_dual_key()) {
             // Not the first key
-            this->press_normal_key(pk->key_info);
-            pk->state = STATE_PRIMARY_KEY;
+            this->press_normal_key(pk->key_info.use_key());
+            pk->state = STATE_ACTIVE_KEY;
         } else {
             pk->state = STATE_PENDING;
         }
     } else if (pk->state == STATE_PENDING) {
-        uint8_t layer = pk->key_info.get_dual_layer_key_layer();
-        this->press_layer_key(layer);
-        pk->state = STATE_SECONDARY_KEY;
+        this->press_layer_key(pk->key_info.layer);
+        pk->state = STATE_ACTIVE_LAYER;
     }
 }
 
 inline void Keyboard::release_dual_layer_key(PressedKey *pk) {
     KeyInfo key_info = pk->key_info;
 
-    if (pk->state == STATE_PRIMARY_KEY) {
-        this->release_normal_key(
-            KeyInfo(KEY_NORMAL, key_info.key, key_info.coords)
-        );
+    if (pk->state == STATE_ACTIVE_KEY) {
+        this->release_normal_key(key_info.use_key());
         pk->state = STATE_RELEASED;
-    } else if (pk->state == STATE_SECONDARY_KEY) {
-        uint8_t layer = key_info.get_dual_layer_key_layer();
-        this->release_layer_key(layer);
+    } else if (pk->state == STATE_ACTIVE_LAYER) {
+        this->release_layer_key(key_info.layer);
         pk->state = STATE_RELEASED;
     } else if (pk->state == STATE_PENDING) {
-        this->press_normal_key(
-            KeyInfo(KEY_NORMAL, key_info.key, key_info.coords)
-        );
+        this->press_normal_key(key_info.use_key());
         this->send_hid_report();
-        pk->state = STATE_PRIMARY_KEY;
+        pk->state = STATE_ACTIVE_KEY;
     }
 }
 // }}}
@@ -647,8 +593,8 @@ inline void Keyboard::press_layer_toggle_or_hold(PressedKey *pk) {
     if (pk->state == STATE_NOT_PROCESSED) {
         pk->state = STATE_PENDING;
     } else if (pk->state == STATE_PENDING) {
-        this->press_layer_key(pk->key_info.key);
-        pk->state = STATE_SECONDARY_KEY;
+        this->press_layer_key(pk->key_info.layer);
+        pk->state = STATE_ACTIVE_LAYER;
     }
 }
 inline void Keyboard::release_layer_toggle_or_hold(PressedKey *pk) {
@@ -658,9 +604,9 @@ inline void Keyboard::release_layer_toggle_or_hold(PressedKey *pk) {
         pk->state == STATE_PENDING
         && pk->key_press_counter == this->key_press_counter
     ) {
-        this->toggle_layer(pk->key_info.key);
+        this->toggle_layer(pk->key_info.layer);
     } else {
-        this->remove_layer(pk->key_info.key);
+        this->remove_layer(pk->key_info.layer);
     }
     pk->state = STATE_RELEASED;
 }
@@ -707,18 +653,10 @@ void Keyboard::print_base_report_to_serial() {
     Serial.print(this->base_hid_report.modifiers, HEX);
     Serial.print(F("|"));
     Serial.print(this->base_hid_report.reserved, HEX);
-    Serial.print(F("|"));
-    Serial.print(this->base_hid_report.keys[0], HEX);
-    Serial.print(F("|"));
-    Serial.print(this->base_hid_report.keys[1], HEX);
-    Serial.print(F("|"));
-    Serial.print(this->base_hid_report.keys[2], HEX);
-    Serial.print(F("|"));
-    Serial.print(this->base_hid_report.keys[3], HEX);
-    Serial.print(F("|"));
-    Serial.print(this->base_hid_report.keys[4], HEX);
-    Serial.print(F("|"));
-    Serial.print(this->base_hid_report.keys[5], HEX);
+    for (uint8_t i = 0; i < 6; i++) {
+        Serial.print(F("|"));
+        Serial.print(this->base_hid_report.keys[i], HEX);
+    }
     Serial.print(F("\n"));
 #endif
 }
@@ -777,10 +715,12 @@ void Keyboard::print_internal_state() {
             Serial.print("STATE_NOT_PROCESSED");
         } else if (state == STATE_PENDING) {
             Serial.print("STATE_PENDING");
-        } else if (state == STATE_PRIMARY_KEY) {
-            Serial.print("STATE_PRIMARY_KEY");
-        } else if (state == STATE_SECONDARY_KEY) {
-            Serial.print("STATE_SECONDARY_KEY");
+        } else if (state == STATE_ACTIVE_LAYER) {
+            Serial.print("STATE_ACTIVE_LAYER");
+        } else if (state == STATE_ACTIVE_MODIFIER) {
+            Serial.print("STATE_ACTIVE_MODIFIER");
+        } else if (state == STATE_ACTIVE_KEY) {
+            Serial.print("STATE_ACTIVE_KEY");
         } else if (state == STATE_RELEASED) {
             Serial.print("STATE_RELEASED");
         }
