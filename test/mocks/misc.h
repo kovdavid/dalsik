@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define TEST_KEYBOARD_FRIENDS \
+   friend PressedKeys get_keyboard_pressed_keys(Keyboard);
+
 #define PROGMEM
 #define HEX 1
 

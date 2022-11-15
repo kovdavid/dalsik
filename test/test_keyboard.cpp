@@ -7,6 +7,10 @@
 #include "Serial.h"
 #include "avr/eeprom.h"
 
+PressedKeys get_keyboard_pressed_keys(Keyboard k) {
+    return k.pressed_keys;
+}
+
 bool compare_base_report(size_t index, BaseHIDReport expected) {
     BaseHIDReport got = HID().base_hid_reports.at(index);
     return memcmp(&got, &expected, sizeof(BaseHIDReport)) == 0;
@@ -683,6 +687,41 @@ void test_layer_press_2(void) {
     BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
+// Test clearing of the pressed_keys structure. We first fill it up, Then
+// remove all but one element (so that keyboard.clear() is not triggered).
+void test_remove_from_pressed_keys(void) {
+    Keyboard keyboard;
+
+    millisec now = 100;
+
+    for (uint8_t i = 0; i < PRESSED_KEY_BUFFER; i++) {
+        keyboard.handle_changed_key({ P, normal_KC_A }, now++);
+    }
+
+    for (uint8_t i = 0; i < PRESSED_KEY_BUFFER - 1; i++) {
+        keyboard.handle_changed_key({ R, normal_KC_A }, now++);
+    }
+
+    PressedKeys pressed_keys = get_keyboard_pressed_keys(keyboard);
+
+    // The first key is still processed
+    PressedKey pressed_key = pressed_keys.keys[0];
+    TEST_CHECK(pressed_key.timestamp != 0);
+    TEST_MSG("index:0 timestamp:%d expected 0", pressed_key.timestamp);
+    TEST_CHECK(pressed_key.state == STATE_ACTIVE_KEY);
+    TEST_MSG("index:0 state:%d expected 0", pressed_key.state);
+
+    // The rest should be zeroed out
+    for (uint8_t i = 1; i < PRESSED_KEY_BUFFER; i++) {
+        PressedKey pressed_key = pressed_keys.keys[i];
+        TEST_CHECK(pressed_key.timestamp == 0);
+        TEST_MSG("index:%d timestamp:%d expected 0", i, pressed_key.timestamp);
+        TEST_CHECK(pressed_key.state == STATE_NOT_PROCESSED);
+        TEST_MSG("index:%d state:%d expected 0", i, pressed_key.state);
+    }
+
+}
+
 TEST_LIST = {
     { "test_normal_key_1", test_normal_key_1 },
     { "test_normal_key_2", test_normal_key_2 },
@@ -710,5 +749,6 @@ TEST_LIST = {
     { "test_layer_hold_or_toggle_hold", test_layer_hold_or_toggle_hold },
     { "test_layer_press_1", test_layer_press_1 },
     { "test_layer_press_2", test_layer_press_2 },
+    { "test_remove_from_pressed_keys", test_remove_from_pressed_keys },
     { NULL, NULL }
 };

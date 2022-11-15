@@ -5,6 +5,10 @@
 #include "dalsik_hid.h"
 #include "dalsik_global.h"
 
+#ifndef TEST_KEYBOARD_FRIENDS
+#define TEST_KEYBOARD_FRIENDS
+#endif
+
 #ifdef LED_PIN
 const uint32_t LED_LAYER_COLORS[MAX_LAYER_COUNT] = {
     0x00000000, // Layer 0 - default (LED off)
@@ -42,6 +46,7 @@ typedef struct {
 } PressedKeys;
 
 class Keyboard {
+    TEST_KEYBOARD_FRIENDS
     private:
         // State
         uint8_t layer_index;
@@ -78,14 +83,14 @@ class Keyboard {
         void reload_keys_on_new_layer(uint8_t key_index);
 
         inline void handle_key_press(KeyInfo key_info, millisec now);
-        inline void handle_key_release(KeyInfo key_info, millisec now);
+        inline void handle_key_release(KeyInfo key_info);
 
-        void press(PressedKey *pk, millisec now);
-        void release(PressedKey *pk, millisec now);
-        inline void run_press_hooks(uint8_t event_key_index, millisec now);
-        inline void run_press_hook(uint8_t key_index, millisec now);
-        inline void run_release_hooks(uint8_t event_key_index, millisec now);
-        inline bool run_release_hook(uint8_t key_index, uint8_t event_key_index, millisec now);
+        void press(PressedKey *pk);
+        void release(PressedKey *pk);
+        inline void run_press_hooks(uint8_t event_key_index);
+        inline void run_press_hook(uint8_t key_index);
+        inline void run_release_hooks(uint8_t event_key_index);
+        inline bool run_release_hook(uint8_t key_index, uint8_t event_key_index);
 
         inline void press_normal_key(KeyInfo key_info);
         inline void release_normal_key(KeyInfo key_info);

@@ -22,10 +22,11 @@ Keyboard::Keyboard() {
 
 void Keyboard::clear() {
     memset(this->layer_history, 0, sizeof(this->layer_history));
-    memset(&(this->pressed_keys), 0, sizeof(PressedKeys));
     memset(&(this->base_hid_report), 0, sizeof(BaseHIDReport));
     memset(&(this->system_hid_report), 0, sizeof(SystemHIDReport));
     memset(&(this->multimedia_hid_report), 0, sizeof(MultimediaHIDReport));
+
+    this->pressed_keys = PressedKeys {};
 
     this->layer_index = 0;
     if (this->toggled_layer_index > 0) {
@@ -39,7 +40,7 @@ void Keyboard::handle_changed_key(ChangedKeyEvent event, millisec now) {
     if (event.type == EVENT_KEY_PRESS) {
         this->handle_key_press(key_info, now);
     } else if (event.type == EVENT_KEY_RELEASE) {
-        this->handle_key_release(key_info, now);
+        this->handle_key_release(key_info);
     }
 
 #if DEBUG_KEYBOARD_STATE
@@ -167,24 +168,24 @@ inline void Keyboard::handle_key_press(KeyInfo key_info, millisec now) {
     if (pk == NULL) return;
 
     if (this->held_keys_count > 1) { // Not the first pressed key
-        this->run_press_hooks(pk->key_index, now);
+        this->run_press_hooks(pk->key_index);
     }
 
-    this->press(pk, now);
+    this->press(pk);
     this->send_hid_report();
 }
 
-void Keyboard::handle_key_release(KeyInfo key_info, millisec now) {
+void Keyboard::handle_key_release(KeyInfo key_info) {
     this->held_keys_count--;
 
     PressedKey *pk = this->find_in_pressed_keys(key_info);
     if (pk == NULL) return;
 
     if (this->held_keys_count > 0) {
-        this->run_release_hooks(pk->key_index, now);
+        this->run_release_hooks(pk->key_index);
     }
 
-    this->release(pk, now);
+    this->release(pk);
 
     if (this->held_keys_count == 0) {
         this->clear();
@@ -195,9 +196,8 @@ void Keyboard::handle_key_release(KeyInfo key_info, millisec now) {
     this->send_hid_report();
 }
 
-void Keyboard::press(PressedKey *pk, millisec now) {
+void Keyboard::press(PressedKey *pk) {
     KeyInfo key_info = pk->key_info;
-
 
     if (key_info.type == KEY_NORMAL) {
         this->press_normal_key(key_info);
@@ -227,7 +227,7 @@ void Keyboard::press(PressedKey *pk, millisec now) {
     }
 }
 
-void Keyboard::release(PressedKey *pk, millisec now) {
+void Keyboard::release(PressedKey *pk) {
     KeyInfo key_info = pk->key_info;
 
     if (pk->state == STATE_RELEASED) {
@@ -290,7 +290,7 @@ inline void Keyboard::remove_from_pressed_keys(PressedKey *pk) {
         this->pressed_keys.keys[i].key_index = i;
     }
 
-    memset(&(this->pressed_keys.keys[last_index]), 0, sizeof(PressedKey));
+    this->pressed_keys.keys[last_index] = PressedKey {};
 }
 
 inline PressedKey* Keyboard::find_in_pressed_keys(KeyInfo key_info_arg) {
@@ -314,17 +314,15 @@ inline PressedKey* Keyboard::find_in_pressed_keys(KeyInfo key_info_arg) {
 // }}}
 
 // Press & Release hooks {{{
-inline void Keyboard::run_press_hooks(
-    uint8_t event_key_index, millisec now
-) {
+inline void Keyboard::run_press_hooks(uint8_t event_key_index) {
     // This is not called, when there are pending timed keys, but we are still
     // checking those, as `press_hook` is called from `run_release_hooks` as well
 
     for (uint8_t key_index = 0; key_index < event_key_index; key_index++) {
-        this->run_press_hook(key_index, now);
+        this->run_press_hook(key_index);
     }
 }
-inline void Keyboard::run_press_hook(uint8_t key_index, millisec now) {
+inline void Keyboard::run_press_hook(uint8_t key_index) {
     PressedKey *pk = &(this->pressed_keys.keys[key_index]);
     KeyInfo key_info = pk->key_info;
 
@@ -346,19 +344,15 @@ inline void Keyboard::run_press_hook(uint8_t key_index, millisec now) {
     }
 }
 
-inline void Keyboard::run_release_hooks(
-    uint8_t event_key_index, millisec now
-) {
+inline void Keyboard::run_release_hooks(uint8_t event_key_index) {
     for (uint8_t key_index = 0; key_index < PRESSED_KEY_BUFFER; key_index++) {
-        bool result = this->run_release_hook(key_index, event_key_index, now);
+        bool result = this->run_release_hook(key_index, event_key_index);
         if (!result) {
             break;
         }
     }
 }
-inline bool Keyboard::run_release_hook(
-    uint8_t key_index, uint8_t event_key_index, millisec now
-) {
+inline bool Keyboard::run_release_hook(uint8_t key_index, uint8_t event_key_index) {
     PressedKey *pk = &(this->pressed_keys.keys[key_index]);
     KeyInfo key_info = pk->key_info;
 
@@ -371,22 +365,22 @@ inline bool Keyboard::run_release_hook(
     if (key_index < event_key_index) {
         if (cond) {
             if (key_index > 0) {
-                this->run_press_hook(key_index - 1, pk->timestamp);
+                this->run_press_hook(key_index - 1);
             }
 
-            this->press(pk, pk->timestamp);
+            this->press(pk);
             this->send_hid_report();
         }
     } else if (key_index == event_key_index) {
         if (cond) {
             if (key_index > 0) {
-                this->run_press_hook(key_index - 1, pk->timestamp);
+                this->run_press_hook(key_index - 1);
             }
             if (pk->state == STATE_NOT_PROCESSED) {
-                this->press(pk, pk->timestamp);
+                this->press(pk);
                 this->send_hid_report();
             }
-            this->release(pk, pk->timestamp);
+            this->release(pk);
             this->send_hid_report();
         }
     } else {
@@ -397,9 +391,9 @@ inline bool Keyboard::run_release_hook(
             }
 
             if (key_index < this->pressed_keys.count) {
-                this->run_press_hook(key_index - 1, pk->timestamp);
+                this->run_press_hook(key_index - 1);
             }
-            this->press(pk, pk->timestamp);
+            this->press(pk);
             this->send_hid_report();
         } else {
             return 0;

@@ -25,7 +25,6 @@ static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 
 static uint8_t execute_command();
 static void serial_print_key(uint8_t layer, KeyCoords coords);
-static void serial_print_tapdance_key(uint8_t index, uint8_t tap);
 
 char cmd_buffer[CMD_LENGTH] = {0};
 uint8_t cmd_buffer_index = 0;
@@ -96,13 +95,13 @@ uint8_t execute_command() {
         if (index >= MAX_TAPDANCE_KEYS) return 7;
         if (tap > MAX_TAPDANCE_TAPS) return 8;
 
-        serial_print_tapdance_key(index, tap);
+        // serial_print_tapdance_key(index, tap);
 
         return 0;
     } else if (buffer[0] == CMD_GET_TAPDANCE_KEYMAP) {
         for (uint8_t index = 0; index < MAX_TAPDANCE_KEYS; index++) {
             for (uint8_t tap = 1; tap <= MAX_TAPDANCE_TAPS; tap++) {
-                serial_print_tapdance_key(index, tap);
+                // serial_print_tapdance_key(index, tap);
             }
         }
 
@@ -117,7 +116,7 @@ uint8_t execute_command() {
         }
         for (uint8_t index = 0; index < MAX_TAPDANCE_KEYS; index++) {
             for (uint8_t tap = 1; tap <= MAX_TAPDANCE_TAPS; tap++) {
-                serial_print_tapdance_key(index, tap);
+                // serial_print_tapdance_key(index, tap);
             }
         }
         return 0;
@@ -163,7 +162,4 @@ void serial_print_key(uint8_t layer, KeyCoords coords) {
     Serial.print(F("|K"));
     Serial.print(key_info.key, HEX);
     Serial.print(F(">\n"));
-}
-
-void serial_print_tapdance_key(uint8_t index, uint8_t tap) {
 }
