@@ -25,9 +25,6 @@ clean:
 test:
 	make -f Makefile.unittest test
 
-render_keymap:
-	./utils/cmd_get_keymap.pl | ./utils/render_keymap.pl
-
 ctags:
 	ctags -f tags -R --extras=+q .
 
