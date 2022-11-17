@@ -138,4 +138,6 @@ class Keyboard {
         void key_timeout_check(millisec now);
 
         void print_internal_state();
+
+        uint8_t get_current_layer();
 };

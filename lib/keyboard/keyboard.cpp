@@ -725,3 +725,7 @@ void Keyboard::print_internal_state() {
         Serial.print("\n");
     }
 }
+
+uint8_t Keyboard::get_current_layer() {
+    return this->layer_index;
+}

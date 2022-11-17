@@ -12,31 +12,31 @@ our $key_to_byte = {};
 our $byte_to_key = {};
 our $aliases = {};
 
-my $file = "$Bin/../lib/key_definitions/key_definitions.h";
-open my $fh, "<", $file or die "Could not open $file: $!";
-while (my $line = <$fh>) {
-    chomp $line;
+# my $file = "$Bin/../lib/key_definitions/key_definitions.h";
+# open my $fh, "<", $file or die "Could not open $file: $!";
+# while (my $line = <$fh>) {
+    # chomp $line;
 
-    if ($line =~ m/^#define KEY_/) {
-        my (undef, $key_type, $byte_str, undef, $alias, undef) = split(/\s+/, $line);
-        my $byte = hex($byte_str);
+    # if ($line =~ m/^#define KEY_/) {
+        # my (undef, $key_type, $byte_str, undef, $alias, undef) = split(/\s+/, $line);
+        # my $byte = hex($byte_str);
 
-        push @{ $key_types_array }, $alias;
-        $type_to_byte->{$key_type} = $byte;
-        $type_to_byte->{$alias} = $byte;
-        $byte_to_alias->{$byte} = $alias;
-    } elsif ($line =~ m/^#define KC_(\S+)\s+(\S+)/) {
-        my $key = $1;
-        my $byte = hex($2);
-        $key_to_byte->{$key} = $byte;
-        $byte_to_key->{$byte} = $key;
-    } elsif ($line =~ m/^#define ALIAS_(\S+)\s+(\S+)/) {
-        my $name = $1;
-        my $alias = $2;
-        $aliases->{$name} = $alias;
-    }
-}
-close $fh;
+        # push @{ $key_types_array }, $alias;
+        # $type_to_byte->{$key_type} = $byte;
+        # $type_to_byte->{$alias} = $byte;
+        # $byte_to_alias->{$byte} = $alias;
+    # } elsif ($line =~ m/^#define KC_(\S+)\s+(\S+)/) {
+        # my $key = $1;
+        # my $byte = hex($2);
+        # $key_to_byte->{$key} = $byte;
+        # $byte_to_key->{$byte} = $key;
+    # } elsif ($line =~ m/^#define ALIAS_(\S+)\s+(\S+)/) {
+        # my $name = $1;
+        # my $alias = $2;
+        # $aliases->{$name} = $alias;
+    # }
+# }
+# close $fh;
 
 sub set_key_command {
     my ($layer, $row, $col, $key_str) = @_;
@@ -161,6 +161,8 @@ sub get_cmd {
         return "DALSIK-\x0F".join("", ("\x00")x5);
     } elsif ($cmd eq 'SET_KEYBOARD_SIDE') {
         return "DALSIK-\x10".$args[0]."\x00\x00\x00\x00";
+    } elsif ($cmd eq 'GET_LAYER_INDEX') {
+        return "DALSIK-\x11".join("", ("\x00")x5);
     }
 }
 

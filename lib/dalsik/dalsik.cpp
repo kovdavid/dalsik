@@ -63,7 +63,7 @@ void Dalsik::loop() {
 
     if (is_master) {
         if (Serial.available() > 0) {
-            SerialCommand::process_command();
+            SerialCommand::process_command(&keyboard);
         }
 
         while (DalsikSerial::has_data()) {
