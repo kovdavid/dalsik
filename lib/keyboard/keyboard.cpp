@@ -620,7 +620,14 @@ inline void Keyboard::send_hid_report() {
     void *base = &(this->base_hid_report);
     void *last_base = &(this->last_base_hid_report);
 
-    if (memcmp(&(this->base_hid_report), last_base, base_size)) {
+    if (memcmp(base, last_base, base_size)) {
+#ifdef REPORT_MODIFIER_CHANGE
+        if (this->base_hid_report.modifiers != this->last_base_hid_report.modifiers) {
+            Serial.print("MODIFIER_CHANGE:");
+            Serial.print(this->base_hid_report.modifiers, HEX);
+            Serial.print("\n");
+        }
+#endif
         this->print_base_report_to_serial();
         DalsikHid::send_report(BASE_KEYBOARD_REPORT_ID, base, base_size);
         this->last_base_hid_report = this->base_hid_report;
