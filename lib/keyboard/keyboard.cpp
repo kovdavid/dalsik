@@ -694,6 +694,10 @@ void Keyboard::print_internal_state() {
         Serial.print(this->pressed_keys.keys[i].key_index);
         Serial.print("] - KeyInfo[T:");
         Serial.print(key_info.type);
+        Serial.print(",L:");
+        Serial.print(key_info.layer);
+        Serial.print(",M:");
+        Serial.print(key_info.mod);
         Serial.print(",K:");
         Serial.print(key_info.key);
         Serial.print(",R:");
