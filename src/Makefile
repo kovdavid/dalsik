@@ -55,6 +55,9 @@ CXXFLAGS         += -pedantic -Wall -Wextra -Wfatal-errors  ## -Werror
 ifdef DALSIK_DEBUG
 CXXFLAGS         += -D DEBUG -D DEBUG_KEYREPORT_BASE -D DEBUG_KEYBOARD_STATE
 endif
+ifdef DALSIK_REPORT_LAYER_CHANGE
+CXXFLAGS         += -D REPORT_LAYER_CHANGE
+endif
 
 LDFLAGS          += -fdiagnostics-color
 

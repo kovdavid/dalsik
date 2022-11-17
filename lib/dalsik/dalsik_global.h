@@ -20,7 +20,9 @@
 // Turn off the keyboard with this PIN
 #define ON_OFF_PIN PIN_C(6)
 
+#ifdef LED_ENABLED
 #define LED_PIN PIN_D(4)
+#endif
 
 #define MAX_LAYER_COUNT 8
 #define LAYER_HISTORY_CAPACITY 5

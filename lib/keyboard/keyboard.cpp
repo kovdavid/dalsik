@@ -10,6 +10,7 @@
 Keyboard::Keyboard() {
     DalsikHid::init_descriptor();
 
+    this->layer_index = 0;
     this->toggled_layer_index = 0;
     this->clear();
 
@@ -28,10 +29,8 @@ void Keyboard::clear() {
 
     this->pressed_keys = PressedKeys {};
 
-    this->layer_index = 0;
-    if (this->toggled_layer_index > 0) {
-        this->set_layer(this->toggled_layer_index);
-    }
+    // If toggled_layer_index is not set (i.e. =0), we'll return to base layer
+    this->set_layer(this->toggled_layer_index);
 }
 
 void Keyboard::handle_changed_key(ChangedKeyEvent event, millisec now) {
@@ -128,6 +127,15 @@ void Keyboard::reload_keys_on_new_layer(uint8_t key_index) {
 }
 
 void Keyboard::set_layer(uint8_t layer) {
+    if (this->layer_index == layer) {
+        return;
+    }
+
+#ifdef REPORT_LAYER_CHANGE
+    Serial.print("LAYER_CHANGE:");
+    Serial.print(layer, HEX);
+    Serial.print("\n");
+#endif
     this->layer_index = layer;
     append_uniq_to_uint8_array(this->layer_history, LAYER_HISTORY_CAPACITY, layer);
 #ifdef LED_PIN
