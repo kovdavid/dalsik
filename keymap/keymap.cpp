@@ -7,7 +7,7 @@
 #define CTRL_ESC  D(MOD_LCTRL, KC_ESCAPE)
 #define SHIFT_SPC D(MOD_LSHIFT, KC_SPACE)
 #define L3_SCOLON DSL(3, KC_SEMICOLON)
-#define L2_SLASH  DSL(2, KC_SLASH)
+#define L4_SLASH  DSL(4, KC_SLASH)
 #define L2_BSPC   DSL(2, KC_BACKSPACE)
 #define OSM_SHFT  OSM(MOD_LSHIFT)
 #define OSM_CTRL  OSM(MOD_LCTRL)
@@ -29,7 +29,7 @@ const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] PROGMEM = KEYMAP({
      * │ Ctrl   │   A    │   S    │   D    │   F    │   G    │ │   H    │   J    │   K    │   L    │ Layer3 │ Enter  │
      * │ ESC    │        │        │        │        │        │ │        │        │        │        │   ;    │        │
      * ├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤
-     * │ OneShot│   Z    │   X    │   C    │   V    │   B    │ │   N    │   M    │   ,    │   .    │ Layer2 │ Delete │
+     * │ OneShot│   Z    │   X    │   C    │   V    │   B    │ │   N    │   M    │   ,    │   .    │ Layer4 │ Delete │
      * │ Shift  │        │        │        │        │        │ │        │        │        │        │   /    │        │
      * ├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤
      * │ OneShot│ Layer  │ OneShot│ OneShot│ Layer  │ Shift  │ │ Layer2 │ Layer  │ Layer  │  LHT   │  Left  │ Right  │
@@ -39,7 +39,7 @@ const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] PROGMEM = KEYMAP({
     LAYOUT_4x12(
         KC_TAB,    KC_Q,   KC_W,     KC_E,     KC_R,   KC_T,       KC_Y,     KC_U,   KC_I,     KC_O,    KC_P,       KC_QUOT,
         CTRL_ESC,  KC_A,   KC_S,     KC_D,     KC_F,   KC_G,       KC_H,     KC_J,   KC_K,     KC_L,    L3_SCOLON,  KC_ENTER,
-        OSM_SHFT,  KC_Z,   KC_X,     KC_C,     KC_V,   KC_B,       KC_N,     KC_M,   KC_COMM,  KC_DOT,  L2_SLASH,   KC_DELETE,
+        OSM_SHFT,  KC_Z,   KC_X,     KC_C,     KC_V,   KC_B,       KC_N,     KC_M,   KC_COMM,  KC_DOT,  L4_SLASH,   KC_DELETE,
         OSM_CTRL,  LP(3),  OSM_ALT,  OSM_GUI,  LP(1),  SHIFT_SPC,  L2_BSPC,  LP(3),  LP(3),    LHT(1),  KC_LEFT,    KC_RIGHT
     ),
 
@@ -107,5 +107,27 @@ const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] PROGMEM = KEYMAP({
         _______,  GUI_PGUP,    GUI_PGDN,  LALT(KC_Q),  LALT(KC_W),  KC_VOLDN,  XXXXXXX,  KC_LEFT,  KC_DOWN,  KC_RIGHT,  XXXXXXX,  _______,
         _______,  LGUI(KC_Z),  XXXXXXX,   LALT(KC_1),  LALT(KC_2),  KC_MUTE,   XXXXXXX,  KC_HOME,  KC_INS,   KC_END,    XXXXXXX,  _______,
         _______,  _______,     SHFT_INS,  _______,     KC_COMM,     KC_CALC,   KC_BSPC,  _______,  _______,  _______,   _______,  _______
-    )
+    ),
+
+    /* Layer 4
+     * ┌────────┬────────┬────────┬────────┬────────┬────────┐ ┌────────┬────────┬────────┬────────┬────────┬────────┐
+     * │ Tab    │        │        │        │        │        │ │        │        │        │        │        │   '    │
+     * │        │        │        │        │        │        │ │        │        │        │        │        │        │
+     * ├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤
+     * │ Ctrl   │ OneShot│ OneShot│ OneShot│ OneShot│        │ │        │        │        │        │ Layer3 │ Enter  │
+     * │ ESC    │ Shift  │ Ctrl   │ Alt    │ Gui    │        │ │        │        │        │        │   ;    │        │
+     * ├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤
+     * │ OneShot│        │        │        │        │        │ │        │        │        │        │ Layer4 │ Delete │
+     * │ Shift  │        │        │        │        │        │ │        │        │        │        │   /    │        │
+     * ├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤
+     * │ OneShot│ Layer  │ OneShot│ OneShot│ Layer  │ Shift  │ │ Layer2 │ Layer  │ Layer  │  LHT   │  Left  │ Right  │
+     * │ Ctrl   │   3    │ Alt    │ Gui    │   1    │ Space  │ │ BSpace │   3    │   3    │   1    │        │        │
+     * └────────┴────────┴────────┴────────┴────────┴────────┘ └────────┴────────┴────────┴────────┴────────┴────────┘
+     */
+    LAYOUT_4x12(
+        KC_TAB,    XXXXXXX,   XXXXXXX,   XXXXXXX,  XXXXXXX,  XXXXXXX,    XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,    KC_QUOT,
+        CTRL_ESC,  OSM_SHFT,  OSM_CTRL,  OSM_ALT,  OSM_GUI,  XXXXXXX,    XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  L3_SCOLON,  KC_ENTER,
+        OSM_SHFT,  XXXXXXX,   XXXXXXX,   XXXXXXX,  XXXXXXX,  XXXXXXX,    XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  L4_SLASH,   KC_DELETE,
+        OSM_CTRL,  LP(3),     OSM_ALT,   OSM_GUI,  LP(1),    SHIFT_SPC,  L2_BSPC,  LP(3),    LP(3),    LHT(1),   KC_LEFT,    KC_RIGHT
+    ),
 });
