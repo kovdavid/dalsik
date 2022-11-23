@@ -7,6 +7,10 @@
 #include "keyboard.h"
 #include "keymap.h"
 
+#define BIT_SET(base, mask) (base |= mask)
+#define BIT_CLEAR(base, mask) (base &= ~(mask))
+#define BIT_TOGGLE(base, mask) (base ^= mask)
+
 Keyboard::Keyboard() {
     DalsikHid::init_descriptor();
 
@@ -28,6 +32,10 @@ void Keyboard::clear() {
     memset(&(this->multimedia_hid_report), 0, sizeof(MultimediaHIDReport));
 
     this->pressed_keys = PressedKeys {};
+
+    if (this->one_shot_modifiers) {
+        this->base_hid_report.modifiers = this->one_shot_modifiers;
+    }
 
     // If toggled_layer_index is not set (i.e. =0), we'll return to base layer
     this->set_layer(this->toggled_layer_index);
@@ -414,25 +422,26 @@ inline bool Keyboard::run_release_hook(uint8_t key_index, uint8_t event_key_inde
 
 // Normal key {{{
 inline void Keyboard::press_normal_key(KeyInfo key_info) {
-    if (this->one_shot_modifiers) {
-        this->base_hid_report.modifiers |= this->one_shot_modifiers;
-        this->one_shot_modifiers = 0x00;
-    }
-
     if (key_info.mod) {
-        this->base_hid_report.modifiers |= key_info.mod;
+        BIT_SET(this->base_hid_report.modifiers, key_info.mod);
     }
 
     if (key_info.key) {
         append_uniq_to_uint8_array(
             this->base_hid_report.keys, BASE_HID_REPORT_KEYS, key_info.key
         );
+
+        if (this->one_shot_modifiers) {
+            this->send_hid_report();
+            BIT_CLEAR(this->base_hid_report.modifiers, this->one_shot_modifiers);
+            this->one_shot_modifiers = 0x00;
+        }
     }
 }
 
 inline void Keyboard::release_normal_key(KeyInfo key_info) {
     if (key_info.mod) {
-        this->base_hid_report.modifiers &= (key_info.mod ^ 0xFF);
+        BIT_CLEAR(this->base_hid_report.modifiers, key_info.mod);
     }
 
     if (key_info.key) {
@@ -463,7 +472,16 @@ inline void Keyboard::release_one_shot_modifier_key(PressedKey *pk) {
         this->release_normal_key(pk->key_info.use_mod());
     } else if (pk->state == STATE_PENDING) {
         // No other key was pressed after this one, act as one-shot modifier
-        this->one_shot_modifiers ^= pk->key_info.mod;
+
+        uint8_t modifier = pk->key_info.mod;
+
+        if (this->one_shot_modifiers & modifier) {
+            BIT_CLEAR(this->one_shot_modifiers, modifier);
+            BIT_CLEAR(this->base_hid_report.modifiers, modifier);
+        } else {
+            BIT_SET(this->one_shot_modifiers, modifier);
+            BIT_SET(this->base_hid_report.modifiers, modifier);
+        }
     }
 }
 // }}}

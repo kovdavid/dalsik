@@ -46,6 +46,7 @@ void dump_hid_reports() {
 #define R EVENT_KEY_RELEASE
 
 // Synchronize with test/mocks/mock_keymap.cpp!
+KeyCoords kc_ctrl = { 1, 0 };
 KeyCoords normal_KC_A = { 1, 1 };
 KeyCoords normal_KC_B = { 1, 2 };
 KeyCoords dual_ctrl_KC_C = { 1, 3 };
@@ -481,7 +482,7 @@ void test_stuck_key(void) {
     BREP_COMP(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
-// Test that the one-shot CTRL modifier is sent with the KC_A key
+// Test that the one-shot CTRL modifier is sent after tapping the one shot key
 void test_one_shot_modifier(void) {
     Keyboard keyboard;
 
@@ -491,12 +492,14 @@ void test_one_shot_modifier(void) {
     HID_SIZE_CHECK(0);
 
     keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(0);
-
-    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
-    BREP_COMP(0, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(3);
+
+    BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test that after the second press of the one-shot modifier the CTRL modifier
@@ -510,18 +513,20 @@ void test_one_shot_modifier_toggle(void) {
     HID_SIZE_CHECK(0);
 
     keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(0);
-
-    keyboard.handle_changed_key({ P, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(0);
-
-    keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(0);
-
-    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
-    BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    keyboard.handle_changed_key({ P, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(1);
+
+    keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(2);
+
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(3);
+
+    BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When a one-shot modifier is held with a different key, it is registered
