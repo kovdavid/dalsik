@@ -489,17 +489,20 @@ void test_one_shot_modifier(void) {
     millisec now = 100;
 
     keyboard.handle_changed_key({ P, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(0);
+    HID_SIZE_CHECK(1);
 
     keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(1);
 
     keyboard.handle_changed_key({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(2);
+
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
     HID_SIZE_CHECK(3);
 
     BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
     BREP_COMP(1, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    BREP_COMP(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(2, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test that after the second press of the one-shot modifier the CTRL modifier
@@ -510,7 +513,7 @@ void test_one_shot_modifier_toggle(void) {
     millisec now = 100;
 
     keyboard.handle_changed_key({ P, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(0);
+    HID_SIZE_CHECK(1);
 
     keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(1);
@@ -538,50 +541,29 @@ void test_one_shot_modifier_hold(void) {
     millisec now = 100;
 
     keyboard.handle_changed_key({ P, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(0);
-
-    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
 
-    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(2);
 
-    keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
     HID_SIZE_CHECK(3);
 
-    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(4);
 
-    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
+    keyboard.handle_changed_key({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(5);
 
-    BREP_COMP(0, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    BREP_COMP(1, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    BREP_COMP(2, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    BREP_COMP(3, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    BREP_COMP(4, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-}
-
-// When a one-shot modifier is held for longer than ONE_SHOT_MODIFIER_TIMEOUT_MS,
-// activate the modifier (useful for e.g. CTRL+mouse click)
-void test_one_shot_modifier_timeout(void) {
-    Keyboard keyboard;
-
-    millisec now = 100;
-
-    keyboard.handle_changed_key({ P, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(0);
-
-    // Not yet...
-    now += ONE_SHOT_MODIFIER_TIMEOUT_MS - 1;
-    keyboard.key_timeout_check(now);
-    HID_SIZE_CHECK(0);
-
-    now++;
-    keyboard.key_timeout_check(now);
-    HID_SIZE_CHECK(1);
+    keyboard.handle_changed_key({ R, normal_KC_A }, now++);
+    HID_SIZE_CHECK(6);
 
     BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(2, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(4, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test that the layer switch is applied and we send KC_E (layer1)
@@ -748,7 +730,6 @@ TEST_LIST = {
     { "test_one_shot_modifier", test_one_shot_modifier },
     { "test_one_shot_modifier_toggle", test_one_shot_modifier_toggle },
     { "test_one_shot_modifier_hold", test_one_shot_modifier_hold },
-    { "test_one_shot_modifier_timeout", test_one_shot_modifier_timeout },
     { "test_layer_hold_or_toggle", test_layer_hold_or_toggle },
     { "test_layer_hold_or_toggle_on_off", test_layer_hold_or_toggle_on_off },
     { "test_layer_hold_or_toggle_hold", test_layer_hold_or_toggle_hold },

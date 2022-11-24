@@ -76,13 +76,6 @@ void Keyboard::key_timeout_check(millisec now) {
         this->press_normal_key(pk->key_info.use_key());
         this->send_hid_report();
     }
-    if (
-        pk->key_info.type == KEY_ONE_SHOT_MODIFIER
-        && pk->timestamp + ONE_SHOT_MODIFIER_TIMEOUT_MS < now
-    ) {
-        this->press_one_shot_modifier_key(pk);
-        this->send_hid_report();
-    }
 }
 
 KeyInfo Keyboard::get_key(KeyCoords c) {
@@ -430,18 +423,17 @@ inline void Keyboard::press_normal_key(KeyInfo key_info) {
         append_uniq_to_uint8_array(
             this->base_hid_report.keys, BASE_HID_REPORT_KEYS, key_info.key
         );
-
-        if (this->one_shot_modifiers) {
-            this->send_hid_report();
-            BIT_CLEAR(this->base_hid_report.modifiers, this->one_shot_modifiers);
-            this->one_shot_modifiers = 0x00;
-        }
     }
 }
 
 inline void Keyboard::release_normal_key(KeyInfo key_info) {
     if (key_info.mod) {
         BIT_CLEAR(this->base_hid_report.modifiers, key_info.mod);
+    }
+
+    if (this->one_shot_modifiers) {
+        BIT_CLEAR(this->base_hid_report.modifiers, this->one_shot_modifiers);
+        this->one_shot_modifiers = 0x00;
     }
 
     if (key_info.key) {
@@ -453,24 +445,12 @@ inline void Keyboard::release_normal_key(KeyInfo key_info) {
 // }}}
 // One-shot modifier key {{{
 inline void Keyboard::press_one_shot_modifier_key(PressedKey *pk) {
-    if (pk->state == STATE_NOT_PROCESSED) {
-        if (pk->key_index > 0) {
-            // Not the first key, act as modifier
-            this->press_normal_key(pk->key_info.use_mod());
-            pk->state = STATE_ACTIVE_MODIFIER;
-        } else {
-            pk->state = STATE_PENDING;
-        }
-    } else if (pk->state == STATE_PENDING) {
-        // If a different key is pressed, act as modifier
-        this->press_normal_key(pk->key_info.use_mod());
-        pk->state = STATE_ACTIVE_MODIFIER;
-    }
+    this->press_normal_key(pk->key_info.use_mod());
+    pk->state = STATE_ACTIVE_MODIFIER;
 }
+
 inline void Keyboard::release_one_shot_modifier_key(PressedKey *pk) {
-    if (pk->state == STATE_ACTIVE_MODIFIER) {
-        this->release_normal_key(pk->key_info.use_mod());
-    } else if (pk->state == STATE_PENDING) {
+    if (pk->key_press_counter == this->key_press_counter) {
         // No other key was pressed after this one, act as one-shot modifier
 
         uint8_t modifier = pk->key_info.mod;
@@ -482,6 +462,8 @@ inline void Keyboard::release_one_shot_modifier_key(PressedKey *pk) {
             BIT_SET(this->one_shot_modifiers, modifier);
             BIT_SET(this->base_hid_report.modifiers, modifier);
         }
+    } else {
+        this->release_normal_key(pk->key_info.use_mod());
     }
 }
 // }}}
