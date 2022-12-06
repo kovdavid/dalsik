@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include "key_info.h"
 
 #define PIN_B(x) (0x30+x)
 #define PIN_C(x) (0x60+x)
@@ -31,6 +30,13 @@
 
 #define KEYBOARD_SIDE_LEFT  0x00
 #define KEYBOARD_SIDE_RIGHT 0x01
+
+#define COORD_UNKNOWN 255
+
+typedef struct {
+    uint8_t row;
+    uint8_t col;
+} KeyCoords;
 
 typedef unsigned long millisec;
 
@@ -77,3 +83,9 @@ typedef struct {
     uint8_t key;
     uint8_t prefix;
 } MultimediaHIDReport;
+
+typedef struct {
+    BaseHIDReport base;
+    SystemHIDReport system;
+    MultimediaHIDReport multimedia;
+} HIDReports;

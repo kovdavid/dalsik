@@ -4,6 +4,7 @@
 #include "dalsik.h"
 #include "dalsik_hid.h"
 #include "dalsik_global.h"
+#include "key_info.h"
 
 #ifndef TEST_KEYBOARD_FRIENDS
 #define TEST_KEYBOARD_FRIENDS
@@ -54,12 +55,8 @@ class Keyboard {
         uint8_t layer_history[LAYER_HISTORY_CAPACITY];
 
         uint8_t one_shot_modifiers;
-        BaseHIDReport base_hid_report;
-        BaseHIDReport last_base_hid_report;
-        SystemHIDReport system_hid_report;
-        SystemHIDReport last_system_hid_report;
-        MultimediaHIDReport multimedia_hid_report;
-        MultimediaHIDReport last_multimedia_hid_report;
+        HIDReports current_hid_reports;
+        HIDReports last_hid_reports;
 
         uint8_t held_keys_count;
         // Does not matter, if this overflows. We need only equality check
@@ -70,33 +67,29 @@ class Keyboard {
 
         PressedKeys pressed_keys;
 
-
         // Functions
 
         void set_layer(uint8_t layer);
         void remove_layer(uint8_t layer);
         void toggle_layer(uint8_t layer);
-        void clear();
 
         KeyInfo get_non_transparent_key(KeyCoords c);
         KeyInfo get_key(KeyCoords c);
         void reload_keys_on_new_layer(uint8_t key_index);
 
         inline void handle_key_press(KeyInfo key_info, millisec now);
-        inline void handle_key_release(KeyInfo key_info);
+        inline void handle_key_release(KeyInfo key_info, millisec now);
 
         void press(PressedKey *pk);
-        void release(PressedKey *pk);
+        void release(PressedKey *pk, millisec now);
         inline void run_press_hooks(uint8_t event_key_index);
         inline void run_press_hook(uint8_t key_index);
-        inline void run_release_hooks(uint8_t event_key_index);
-        inline bool run_release_hook(uint8_t key_index, uint8_t event_key_index);
 
         inline void press_normal_key(KeyInfo key_info);
         inline void release_normal_key(KeyInfo key_info);
 
         inline void press_one_shot_modifier_key(PressedKey *pk);
-        inline void release_one_shot_modifier_key(PressedKey *pk);
+        inline void release_one_shot_modifier_key(PressedKey *pk, millisec now);
 
         inline void press_layer_key(uint8_t layer);
         inline void release_layer_key(uint8_t layer);
@@ -124,7 +117,7 @@ class Keyboard {
         inline void send_hid_report();
 
         inline PressedKey* add_to_pressed_keys(KeyInfo key_info, millisec now);
-        inline PressedKey* find_in_pressed_keys(KeyInfo key_info);
+        inline PressedKey* find_in_pressed_keys(KeyCoords coords);
         inline void remove_from_pressed_keys(PressedKey *pk);
 
         void print_base_report_to_serial();

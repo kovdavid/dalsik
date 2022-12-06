@@ -1,13 +1,8 @@
 #pragma once
 
+#include "Arduino.h"
 #include "key_definitions.h"
-
-#define COORD_UNKNOWN 255
-
-typedef struct {
-    uint8_t row;
-    uint8_t col;
-} KeyCoords;
+#include "dalsik_global.h"
 
 class KeyInfo {
     public:

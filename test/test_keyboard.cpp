@@ -53,6 +53,8 @@ KeyCoords dual_ctrl_KC_C = { 1, 3 };
 KeyCoords dual_shift_KC_D = { 1, 4 };
 
 KeyCoords dual_layer_1 = { 1, 7 };
+KeyCoords dual_layer_2 = { 2, 0 };
+KeyCoords dual_layer_3 = { 2, 1 };
 KeyCoords solo_dual_layer_1 = { 1, 8 };
 KeyCoords one_shot_ctrl = { 1, 9 };
 KeyCoords layer_hold_or_toggle = { 1, 10 };
@@ -447,6 +449,37 @@ void test_dual_layer_key_4(void) {
     BREP_COMP(1, { 0x00, 0x00, KC_A, KC_H, 0x00, 0x00, 0x00, 0x00 });
 }
 
+// Press only dual layer keys
+// After pressing the second dual key, we trigger the layer on the first one
+// and leave the second one in STATE_PENDING. After releasing the second one
+// we trigger the primary key on it
+void test_dual_layer_key_5(void) {
+    Keyboard keyboard;
+
+    millisec now = 100;
+
+    keyboard.handle_changed_key({ P, dual_layer_1 }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ P, dual_layer_2 }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ P, dual_layer_3 }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_changed_key({ R, dual_layer_3 }, now++);
+    HID_SIZE_CHECK(2);
+
+    keyboard.handle_changed_key({ R, dual_layer_2 }, now++);
+    HID_SIZE_CHECK(2);
+
+    keyboard.handle_changed_key({ R, dual_layer_1 }, now++);
+    HID_SIZE_CHECK(2);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_I, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
 // There was an issue with the `key_index` value in the PressedKeys
 // structure after calling `remove_from_pressed_keys` - the value was not updated.
 // That caused in this test to the dual_shift_KC_D key to be stuck even after
@@ -564,6 +597,24 @@ void test_one_shot_modifier_hold(void) {
     BREP_COMP(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
     BREP_COMP(4, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
     BREP_COMP(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// We won't toggle OSM if the key is tapped/held for too long
+void test_one_shot_modifier_long_tap(void) {
+    Keyboard keyboard;
+
+    millisec now = 100;
+
+    keyboard.handle_changed_key({ P, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(1);
+
+    now += ONE_SHOT_MODIFIER_TAP_TIMEOUT_MS;
+
+    keyboard.handle_changed_key({ R, one_shot_ctrl }, now++);
+    HID_SIZE_CHECK(2);
+
+    BREP_COMP(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test that the layer switch is applied and we send KC_E (layer1)
@@ -726,10 +777,12 @@ TEST_LIST = {
     { "test_dual_layer_key_2", test_dual_layer_key_2 },
     { "test_dual_layer_key_3", test_dual_layer_key_3 },
     { "test_dual_layer_key_4", test_dual_layer_key_4 },
+    { "test_dual_layer_key_5", test_dual_layer_key_5 },
     { "test_stuck_key", test_stuck_key },
     { "test_one_shot_modifier", test_one_shot_modifier },
     { "test_one_shot_modifier_toggle", test_one_shot_modifier_toggle },
     { "test_one_shot_modifier_hold", test_one_shot_modifier_hold },
+    { "test_one_shot_modifier_long_tap", test_one_shot_modifier_long_tap },
     { "test_layer_hold_or_toggle", test_layer_hold_or_toggle },
     { "test_layer_hold_or_toggle_on_off", test_layer_hold_or_toggle_on_off },
     { "test_layer_hold_or_toggle_hold", test_layer_hold_or_toggle_hold },
