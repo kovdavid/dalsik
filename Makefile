@@ -6,7 +6,9 @@ verify:
 	make -C src
 
 upload:
+	$(PRE_UPLOAD_COMMAND)
 	make -C src upload
+	$(POST_UPLOAD_COMMAND)
 
 Arduino-Makefile:
 	git submodule add --force https://github.com/DavsX/Arduino-Makefile Arduino-Makefile

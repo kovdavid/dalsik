@@ -1,4 +1,5 @@
 #include "keymap.h"
+#include "combos.h"
 
 // Sample keymap. To use it, set the `KEYMAP` env variable to this file
 // $ export KEYMAP=keymap/keymap.cpp
@@ -19,6 +20,14 @@
 #define GUI_PGUP LGUI(KC_PGUP)
 #define GUI_PGDN LGUI(KC_PGDN)
 #define SHFT_INS LSHIFT(KC_INS)
+
+const KeyCoords combo1[] PROGMEM = { { 1, 2 }, { 1, 3 } };
+const KeyCoords combo2[] PROGMEM = { { 1, 3 }, { 1, 4 } };
+
+ComboState combos[] = COMBOS({
+    COMBO(combo1, OSM_CTRL),
+    COMBO(combo2, OSM_GUI),
+});
 
 const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] PROGMEM = KEYMAP({
     /* Layer 0
