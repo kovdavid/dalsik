@@ -16,7 +16,6 @@ static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 #define CMD_GET_FULL_KEYMAP     0x0E
 #define CMD_GET_KEYBOARD_SIDE   0x0F
 #define CMD_SET_KEYBOARD_SIDE   0x10
-#define CMD_GET_LAYER_INDEX     0x11
 
 // +1 for the command type
 // +5 is the max size of arguments (for SET_KEY)
@@ -24,18 +23,18 @@ static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 // the HID code for KC_G, so I made every command fixed-length
 #define CMD_LENGTH sizeof(CMD_PREFIX)+1+5
 
-static uint8_t execute_command(Keyboard* keyboard);
+static uint8_t execute_command();
 static void serial_print_key(uint8_t layer, KeyCoords coords);
 
 char cmd_buffer[CMD_LENGTH] = {0};
 uint8_t cmd_buffer_index = 0;
 
-void SerialCommand::process_command(Keyboard* keyboard) {
+void SerialCommand::process_command() {
     char c = Serial.read();
     cmd_buffer[cmd_buffer_index++] = c;
 
     if (cmd_buffer_index == CMD_LENGTH) {
-        uint8_t res = execute_command(keyboard);
+        uint8_t res = execute_command();
         if (res) {
             Serial.print(F("CMD_ERROR "));
             Serial.print(res);
@@ -48,7 +47,7 @@ void SerialCommand::process_command(Keyboard* keyboard) {
     }
 }
 
-uint8_t execute_command(Keyboard* keyboard) {
+uint8_t execute_command() {
     if (memcmp(cmd_buffer, CMD_PREFIX, sizeof(CMD_PREFIX)) != 0) {
         return 1; // Invalid command
     }
@@ -140,10 +139,6 @@ uint8_t execute_command(Keyboard* keyboard) {
             return 0;
         }
         return 9;
-    } else if (buffer[0] == CMD_GET_LAYER_INDEX) {
-        uint8_t layer = keyboard->get_current_layer();
-        Serial.println(layer, HEX);
-        return 0;
     }
 
     return 1;

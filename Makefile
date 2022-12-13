@@ -26,6 +26,6 @@ test:
 	make -f Makefile.unittest test
 
 ctags:
-	ctags -f tags -R --extras=+q .
+	ctags -f tags -R --extras=+q --languages=C,C++ .
 
 .PHONY: test

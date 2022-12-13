@@ -5,6 +5,7 @@
 #include "dalsik_hid.h"
 #include "dalsik_global.h"
 #include "key_info.h"
+#include "pressed_keys.h"
 
 #ifndef TEST_KEYBOARD_FRIENDS
 #define TEST_KEYBOARD_FRIENDS
@@ -23,29 +24,6 @@ const uint32_t LED_LAYER_COLORS[MAX_LAYER_COUNT] = {
 };
 #endif
 
-#define STATE_NOT_PROCESSED   0x00
-#define STATE_PENDING         0x01
-#define STATE_ACTIVE_KEY      0x02
-#define STATE_ACTIVE_MODIFIER 0x03
-#define STATE_ACTIVE_LAYER    0x04
-#define STATE_RELEASED        0x05
-
-#define PRESSED_KEY_BUFFER 10
-#define INVALID_PRESSED_KEY 255
-
-typedef struct {
-    KeyInfo key_info;
-    millisec timestamp;
-    uint8_t key_press_counter;
-    uint8_t state;
-    uint8_t key_index;
-} PressedKey;
-
-typedef struct {
-    PressedKey keys[PRESSED_KEY_BUFFER];
-    uint8_t count;
-} PressedKeys;
-
 class Keyboard {
     TEST_KEYBOARD_FRIENDS
     private:
@@ -58,7 +36,6 @@ class Keyboard {
         HIDReports current_hid_reports;
         HIDReports last_hid_reports;
 
-        uint8_t held_keys_count;
         // Does not matter, if this overflows. We need only equality check
         // This is mostly needed for timeout handlers to detect if there
         // was any keys pressed between the key we are checking timeout for
@@ -76,9 +53,6 @@ class Keyboard {
         KeyInfo get_non_transparent_key(KeyCoords c);
         KeyInfo get_key(KeyCoords c);
         void reload_keys_on_new_layer(uint8_t key_index);
-
-        inline void handle_key_press(KeyInfo key_info, millisec now);
-        inline void handle_key_release(KeyInfo key_info, millisec now);
 
         void press(PressedKey *pk);
         void release(PressedKey *pk, millisec now);
@@ -127,10 +101,11 @@ class Keyboard {
     public:
         Keyboard(void);
 
-        void handle_changed_key(ChangedKeyEvent e, millisec now);
-        void key_timeout_check(millisec now);
+        void handle_key_event(ChangedKeyEvent e, millisec now);
+
+        void handle_key_press(KeyInfo key_info, millisec now);
+        void handle_key_release(KeyCoords coords, millisec now);
+        void handle_timeout(millisec now);
 
         void print_internal_state();
-
-        uint8_t get_current_layer();
 };

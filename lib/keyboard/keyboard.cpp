@@ -1,15 +1,8 @@
 #include "Arduino.h"
 #include "array_utils.h"
-#include "dalsik_global.h"
-#include "dalsik_hid.h"
 #include "dalsik_led.h"
-#include "key_info.h"
 #include "keyboard.h"
 #include "keymap.h"
-
-#define BIT_SET(base, mask) (base |= mask)
-#define BIT_CLEAR(base, mask) (base &= ~(mask))
-#define BIT_TOGGLE(base, mask) (base ^= mask)
 
 Keyboard::Keyboard() {
     DalsikHid::init_descriptor();
@@ -20,18 +13,19 @@ Keyboard::Keyboard() {
     this->last_hid_reports = HIDReports {};
     this->key_press_counter = 0;
     this->one_shot_modifiers = 0x00;
-    this->pressed_keys = PressedKeys {};
+    this->pressed_keys = PressedKeys();
 
     memset(this->layer_history, 0, sizeof(this->layer_history));
 }
 
-void Keyboard::handle_changed_key(ChangedKeyEvent event, millisec now) {
-    KeyInfo key_info = this->get_key(event.coords);
-
+void Keyboard::handle_key_event(ChangedKeyEvent event, millisec now) {
     if (event.type == EVENT_KEY_PRESS) {
+        KeyInfo key_info = this->get_key(event.coords);
         this->handle_key_press(key_info, now);
     } else if (event.type == EVENT_KEY_RELEASE) {
-        this->handle_key_release(key_info, now);
+        this->handle_key_release(event.coords, now);
+    } else if (event.type == EVENT_TIMEOUT) {
+        this->handle_timeout(now);
     }
 
 #if DEBUG_KEYBOARD_STATE
@@ -39,14 +33,14 @@ void Keyboard::handle_changed_key(ChangedKeyEvent event, millisec now) {
 #endif
 }
 
-void Keyboard::key_timeout_check(millisec now) {
-    if (this->pressed_keys.count == 0) {
+inline void Keyboard::handle_timeout(millisec now) {
+    if (this->pressed_keys.is_empty()) {
         return; // No key is pressed
     }
 
     // We need to check the last pressed key. If it is a pending dual key
     // that has timeouted, we activate the primary key
-    PressedKey *pk = &(this->pressed_keys.keys[this->pressed_keys.count-1]);
+    PressedKey *pk = this->pressed_keys.get_last();
 
     if (pk->state != STATE_PENDING) {
         return;
@@ -95,13 +89,13 @@ KeyInfo Keyboard::get_non_transparent_key(KeyCoords c) {
 
 void Keyboard::reload_keys_on_new_layer(uint8_t key_index) {
     for (uint8_t i = key_index + 1; i < PRESSED_KEY_BUFFER; i++) {
-        PressedKey *pk = &(this->pressed_keys.keys[i]);
+        PressedKey *pk = this->pressed_keys.get(i);
 
         if (!pk->timestamp || pk->state != STATE_NOT_PROCESSED) {
             break;
         }
 
-        if (pk->key_info.has_no_coords()) continue; // Missing coords info
+        if (pk->key_info.skip_layer_reload()) continue; // Missing coords info
 
         KeyInfo new_ki = this->get_key(pk->key_info.coords);
         pk->key_info.type = new_ki.type;
@@ -154,13 +148,12 @@ void Keyboard::toggle_layer(uint8_t layer) {
 
 // Handle key press & release {{{
 inline void Keyboard::handle_key_press(KeyInfo key_info, millisec now) {
-    this->held_keys_count++;
     this->key_press_counter++;
 
-    PressedKey *pk = this->add_to_pressed_keys(key_info, now);
+    PressedKey *pk = this->pressed_keys.add(key_info, now, this->key_press_counter);
     if (pk == NULL) return;
 
-    if (this->held_keys_count > 1) { // Not the first pressed key
+    if (this->pressed_keys.count > 1) { // Not the first pressed key
         this->run_press_hooks(pk->key_index);
     }
 
@@ -168,15 +161,13 @@ inline void Keyboard::handle_key_press(KeyInfo key_info, millisec now) {
     this->send_hid_report();
 }
 
-void Keyboard::handle_key_release(KeyInfo key_info, millisec now) {
-    this->held_keys_count--;
-
-    PressedKey *pk = this->find_in_pressed_keys(key_info.coords);
+void Keyboard::handle_key_release(KeyCoords coords, millisec now) {
+    PressedKey *pk = this->pressed_keys.find(coords);
     if (pk == NULL) return;
 
     this->release(pk, now);
 
-    this->remove_from_pressed_keys(pk);
+    this->pressed_keys.remove(pk);
 
     this->send_hid_report();
 }
@@ -240,56 +231,6 @@ void Keyboard::release(PressedKey *pk, millisec now) {
 }
 // }}}
 
-// this->pressed_keys helpers {{{
-inline PressedKey* Keyboard::add_to_pressed_keys(KeyInfo key_info, millisec now) {
-    if (this->pressed_keys.count >= PRESSED_KEY_BUFFER) {
-        return NULL;
-    }
-
-    uint8_t key_index = this->pressed_keys.count++;
-
-    PressedKey *pk = &(this->pressed_keys.keys[key_index]);
-    pk->key_info = key_info;
-    pk->timestamp = now;
-    pk->key_press_counter = this->key_press_counter;
-    pk->state = STATE_NOT_PROCESSED;
-    pk->key_index = key_index;
-
-    return pk;
-}
-
-inline void Keyboard::remove_from_pressed_keys(PressedKey *pk) {
-    this->pressed_keys.count--;
-    uint8_t last_index = PRESSED_KEY_BUFFER - 1;
-
-    for (uint8_t i = pk->key_index; i < last_index; i++) {
-        this->pressed_keys.keys[i] = this->pressed_keys.keys[i+1];
-        this->pressed_keys.keys[i].key_index = i;
-    }
-
-    this->pressed_keys.keys[last_index] = PressedKey {};
-}
-
-inline PressedKey* Keyboard::find_in_pressed_keys(KeyCoords coords) {
-    for (uint8_t i = 0; i < PRESSED_KEY_BUFFER; i++) {
-        if (!this->pressed_keys.keys[i].timestamp) {
-            break;
-        }
-
-        PressedKey *pk = &(this->pressed_keys.keys[i]);
-
-        if (
-            pk->key_info.coords.row == coords.row
-            && pk->key_info.coords.col == coords.col
-        ) {
-            return pk;
-        }
-    }
-
-    return NULL;
-}
-// }}}
-
 // Press & Release hooks {{{
 inline void Keyboard::run_press_hooks(uint8_t event_key_index) {
     for (uint8_t key_index = 0; key_index < event_key_index; key_index++) {
@@ -297,7 +238,7 @@ inline void Keyboard::run_press_hooks(uint8_t event_key_index) {
     }
 }
 inline void Keyboard::run_press_hook(uint8_t key_index) {
-    PressedKey *pk = &(this->pressed_keys.keys[key_index]);
+    PressedKey *pk = this->pressed_keys.get(key_index);
     KeyInfo key_info = pk->key_info;
 
     if (pk->state != STATE_PENDING) {
@@ -622,13 +563,14 @@ void Keyboard::print_internal_state() {
     Serial.print(this->toggled_layer_index);
     Serial.print("\n");
     for (uint8_t i = 0; i < this->pressed_keys.count; i++) {
-        KeyInfo key_info = this->pressed_keys.keys[i].key_info;
-        uint8_t state = this->pressed_keys.keys[i].state;
+        PressedKey* pk = this->pressed_keys.get(i);
+        KeyInfo key_info = pk->key_info;
+        uint8_t state = pk->state;
 
         Serial.print("  -[");
         Serial.print(i);
         Serial.print("/");
-        Serial.print(this->pressed_keys.keys[i].key_index);
+        Serial.print(pk->key_index);
         Serial.print("] - KeyInfo[T:");
         Serial.print(key_info.type);
         Serial.print(",L:");
@@ -642,9 +584,9 @@ void Keyboard::print_internal_state() {
         Serial.print(",C:");
         Serial.print(key_info.coords.col);
         Serial.print("]\n       - key_press_counter:");
-        Serial.print(this->pressed_keys.keys[i].key_press_counter);
+        Serial.print(pk->key_press_counter);
         Serial.print("\n        - timestamp:");
-        Serial.print(this->pressed_keys.keys[i].timestamp);
+        Serial.print(pk->timestamp);
         Serial.print("\n        - state:");
         if (state == STATE_NOT_PROCESSED) {
             Serial.print("STATE_NOT_PROCESSED");
@@ -661,8 +603,4 @@ void Keyboard::print_internal_state() {
         }
         Serial.print("\n");
     }
-}
-
-uint8_t Keyboard::get_current_layer() {
-    return this->layer_index;
 }

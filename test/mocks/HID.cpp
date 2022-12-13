@@ -15,6 +15,12 @@ TestHID& HID()
 void TestHID::AppendDescriptor(HIDSubDescriptor *node UNUSED) {
 }
 
+void TestHID::clear() {
+    this->base_hid_reports.clear();
+    this->system_hid_reports.clear();
+    this->multimedia_hid_reports.clear();
+}
+
 int TestHID::SendReport(uint8_t type, const void* data, int len) {
     if (type == BASE_KEYBOARD_REPORT_ID) {
         BaseHIDReport r;
@@ -32,6 +38,5 @@ int TestHID::SendReport(uint8_t type, const void* data, int len) {
 
     return 0;
 }
-
 
 TestHID::TestHID(void) {}

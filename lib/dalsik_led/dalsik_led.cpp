@@ -87,5 +87,7 @@ void set_led_rgb(uint32_t rgb) {
     );
     sei();
     last_led_ts = micros();
+#else
+    (void)green_red_blue_array; // Unused
 #endif
 }

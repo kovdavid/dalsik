@@ -9,9 +9,7 @@
 #include <avr/io.h>
 
 Matrix matrix;
-
-Keyboard keyboard;
-KeyEventHandler key_event_handler(&keyboard);
+KeyEventHandler key_event_handler;
 
 uint8_t is_master = 0;
 millisec prev_millis = 0;
@@ -63,7 +61,7 @@ void Dalsik::loop() {
 
     if (is_master) {
         if (Serial.available() > 0) {
-            SerialCommand::process_command(&keyboard);
+            SerialCommand::process_command();
         }
 
         while (DalsikSerial::has_data()) {
@@ -79,7 +77,7 @@ void Dalsik::loop() {
     }
     prev_millis = now;
 
-    keyboard.key_timeout_check(now); // check once every millisecond
+    key_event_handler.handle_timeout(now); // check once every millisecond
 
     ChangedKeyEvent event = matrix.scan();
     if (event.type == EVENT_NONE) {

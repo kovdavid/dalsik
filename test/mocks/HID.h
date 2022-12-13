@@ -13,6 +13,7 @@ class TestHID {
         TestHID(void);
         int SendReport(uint8_t id, const void* data, int len);
         void AppendDescriptor(HIDSubDescriptor* node);
+        void clear();
 
         std::vector<BaseHIDReport> base_hid_reports;
         std::vector<SystemHIDReport> system_hid_reports;

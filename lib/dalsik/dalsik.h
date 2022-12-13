@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dalsik_global.h"
+#include "bit_utils.h"
 
 #ifndef DEBUG
 #define DEBUG 0

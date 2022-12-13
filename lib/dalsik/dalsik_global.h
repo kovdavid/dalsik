@@ -31,18 +31,28 @@
 #define KEYBOARD_SIDE_LEFT  0x00
 #define KEYBOARD_SIDE_RIGHT 0x01
 
-#define COORD_UNKNOWN 255
+#define COMBO_TIMEOUT_MS 50
 
-typedef struct {
-    uint8_t row;
-    uint8_t col;
-} KeyCoords;
+#define COORD_UNKNOWN 255
+#define COORD_COMBO 127
+#define COORDS_INVALID KeyCoords { COORD_UNKNOWN, COORD_UNKNOWN }
+
+class KeyCoords {
+    public:
+        uint8_t row;
+        uint8_t col;
+
+        bool equals(KeyCoords other) {
+            return this->row == other.row && this->col == other.col;
+        }
+};
 
 typedef unsigned long millisec;
 
 #define EVENT_NONE 0x00
 #define EVENT_KEY_PRESS 0x01
 #define EVENT_KEY_RELEASE 0x02
+#define EVENT_TIMEOUT 0x03
 
 typedef struct {
     uint8_t type;

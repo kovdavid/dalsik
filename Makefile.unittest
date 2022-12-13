@@ -16,6 +16,7 @@ CFLAGS += -fno-devirtualize
 CFLAGS += -fno-threadsafe-statics
 CFLAGS += -fpermissive
 CFLAGS += -pedantic
+CFLAGS += -D COMBOS_ENABLED
 CFLAGS += -include test/mocks/misc.h
 
 HEADERS = $(dir $(wildcard test/*/ test/*/*/ lib/*/))
@@ -34,22 +35,26 @@ $(BUILD_ROOT)/%.o: lib/*/%
 $(BUILD_ROOT)/%.o: test/*/%
 	$(COMPILER) -c $< -o $@
 
-OBJ = \
-	  test_keyboard.cpp.o \
+TEST_OBJS = \
 	  mock_eeprom.cpp.o \
 	  mock_keymap.cpp.o \
+	  combo_state.cpp.o \
+	  combos_key_buffer.cpp.o \
+	  combos_buffered_key.cpp.o \
+	  combos_handler.cpp.o \
 	  dalsik_eeprom.cpp.o \
 	  keyboard.cpp.o \
 	  array_utils.cpp.o \
+	  pressed_keys.cpp.o \
 	  HID.cpp.o \
 	  Serial.cpp.o
 
-test_keyboard: $(addprefix $(BUILD_ROOT)/, $(OBJ)) | $(BUILD_ROOT)
-	echo ">> Linking $(BUILD_ROOT)/test_keyboard"
-	$(COMPILER) $^ -o $(BUILD_ROOT)/test_keyboard
+test_suite: $(addprefix $(BUILD_ROOT)/, $(TEST_OBJS) test_suite.cpp.o) | $(BUILD_ROOT)
+	echo ">> Linking $(BUILD_ROOT)/$@"
+	$(COMPILER) $^ -o $(BUILD_ROOT)/$@
 
-test: $(BUILD_ROOT) test_keyboard
-	$(BUILD_ROOT)/test_keyboard
+test: $(BUILD_ROOT) test_suite
+	$(BUILD_ROOT)/test_suite $(TEST_NAME)
 
 # https://www.youtube.com/watch?v=NPdagdEOBnI
 # https://github.com/JeremiahK96/auto-makefile/blob/main/Makefile

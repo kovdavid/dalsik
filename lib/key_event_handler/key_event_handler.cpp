@@ -3,6 +3,7 @@
 #include "dalsik_serial.h"
 #include "matrix.h"
 #include "key_event_handler.h"
+#include "combos_handler.h"
 
 inline uint8_t parity(uint8_t d) {
     d ^= (d >> 4);
@@ -11,9 +12,11 @@ inline uint8_t parity(uint8_t d) {
     return d & 0x1;
 }
 
-KeyEventHandler::KeyEventHandler(Keyboard* keyboard) {
-    this->keyboard_side = EEPROM::get_keyboard_side();
-    this->keyboard = keyboard;
+KeyEventHandler::KeyEventHandler():
+    keyboard(),
+    combos_handler(&this->keyboard),
+    keyboard_side(EEPROM::get_keyboard_side())
+{
 }
 
 void KeyEventHandler::send_slave_event_to_master(ChangedKeyEvent event) {
@@ -122,7 +125,7 @@ void KeyEventHandler::process_master_changed_key(ChangedKeyEvent event, millisec
     if (this->keyboard_side == KEYBOARD_SIDE_RIGHT) {
         event.coords.col = 2*ONE_SIDE_COL_PIN_COUNT - event.coords.col - 1;
     }
-    this->keyboard->handle_changed_key(event, now);
+    this->handle_key_event(event, now);
 }
 
 // KeyMap is used only on the master side; The slave is the right side if the master is the left
@@ -130,5 +133,17 @@ void KeyEventHandler::process_slave_changed_key(ChangedKeyEvent event, millisec 
     if (this->keyboard_side == KEYBOARD_SIDE_LEFT) {
         event.coords.col = 2*ONE_SIDE_COL_PIN_COUNT - event.coords.col - 1;
     }
-    this->keyboard->handle_changed_key(event, now);
+    this->handle_key_event(event, now);
+}
+
+void KeyEventHandler::handle_timeout(millisec now) {
+    this->handle_key_event(ChangedKeyEvent { EVENT_TIMEOUT, COORDS_INVALID }, now);
+}
+
+inline void KeyEventHandler::handle_key_event(ChangedKeyEvent event, millisec now) {
+#if COMBOS_ENABLED
+    this->combos_handler.handle_key_event(event, now);
+#else
+    this->keyboard.handle_key_event(event, now);
+#endif
 }

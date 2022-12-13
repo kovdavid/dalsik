@@ -19,6 +19,13 @@ class KeyInfo {
             this->key = KC_NO;
             this->coords = KeyCoords { COORD_UNKNOWN, COORD_UNKNOWN };
         }
+        KeyInfo(KeyCoords c) {
+            this->type = KEY_NORMAL;
+            this->layer = 0;
+            this->mod = MOD_CLEAR;
+            this->key = KC_NO;
+            this->coords = c;
+        }
         KeyInfo(uint32_t progmem_data, KeyCoords c) {
             this->type  = (progmem_data >> 24) & 0xFF;
             this->layer = (progmem_data >> 16) & 0xFF;
@@ -42,10 +49,26 @@ class KeyInfo {
             return KeyInfo(this->type, 0, MOD_CLEAR, this->key, this->coords);
         }
 
-        uint8_t has_no_coords() {
+        void print_internal_state() {
+            Serial.print(">> KEY_INFO ROW:");
+            Serial.print(this->coords.row);
+            Serial.print(" COL:");
+            Serial.print(this->coords.col);
+            Serial.print(" TYPE:");
+            Serial.print(this->type);
+            Serial.print(" LAYER:");
+            Serial.print(this->layer);
+            Serial.print(" MOD:");
+            Serial.print(this->mod);
+            Serial.print(" KEY:");
+            Serial.println(this->key);
+        }
+
+        uint8_t skip_layer_reload() {
             return
-                this->coords.row == COORD_UNKNOWN
-                && this->coords.col == COORD_UNKNOWN;
+                this->coords.row == COORD_COMBO
+                || this->coords.row == COORD_UNKNOWN
+                || this->coords.col == COORD_UNKNOWN;
         }
 
         uint8_t is_any_dual_mod_key() {

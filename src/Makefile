@@ -64,6 +64,10 @@ ifdef DALSIK_REPORT_MODIFIER_CHANGE
 CXXFLAGS         += -D REPORT_MODIFIER_CHANGE
 endif
 
+ifdef DALSIK_COMBOS_ENABLED
+CXXFLAGS         += -D COMBOS_ENABLED
+endif
+
 LDFLAGS          += -fdiagnostics-color
 
 ### OBJDIR
