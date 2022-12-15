@@ -4,6 +4,12 @@
 #include "keyboard.h"
 #include "keymap.h"
 
+#if DEBUG_KEYBOARD_STATE
+#define PRINT_INTERNAL_STATE this->print_internal_state();
+#else
+#define PRINT_INTERNAL_STATE
+#endif
+
 Keyboard::Keyboard() {
     DalsikHid::init_descriptor();
 
@@ -27,10 +33,6 @@ void Keyboard::handle_key_event(ChangedKeyEvent event, millisec now) {
     } else if (event.type == EVENT_TIMEOUT) {
         this->handle_timeout(now);
     }
-
-#if DEBUG_KEYBOARD_STATE
-    this->print_internal_state();
-#endif
 }
 
 inline void Keyboard::handle_timeout(millisec now) {
@@ -54,6 +56,8 @@ inline void Keyboard::handle_timeout(millisec now) {
         this->press_normal_key(pk->key_info.use_key());
         this->send_hid_report();
     }
+
+    PRINT_INTERNAL_STATE
 }
 
 KeyInfo Keyboard::get_key(KeyCoords c) {
@@ -159,9 +163,11 @@ inline void Keyboard::handle_key_press(KeyInfo key_info, millisec now) {
 
     this->press(pk);
     this->send_hid_report();
+
+    PRINT_INTERNAL_STATE
 }
 
-void Keyboard::handle_key_release(KeyCoords coords, millisec now) {
+inline void Keyboard::handle_key_release(KeyCoords coords, millisec now) {
     PressedKey *pk = this->pressed_keys.find(coords);
     if (pk == NULL) return;
 
@@ -170,6 +176,8 @@ void Keyboard::handle_key_release(KeyCoords coords, millisec now) {
     this->pressed_keys.remove(pk);
 
     this->send_hid_report();
+
+    PRINT_INTERNAL_STATE
 }
 
 void Keyboard::press(PressedKey *pk) {

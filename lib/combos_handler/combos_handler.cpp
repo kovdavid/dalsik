@@ -22,11 +22,11 @@ bool CombosHandler::handle_key_event(ChangedKeyEvent event, millisec now) {
 
     if (result == PROCESS_EVENT_WITH_KEYBOARD) {
         this->keyboard->handle_key_event(event, now);
-    }
-
+    } else {
 #if DEBUG_COMBOS_HANDLER_STATE
     this->print_internal_state();
 #endif
+    }
 
     return result;
 }
