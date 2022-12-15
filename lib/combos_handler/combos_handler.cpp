@@ -24,6 +24,10 @@ bool CombosHandler::handle_key_event(ChangedKeyEvent event, millisec now) {
         this->keyboard->handle_key_event(event, now);
     }
 
+#if DEBUG_COMBOS_HANDLER_STATE
+    this->print_internal_state();
+#endif
+
     return result;
 }
 
