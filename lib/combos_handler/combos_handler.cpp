@@ -39,8 +39,10 @@ bool CombosHandler::start_pending_combo_processing(ChangedKeyEvent event, millis
     }
 
     if (event.type == EVENT_KEY_RELEASE) {
+        bool result = PROCESS_EVENT_WITH_KEYBOARD;
+
         CombosBufferedKey* cbk = this->key_buffer.find(event.coords);
-        if (cbk == NULL) return PROCESS_EVENT_WITH_KEYBOARD;
+        if (cbk == NULL) return result;
 
         if (cbk->part_of_active_combo) {
             ComboState* combo_state = COMBO_STATE(cbk->active_combo_index);
@@ -52,12 +54,14 @@ bool CombosHandler::start_pending_combo_processing(ChangedKeyEvent event, millis
 
                 combo_state->clear_state_and_flags();
             }
+
+            result = SKIP_KEYBOARD_PROCESSING;
         }
 
         cbk->clear();
         this->key_buffer.normalize();
 
-        return PROCESS_EVENT_WITH_KEYBOARD;
+        return result;
     }
 
     // EVENT_KEY_PRESS

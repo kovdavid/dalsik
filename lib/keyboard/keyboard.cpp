@@ -55,9 +55,9 @@ inline void Keyboard::handle_timeout(millisec now) {
         pk->state = STATE_ACTIVE_KEY;
         this->press_normal_key(pk->key_info.use_key());
         this->send_hid_report();
-    }
 
-    PRINT_INTERNAL_STATE
+        PRINT_INTERNAL_STATE
+    }
 }
 
 KeyInfo Keyboard::get_key(KeyCoords c) {
