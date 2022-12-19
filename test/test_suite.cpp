@@ -34,7 +34,8 @@ void print_hid_reports() {
 void print_combo_states() {
     printf("\nComboStates:\n");
     for (uint8_t i = 0; i < COMBOS_COUNT; i++) {
-        combos[i].print_internal_state(i, 0);
+        ComboState* combo_state = COMBO_STATE(i);
+        combo_state->print_internal_state(i, 0);
     }
 }
 
@@ -52,6 +53,7 @@ void dump_hid_reports() {
 #define RELEASE(r,c) ChangedKeyEvent { EVENT_KEY_RELEASE, KeyCoords { r, c } }
 
 // Synchronize with test/mocks/mock_keymap.cpp!
+KeyCoords kc_no = { 0, 0 };
 KeyCoords kc_ctrl = { 1, 0 };
 KeyCoords normal_KC_A = { 1, 1 };
 KeyCoords normal_KC_B = { 1, 2 };
@@ -71,7 +73,7 @@ KeyCoords layer_press_1 = { 1, 11 };
 void test_normal_key_1(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
@@ -98,7 +100,7 @@ void test_normal_key_1(void) {
 void test_normal_key_2(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
@@ -116,7 +118,7 @@ void test_normal_key_2(void) {
 void test_normal_key_3(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
@@ -143,7 +145,7 @@ void test_normal_key_3(void) {
 void test_dual_mod_key_1(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
@@ -161,7 +163,7 @@ void test_dual_mod_key_1(void) {
 void test_dual_mod_key_2(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
@@ -189,7 +191,7 @@ void test_dual_mod_key_2(void) {
 void test_dual_mod_key_3(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
@@ -215,7 +217,7 @@ void test_dual_mod_key_3(void) {
 void test_dual_mod_key_4(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
@@ -244,7 +246,7 @@ void test_dual_mod_key_4(void) {
 void test_dual_mod_key_5(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
@@ -271,7 +273,7 @@ void test_dual_mod_key_5(void) {
 void test_dual_mod_key_6(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
@@ -307,7 +309,7 @@ void test_dual_mod_key_6(void) {
 void test_dual_mod_key_7(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
@@ -346,7 +348,7 @@ void test_dual_mod_key_7(void) {
 void test_dual_mod_key_8(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, dual_ctrl_KC_C }, now++);
     HID_SIZE_CHECK(0);
@@ -369,7 +371,7 @@ void test_dual_mod_key_8(void) {
 void test_dual_mod_key_9(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
@@ -393,7 +395,7 @@ void test_dual_mod_key_9(void) {
 void test_dual_layer_key_1(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, dual_layer_1 }, now++);
     HID_SIZE_CHECK(0);
@@ -411,7 +413,7 @@ void test_dual_layer_key_1(void) {
 void test_dual_layer_key_2(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, dual_layer_1 }, now++);
     HID_SIZE_CHECK(0);
@@ -427,7 +429,7 @@ void test_dual_layer_key_2(void) {
 void test_dual_layer_key_3(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, solo_dual_layer_1 }, now++);
     HID_SIZE_CHECK(0);
@@ -443,7 +445,7 @@ void test_dual_layer_key_3(void) {
 void test_dual_layer_key_4(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
@@ -462,7 +464,7 @@ void test_dual_layer_key_4(void) {
 void test_dual_layer_key_5(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, dual_layer_1 }, now++);
     HID_SIZE_CHECK(0);
@@ -493,7 +495,7 @@ void test_dual_layer_key_5(void) {
 void test_stuck_key(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
@@ -525,7 +527,7 @@ void test_stuck_key(void) {
 void test_one_shot_modifier(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(1);
@@ -549,7 +551,7 @@ void test_one_shot_modifier(void) {
 void test_one_shot_modifier_toggle(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(1);
@@ -577,7 +579,7 @@ void test_one_shot_modifier_toggle(void) {
 void test_one_shot_modifier_hold(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(1);
@@ -609,7 +611,7 @@ void test_one_shot_modifier_hold(void) {
 void test_one_shot_modifier_long_tap(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, one_shot_ctrl }, now++);
     HID_SIZE_CHECK(1);
@@ -627,7 +629,7 @@ void test_one_shot_modifier_long_tap(void) {
 void test_layer_hold_or_toggle(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, layer_hold_or_toggle }, now++);
     HID_SIZE_CHECK(0);
@@ -645,7 +647,7 @@ void test_layer_hold_or_toggle(void) {
 void test_layer_hold_or_toggle_on_off(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, layer_hold_or_toggle }, now++);
     HID_SIZE_CHECK(0);
@@ -671,7 +673,7 @@ void test_layer_hold_or_toggle_on_off(void) {
 void test_layer_hold_or_toggle_hold(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, layer_hold_or_toggle }, now++);
     HID_SIZE_CHECK(0);
@@ -702,7 +704,7 @@ void test_layer_hold_or_toggle_hold(void) {
 void test_layer_press_1(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, layer_press_1 }, now++);
     HID_SIZE_CHECK(0);
@@ -717,7 +719,7 @@ void test_layer_press_1(void) {
 void test_layer_press_2(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     keyboard.handle_key_event({ P, layer_press_1 }, now++);
     HID_SIZE_CHECK(0);
@@ -736,7 +738,7 @@ void test_layer_press_2(void) {
 void test_remove_from_pressed_keys(void) {
     Keyboard keyboard;
 
-    millisec now = 100;
+    millisec now = 10000;
 
     for (uint8_t i = 0; i < PRESSED_KEY_BUFFER; i++) {
         keyboard.handle_key_event({ P, normal_KC_A }, now++);
@@ -789,7 +791,7 @@ void test_combo_simple_press_and_release(void) {
         Keyboard keyboard;
         CombosHandler combos_handler(&keyboard);
 
-        millisec now = 100;
+        millisec now = 10000;
 
         // The first key is part of a combo, so it is buffered in combos_handler
         combos_handler.handle_key_event(test_case.events[0], now++);
@@ -817,7 +819,7 @@ void test_combo_state_changes_1(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
-    millisec now = 100;
+    millisec now = 10000;
 
     combos_handler.handle_key_event({ P, normal_KC_A }, now++);
     HID_SIZE_CHECK(1);
@@ -825,11 +827,11 @@ void test_combo_state_changes_1(void) {
     BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < COMBOS_COUNT; i++) {
-        ComboState combo_state = combos[i];
+        ComboState* combo_state = COMBO_STATE(i);
 
-        TEST_CHECK(combo_state.timestamp == 0);
-        TEST_CHECK(combo_state.flags == 0x00);
-        TEST_CHECK(combo_state.state == 0x00);
+        TEST_CHECK(combo_state->timestamp == 0);
+        TEST_CHECK(combo_state->flags == 0x00);
+        TEST_CHECK(combo_state->state == 0x00);
     }
 
     CombosKeyBuffer ckb = get_combos_key_buffer(combos_handler);
@@ -842,23 +844,23 @@ void test_combo_state_changes_2(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
-    millisec now = 100;
+    millisec now = 10000;
 
     combos_handler.handle_key_event(PRESS(3,0), now++);
     HID_SIZE_CHECK(0);
 
     for (uint8_t i = 0; i < 4; i++) {
-        ComboState combo_state = combos[i];
-        TEST_CHECK(combo_state.timestamp == 100);
-        TEST_CHECK(combo_state.flags == 0x00);
-        TEST_CHECK(combo_state.state == 0x01);
+        ComboState* combo_state = COMBO_STATE(i);
+        TEST_CHECK(combo_state->timestamp == 10000);
+        TEST_CHECK(combo_state->flags == 0x00);
+        TEST_CHECK(combo_state->state == 0x01);
     }
 
     // Disabled
-    ComboState combo_state = combos[4];
-    TEST_CHECK(combo_state.timestamp == 0);
-    TEST_CHECK(combo_state.flags == FLAG_DISABLED);
-    TEST_CHECK(combo_state.state == 0x00);
+    ComboState* combo_state = COMBO_STATE(4);
+    TEST_CHECK(combo_state->timestamp == 0);
+    TEST_CHECK(combo_state->flags == FLAG_DISABLED);
+    TEST_CHECK(combo_state->state == 0x00);
 
     CombosKeyBuffer ckb = get_combos_key_buffer(combos_handler);
     TEST_CHECK(ckb.count == 1);
@@ -866,7 +868,7 @@ void test_combo_state_changes_2(void) {
     CombosBufferedKey* cbk = ckb.get(0);
     TEST_CHECK(cbk->coords.row == 3);
     TEST_CHECK(cbk->coords.col == 0);
-    TEST_CHECK(cbk->timestamp == 100);
+    TEST_CHECK(cbk->timestamp == 10000);
     TEST_CHECK(cbk->part_of_active_combo == 0);
     TEST_CHECK(cbk->active_combo_index == 0);
 }
@@ -877,28 +879,28 @@ void test_combo_state_changes_3(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
-    millisec now = 100;
+    millisec now = 10000;
 
     combos_handler.handle_key_event(PRESS(3,3), now++);
     HID_SIZE_CHECK(0);
 
     for (uint8_t i = 0; i < 2; i++) { // These should be disabled
-        ComboState combo_state = combos[i];
-        TEST_CHECK(combo_state.timestamp == 0);
-        TEST_CHECK(combo_state.flags == FLAG_DISABLED);
-        TEST_CHECK(combo_state.state == 0x00);
+        ComboState* combo_state = COMBO_STATE(i);
+        TEST_CHECK(combo_state->timestamp == 0);
+        TEST_CHECK(combo_state->flags == FLAG_DISABLED);
+        TEST_CHECK(combo_state->state == 0x00);
     }
     for (uint8_t i = 2; i < 4; i++) { // These should be pending
-        ComboState combo_state = combos[i];
-        TEST_CHECK(combo_state.timestamp == 100);
-        TEST_CHECK(combo_state.flags == 0x00);
-        TEST_CHECK(combo_state.state == 0b100);
+        ComboState* combo_state = COMBO_STATE(i);
+        TEST_CHECK(combo_state->timestamp == 10000);
+        TEST_CHECK(combo_state->flags == 0x00);
+        TEST_CHECK(combo_state->state == 0b100);
     }
     // Disabled
-    ComboState combo_state = combos[4];
-    TEST_CHECK(combo_state.timestamp == 0);
-    TEST_CHECK(combo_state.flags == FLAG_DISABLED);
-    TEST_CHECK(combo_state.state == 0x00);
+    ComboState* combo_state = COMBO_STATE(4);
+    TEST_CHECK(combo_state->timestamp == 0);
+    TEST_CHECK(combo_state->flags == FLAG_DISABLED);
+    TEST_CHECK(combo_state->state == 0x00);
 
     CombosKeyBuffer ckb = get_combos_key_buffer(combos_handler);
     TEST_CHECK(ckb.count == 1);
@@ -906,7 +908,7 @@ void test_combo_state_changes_3(void) {
     CombosBufferedKey* cbk = ckb.get(0);
     TEST_CHECK(cbk->coords.row == 3);
     TEST_CHECK(cbk->coords.col == 3);
-    TEST_CHECK(cbk->timestamp == 100);
+    TEST_CHECK(cbk->timestamp == 10000);
     TEST_CHECK(cbk->part_of_active_combo == 0);
     TEST_CHECK(cbk->active_combo_index == 0);
 }
@@ -917,7 +919,7 @@ void test_combo_state_changes_4(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
-    millisec now = 100;
+    millisec now = 10000;
 
     combos_handler.handle_key_event(PRESS(3,3), now++);
     HID_SIZE_CHECK(0);
@@ -926,22 +928,22 @@ void test_combo_state_changes_4(void) {
     HID_SIZE_CHECK(0);
 
     for (uint8_t i = 0; i < 3; i++) { // These should be disabled
-        ComboState combo_state = combos[i];
-        TEST_CHECK(combo_state.timestamp == 0);
-        TEST_CHECK(combo_state.flags == FLAG_DISABLED);
-        TEST_CHECK(combo_state.state == 0x00);
+        ComboState* combo_state = COMBO_STATE(i);
+        TEST_CHECK(combo_state->timestamp == 0);
+        TEST_CHECK(combo_state->flags == FLAG_DISABLED);
+        TEST_CHECK(combo_state->state == 0x00);
     }
     for (uint8_t i = 3; i < 4; i++) { // These should be pending
-        ComboState combo_state = combos[i];
-        TEST_CHECK(combo_state.timestamp == 100);
-        TEST_CHECK(combo_state.flags == 0x00);
-        TEST_CHECK(combo_state.state == 0b1100);
+        ComboState* combo_state = COMBO_STATE(i);
+        TEST_CHECK(combo_state->timestamp == 10000);
+        TEST_CHECK(combo_state->flags == 0x00);
+        TEST_CHECK(combo_state->state == 0b1100);
     }
     // Disabled
-    ComboState combo_state = combos[4];
-    TEST_CHECK(combo_state.timestamp == 0);
-    TEST_CHECK(combo_state.flags == FLAG_DISABLED);
-    TEST_CHECK(combo_state.state == 0x00);
+    ComboState* combo_state = COMBO_STATE(4);
+    TEST_CHECK(combo_state->timestamp == 0);
+    TEST_CHECK(combo_state->flags == FLAG_DISABLED);
+    TEST_CHECK(combo_state->state == 0x00);
 
     CombosKeyBuffer ckb = get_combos_key_buffer(combos_handler);
     TEST_CHECK(ckb.count == 2);
@@ -949,14 +951,14 @@ void test_combo_state_changes_4(void) {
     CombosBufferedKey* cbk1 = ckb.get(0);
     TEST_CHECK(cbk1->coords.row == 3);
     TEST_CHECK(cbk1->coords.col == 3);
-    TEST_CHECK(cbk1->timestamp == 100);
+    TEST_CHECK(cbk1->timestamp == 10000);
     TEST_CHECK(cbk1->part_of_active_combo == 0);
     TEST_CHECK(cbk1->active_combo_index == 0);
 
     CombosBufferedKey* cbk2 = ckb.get(1);
     TEST_CHECK(cbk2->coords.row == 3);
     TEST_CHECK(cbk2->coords.col == 4);
-    TEST_CHECK(cbk2->timestamp == 101);
+    TEST_CHECK(cbk2->timestamp == 10001);
     TEST_CHECK(cbk2->part_of_active_combo == 0);
     TEST_CHECK(cbk2->active_combo_index == 0);
 }
@@ -968,7 +970,7 @@ void test_combo_state_changes_5(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
-    millisec now = 100;
+    millisec now = 10000;
 
     combos_handler.handle_key_event(PRESS(3,3), now++);
     HID_SIZE_CHECK(0);
@@ -985,16 +987,16 @@ void test_combo_state_changes_5(void) {
     BREP_COMP(0, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < 3; i++) { // These should be disabled
-        ComboState combo_state = combos[i];
-        TEST_CHECK(combo_state.timestamp == 0);
-        TEST_CHECK(combo_state.flags == 0x00);
-        TEST_CHECK(combo_state.state == 0x00);
+        ComboState* combo_state = COMBO_STATE(i);
+        TEST_CHECK(combo_state->timestamp == 0);
+        TEST_CHECK(combo_state->flags == 0x00);
+        TEST_CHECK(combo_state->state == 0x00);
     }
     for (uint8_t i = 3; i < 4; i++) { // This is activated
-        ComboState combo_state = combos[i];
-        TEST_CHECK(combo_state.timestamp == 100);
-        TEST_CHECK(combo_state.flags == FLAG_ACTIVATED);
-        TEST_CHECK(combo_state.state == 0b1111);
+        ComboState* combo_state = COMBO_STATE(i);
+        TEST_CHECK(combo_state->timestamp == 10000);
+        TEST_CHECK(combo_state->flags == FLAG_ACTIVATED);
+        TEST_CHECK(combo_state->state == 0b1111);
     }
 
     CombosKeyBuffer ckb = get_combos_key_buffer(combos_handler);
@@ -1003,28 +1005,28 @@ void test_combo_state_changes_5(void) {
     CombosBufferedKey* cbk1 = ckb.get(0);
     TEST_CHECK(cbk1->coords.row == 3);
     TEST_CHECK(cbk1->coords.col == 3);
-    TEST_CHECK(cbk1->timestamp == 100);
+    TEST_CHECK(cbk1->timestamp == 10000);
     TEST_CHECK(cbk1->part_of_active_combo == true);
     TEST_CHECK(cbk1->active_combo_index == 3);
 
     CombosBufferedKey* cbk2 = ckb.get(1);
     TEST_CHECK(cbk2->coords.row == 3);
     TEST_CHECK(cbk2->coords.col == 4);
-    TEST_CHECK(cbk2->timestamp == 101);
+    TEST_CHECK(cbk2->timestamp == 10001);
     TEST_CHECK(cbk2->part_of_active_combo == true);
     TEST_CHECK(cbk2->active_combo_index == 3);
 
     CombosBufferedKey* cbk3 = ckb.get(2);
     TEST_CHECK(cbk3->coords.row == 3);
     TEST_CHECK(cbk3->coords.col == 0);
-    TEST_CHECK(cbk3->timestamp == 102);
+    TEST_CHECK(cbk3->timestamp == 10002);
     TEST_CHECK(cbk3->part_of_active_combo == true);
     TEST_CHECK(cbk3->active_combo_index == 3);
 
     CombosBufferedKey* cbk4 = ckb.get(3);
     TEST_CHECK(cbk4->coords.row == 3);
     TEST_CHECK(cbk4->coords.col == 1);
-    TEST_CHECK(cbk4->timestamp == 103);
+    TEST_CHECK(cbk4->timestamp == 10003);
     TEST_CHECK(cbk4->part_of_active_combo == true);
     TEST_CHECK(cbk4->active_combo_index == 3);
 }
@@ -1036,7 +1038,7 @@ void test_combo_state_changes_6(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
-    millisec now = 100;
+    millisec now = 10000;
 
     combos_handler.handle_key_event(PRESS(3,3), now++);
     HID_SIZE_CHECK(0);
@@ -1062,16 +1064,16 @@ void test_combo_state_changes_6(void) {
     BREP_COMP(0, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < 3; i++) { // These should be disabled
-        ComboState combo_state = combos[i];
-        TEST_CHECK(combo_state.timestamp == 0);
-        TEST_CHECK(combo_state.flags == 0x00);
-        TEST_CHECK(combo_state.state == 0x00);
+        ComboState* combo_state = COMBO_STATE(i);
+        TEST_CHECK(combo_state->timestamp == 0);
+        TEST_CHECK(combo_state->flags == 0x00);
+        TEST_CHECK(combo_state->state == 0x00);
     }
     for (uint8_t i = 3; i < 4; i++) { // This is activated
-        ComboState combo_state = combos[i];
-        TEST_CHECK(combo_state.timestamp == 100);
-        TEST_CHECK(combo_state.flags == FLAG_ACTIVATED);
-        TEST_CHECK(combo_state.state == 0b1);
+        ComboState* combo_state = COMBO_STATE(i);
+        TEST_CHECK(combo_state->timestamp == 10000);
+        TEST_CHECK(combo_state->flags == FLAG_ACTIVATED);
+        TEST_CHECK(combo_state->state == 0b1);
     }
 
     CombosKeyBuffer ckb = get_combos_key_buffer(combos_handler);
@@ -1080,7 +1082,7 @@ void test_combo_state_changes_6(void) {
     CombosBufferedKey* cbk1 = ckb.get(0);
     TEST_CHECK(cbk1->coords.row == 3);
     TEST_CHECK(cbk1->coords.col == 0);
-    TEST_CHECK(cbk1->timestamp == 102);
+    TEST_CHECK(cbk1->timestamp == 10002);
     TEST_CHECK(cbk1->part_of_active_combo == true);
     TEST_CHECK(cbk1->active_combo_index == 3);
 }
@@ -1090,7 +1092,7 @@ void test_combo_state_changes_7(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
-    millisec now = 100;
+    millisec now = 10000;
 
     combos_handler.handle_key_event(PRESS(3,3), now++);
     HID_SIZE_CHECK(0);
@@ -1120,10 +1122,10 @@ void test_combo_state_changes_7(void) {
     BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < COMBOS_COUNT; i++) { // These should be reset
-        ComboState combo_state = combos[i];
-        TEST_CHECK(combo_state.timestamp == 0);
-        TEST_CHECK(combo_state.flags == 0x00);
-        TEST_CHECK(combo_state.state == 0x00);
+        ComboState* combo_state = COMBO_STATE(i);
+        TEST_CHECK(combo_state->timestamp == 0);
+        TEST_CHECK(combo_state->flags == 0x00);
+        TEST_CHECK(combo_state->state == 0x00);
     }
 
     CombosKeyBuffer ckb = get_combos_key_buffer(combos_handler);
@@ -1137,7 +1139,7 @@ void test_combo_state_changes_abort(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
-    millisec now = 100;
+    millisec now = 10000;
 
     combos_handler.handle_key_event(PRESS(3,0), now++);
     HID_SIZE_CHECK(0);
@@ -1157,10 +1159,10 @@ void test_combo_state_changes_abort(void) {
     BREP_COMP(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < COMBOS_COUNT; i++) { // These should be reset
-        ComboState combo_state = combos[i];
-        TEST_CHECK(combo_state.timestamp == 0);
-        TEST_CHECK(combo_state.flags == 0x00);
-        TEST_CHECK(combo_state.state == 0x00);
+        ComboState* combo_state = COMBO_STATE(i);
+        TEST_CHECK(combo_state->timestamp == 0);
+        TEST_CHECK(combo_state->flags == 0x00);
+        TEST_CHECK(combo_state->state == 0x00);
     }
 
     CombosKeyBuffer ckb = get_combos_key_buffer(combos_handler);
@@ -1173,7 +1175,7 @@ void test_combo_timeout_abort(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
-    millisec now = 100;
+    millisec now = 10000;
 
     combos_handler.handle_key_event(PRESS(3,1), now++);
     HID_SIZE_CHECK(0);
@@ -1185,7 +1187,7 @@ void test_combo_timeout_abort(void) {
     combos_handler.handle_key_event({ T }, now);
     HID_SIZE_CHECK(0);
 
-    now += COMBO_TIMEOUT_MS;
+    now += COMBO_ACTIVATION_TIMEOUT_MS;
 
     combos_handler.handle_key_event({ T }, now);
     HID_SIZE_CHECK(2);
@@ -1194,10 +1196,10 @@ void test_combo_timeout_abort(void) {
     BREP_COMP(1, { 0x00, 0x00, KC_W, KC_Q, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < COMBOS_COUNT; i++) { // These should be reset
-        ComboState combo_state = combos[i];
-        TEST_CHECK(combo_state.timestamp == 0);
-        TEST_CHECK(combo_state.flags == 0x00);
-        TEST_CHECK(combo_state.state == 0x00);
+        ComboState* combo_state = COMBO_STATE(i);
+        TEST_CHECK(combo_state->timestamp == 0);
+        TEST_CHECK(combo_state->flags == 0x00);
+        TEST_CHECK(combo_state->state == 0x00);
     }
 
     CombosKeyBuffer ckb = get_combos_key_buffer(combos_handler);
@@ -1221,7 +1223,7 @@ void test_combo_timeout_activate(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
-    millisec now = 100;
+    millisec now = 10000;
 
     combos_handler.handle_key_event(PRESS(3,0), now++);
     HID_SIZE_CHECK(0);
@@ -1236,7 +1238,7 @@ void test_combo_timeout_activate(void) {
     combos_handler.handle_key_event({ T }, now);
     HID_SIZE_CHECK(0);
 
-    now += COMBO_TIMEOUT_MS;
+    now += COMBO_ACTIVATION_TIMEOUT_MS;
 
     combos_handler.handle_key_event({ T }, now);
     HID_SIZE_CHECK(1);
@@ -1244,26 +1246,26 @@ void test_combo_timeout_activate(void) {
     BREP_COMP(0, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     // These should be reset
-    ComboState combo_state1 = combos[0];
-    TEST_CHECK(combo_state1.timestamp == 0);
-    TEST_CHECK(combo_state1.flags == 0x00);
-    TEST_CHECK(combo_state1.state == 0x00);
+    ComboState* combo_state1 = COMBO_STATE(0);
+    TEST_CHECK(combo_state1->timestamp == 0);
+    TEST_CHECK(combo_state1->flags == 0x00);
+    TEST_CHECK(combo_state1->state == 0x00);
 
-    ComboState combo_state2 = combos[1];
-    TEST_CHECK(combo_state2.timestamp == 0);
-    TEST_CHECK(combo_state2.flags == 0x00);
-    TEST_CHECK(combo_state2.state == 0x00);
+    ComboState* combo_state2 = COMBO_STATE(1);
+    TEST_CHECK(combo_state2->timestamp == 0);
+    TEST_CHECK(combo_state2->flags == 0x00);
+    TEST_CHECK(combo_state2->state == 0x00);
 
-    ComboState combo_state3 = combos[3];
-    TEST_CHECK(combo_state3.timestamp == 0);
-    TEST_CHECK(combo_state3.flags == 0x00);
-    TEST_CHECK(combo_state3.state == 0x00);
+    ComboState* combo_state3 = COMBO_STATE(3);
+    TEST_CHECK(combo_state3->timestamp == 0);
+    TEST_CHECK(combo_state3->flags == 0x00);
+    TEST_CHECK(combo_state3->state == 0x00);
 
     // This should be active
-    ComboState combo_state4 = combos[2];
-    TEST_CHECK(combo_state4.timestamp == 100);
-    TEST_CHECK(combo_state4.flags == FLAG_ACTIVATED);
-    TEST_CHECK(combo_state4.state == 0b111);
+    ComboState* combo_state4 = COMBO_STATE(2);
+    TEST_CHECK(combo_state4->timestamp == 10000);
+    TEST_CHECK(combo_state4->flags == FLAG_ACTIVATED);
+    TEST_CHECK(combo_state4->state == 0b111);
 
     CombosKeyBuffer ckb = get_combos_key_buffer(combos_handler);
     TEST_CHECK(ckb.count == 3);
@@ -1281,7 +1283,7 @@ void test_combo_multiple_active_combos(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
-    millisec now = 100;
+    millisec now = 10000;
 
     // Combo1
     combos_handler.handle_key_event(PRESS(3,5), now++);
@@ -1321,7 +1323,7 @@ void test_combo_stuck_key(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
-    millisec now = 100;
+    millisec now = 10000;
 
     // We activate the combo - everything according to the plan
     combos_handler.handle_key_event(PRESS(3,7), now++);
@@ -1351,6 +1353,36 @@ void test_combo_stuck_key(void) {
 
     BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
     BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// We don't start a new pending combo processing until COMBO_START_THRESHOLD_MS
+// passes. The first { P, kc_no } sets the timer to 'now', so the PRESS(3,0)
+// event 1 ms later does not start the combo processing; instead the event
+// is passed to the Keyboard and KC_Q is pressed.
+void test_combo_start_threshold(void) {
+    Keyboard keyboard;
+    CombosHandler combos_handler(&keyboard);
+
+    millisec now = 10000;
+
+    combos_handler.handle_key_event({ P, kc_no }, now++);
+    HID_SIZE_CHECK(0);
+
+    combos_handler.handle_key_event(PRESS(3,0), now++);
+    HID_SIZE_CHECK(1);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_Q, 0x00, 0x00, 0x00, 0x00, 0x00 });
+
+    for (uint8_t i = 0; i < COMBOS_COUNT; i++) {
+        ComboState* combo_state = COMBO_STATE(i);
+
+        TEST_CHECK(combo_state->timestamp == 0);
+        TEST_CHECK(combo_state->flags == 0x00);
+        TEST_CHECK(combo_state->state == 0x00);
+    }
+
+    CombosKeyBuffer ckb = get_combos_key_buffer(combos_handler);
+    TEST_CHECK(ckb.count == 0);
 }
 
 TEST_LIST = {
@@ -1395,5 +1427,6 @@ TEST_LIST = {
     { "test_combo_timeout_activate", test_combo_timeout_activate },
     { "test_combo_multiple_active_combos", test_combo_multiple_active_combos },
     { "test_combo_stuck_key", test_combo_stuck_key },
+    { "test_combo_start_threshold", test_combo_start_threshold },
     { NULL, NULL }
 };

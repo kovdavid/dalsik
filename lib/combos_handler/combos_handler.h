@@ -17,6 +17,8 @@ class CombosHandler {
 
         // When did we start processing a pending combo
         millisec pending_combos_start;
+        // The last event that was sent to the keyboard
+        millisec last_passthrough_event;
 
         bool start_pending_combo_processing(ChangedKeyEvent e, millisec now);
         bool resume_pending_combo_processing(ChangedKeyEvent e, millisec now);

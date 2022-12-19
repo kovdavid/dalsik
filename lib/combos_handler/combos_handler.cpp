@@ -16,10 +16,11 @@ CombosHandler::CombosHandler(Keyboard* keyboard) {
     this->keyboard = keyboard;
     this->key_buffer = CombosKeyBuffer {};
     this->pending_combos_start = 0;
+    this->last_passthrough_event = 0;
 }
 
 bool CombosHandler::handle_key_event(ChangedKeyEvent event, millisec now) {
-    bool result;
+    bool result = PROCESS_EVENT_WITH_KEYBOARD;
     if (this->pending_combos_start) {
         result = this->resume_pending_combo_processing(event, now);
     } else {
@@ -27,6 +28,9 @@ bool CombosHandler::handle_key_event(ChangedKeyEvent event, millisec now) {
     }
 
     if (result == PROCESS_EVENT_WITH_KEYBOARD) {
+        if (this->pending_combos_start == 0) {
+            this->last_passthrough_event = now;
+        }
         this->keyboard->handle_key_event(event, now);
     }
 
@@ -68,6 +72,13 @@ bool CombosHandler::start_pending_combo_processing(ChangedKeyEvent event, millis
         }
 
         return result;
+    }
+
+    // We need to have COMBO_START_THRESHOLD_MS milliseconds without any events
+    // to start combo processing. This is to prevent accidental combo firing
+    // when typing
+    if (this->last_passthrough_event + COMBO_START_THRESHOLD_MS > now) {
+        return PROCESS_EVENT_WITH_KEYBOARD;
     }
 
     // EVENT_KEY_PRESS
@@ -278,7 +289,7 @@ bool CombosHandler::resume_pending_combo_processing_timeout(millisec now) {
     }
 
     // We are in the middle of a pending combo processing
-    if (this->pending_combos_start + COMBO_TIMEOUT_MS > now) {
+    if (this->pending_combos_start + COMBO_ACTIVATION_TIMEOUT_MS > now) {
         return SKIP_KEYBOARD_PROCESSING;
     }
 
@@ -369,6 +380,11 @@ void CombosHandler::print_internal_state(millisec now) {
     Serial.print(this->pending_combos_start);
     Serial.print(" now-pending_combos_start:");
     Serial.print(now - this->pending_combos_start);
+    Serial.print(" last_passthrough_event:");
+    Serial.print(this->last_passthrough_event);
+    Serial.print(" now-last_passthrough_event:");
+    Serial.print(now - this->last_passthrough_event);
+
     this->key_buffer.print_internal_state(now);
 
     Serial.print("\nComboState\n");
