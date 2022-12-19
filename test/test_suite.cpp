@@ -1314,6 +1314,45 @@ void test_combo_multiple_active_combos(void) {
     BREP_COMP(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
+// Test stuck combo key - sometimes the release event is not sent to the keyboard
+// Apparently it is happening, when after activating a combo I release-then-press-again
+// one of the combo keys
+void test_combo_stuck_key(void) {
+    Keyboard keyboard;
+    CombosHandler combos_handler(&keyboard);
+
+    millisec now = 100;
+
+    // We activate the combo - everything according to the plan
+    combos_handler.handle_key_event(PRESS(3,7), now++);
+    HID_SIZE_CHECK(0);
+    combos_handler.handle_key_event(PRESS(3,0), now++);
+    HID_SIZE_CHECK(1);
+
+    // We release one of the key - we send nothing, which is OK, because
+    // the other key is still pressed
+    combos_handler.handle_key_event(RELEASE(3,7), now++);
+    HID_SIZE_CHECK(1);
+    // We press the same key again - this triggered the bug
+    combos_handler.handle_key_event(PRESS(3,7), now++);
+    HID_SIZE_CHECK(1);
+
+    // We release the last key of the combo. Note that (3,7) is still pressed,
+    // but after the first release of that key we've already modified the state
+    // of the combo; the second press did not change the existing active combo,
+    // so after releasing (3,0) we consider it fully released.
+    combos_handler.handle_key_event(RELEASE(3,0), now++);
+    HID_SIZE_CHECK(2);
+    combos_handler.handle_key_event(RELEASE(3,7), now++);
+    HID_SIZE_CHECK(2);
+
+    // At this point before fixing the error, HID_SIZE_CHECK(1) == true, so
+    // the KC_A key is stuck = the release event was never sent to the keyboard
+
+    BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
 TEST_LIST = {
     { "test_normal_key_1", test_normal_key_1 },
     { "test_normal_key_2", test_normal_key_2 },
@@ -1355,5 +1394,6 @@ TEST_LIST = {
     { "test_combo_timeout_abort", test_combo_timeout_abort },
     { "test_combo_timeout_activate", test_combo_timeout_activate },
     { "test_combo_multiple_active_combos", test_combo_multiple_active_combos },
+    { "test_combo_stuck_key", test_combo_stuck_key },
     { NULL, NULL }
 };

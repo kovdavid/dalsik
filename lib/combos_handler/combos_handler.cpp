@@ -69,6 +69,7 @@ bool CombosHandler::start_pending_combo_processing(ChangedKeyEvent event, millis
     uint8_t disabled_combos_count = 0;
     for (uint8_t i = 0; i < COMBOS_COUNT; i++) {
         ComboState* combo_state = COMBO_STATE(i);
+        if (combo_state->is_activated()) continue;
 
         if (combo_state->update_state_if_affected(event.coords, now)) {
             affected_combos_count++;
@@ -88,6 +89,8 @@ bool CombosHandler::start_pending_combo_processing(ChangedKeyEvent event, millis
         if (disabled_combos_count) {
             for (uint8_t i = 0; i < COMBOS_COUNT; i++) {
                 ComboState* combo_state = COMBO_STATE(i);
+                if (combo_state->is_activated()) continue;
+
                 combo_state->clear_disabled();
             }
         }
