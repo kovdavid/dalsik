@@ -5,7 +5,7 @@
 #include "keymap.h"
 
 #if DEBUG_KEYBOARD_STATE
-#define PRINT_INTERNAL_STATE this->print_internal_state();
+#define PRINT_INTERNAL_STATE this->print_internal_state(now);
 #else
 #define PRINT_INTERNAL_STATE
 #endif
@@ -559,7 +559,7 @@ void Keyboard::print_multimedia_report_to_serial() {
 #endif
 }
 
-void Keyboard::print_internal_state() {
+void Keyboard::print_internal_state(millisec now) {
     Serial.print("=========================PRESSED_KEYS\n");
     Serial.print("  -count:");
     Serial.print(this->pressed_keys.count);
@@ -595,6 +595,8 @@ void Keyboard::print_internal_state() {
         Serial.print(pk->key_press_counter);
         Serial.print("\n        - timestamp:");
         Serial.print(pk->timestamp);
+        Serial.print(" now-timestamp:");
+        Serial.print(now - pk->timestamp);
         Serial.print("\n        - state:");
         if (state == STATE_NOT_PROCESSED) {
             Serial.print("STATE_NOT_PROCESSED");

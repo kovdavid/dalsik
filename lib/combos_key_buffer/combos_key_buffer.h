@@ -15,7 +15,7 @@ class CombosKeyBuffer {
         CombosBufferedKey* find(KeyCoords coords);
         void normalize();
 
-        void print_internal_state();
+        void print_internal_state(millisec now);
 
         CombosBufferedKey* get(uint8_t index);
 };

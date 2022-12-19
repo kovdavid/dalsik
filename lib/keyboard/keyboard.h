@@ -107,5 +107,5 @@ class Keyboard {
         void handle_key_release(KeyCoords coords, millisec now);
         void handle_timeout(millisec now);
 
-        void print_internal_state();
+        void print_internal_state(millisec now);
 };

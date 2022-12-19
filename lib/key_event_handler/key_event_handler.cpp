@@ -75,45 +75,10 @@ ChangedKeyEvent KeyEventHandler::decode_slave_event(uint8_t data) {
 
 void KeyEventHandler::handle_received_data_from_slave(uint8_t data, millisec now) {
     ChangedKeyEvent event = this->decode_slave_event(data);
-
-#if DEBUG
-    Serial.print("Slave ChangedKeyEvent <");
-    if (event.type == EVENT_KEY_PRESS) {
-        Serial.print("PRE");
-    } else {
-        Serial.print("REL");
-    }
-    Serial.print("|ROW:");
-    Serial.print(event.coords.row);
-    Serial.print("|COL:");
-    Serial.print(event.coords.col);
-    Serial.print(">");
-    Serial.print(" now:");
-    Serial.print(now);
-    Serial.print("\n");
-#endif
-
     this->process_slave_changed_key(event, now);
 }
 
 void KeyEventHandler::handle_key_event_from_master(ChangedKeyEvent event, millisec now) {
-#if DEBUG
-    Serial.print("Master ChangedKeyEvent <");
-    if (event.type == EVENT_KEY_PRESS) {
-        Serial.print("PRE");
-    } else {
-        Serial.print("REL");
-    }
-    Serial.print("|ROW:");
-    Serial.print(event.coords.row);
-    Serial.print("|COL:");
-    Serial.print(event.coords.col);
-    Serial.print(">");
-    Serial.print(" now:");
-    Serial.print(now);
-    Serial.print("\n");
-#endif
-
     this->process_master_changed_key(event, now);
 }
 
@@ -141,6 +106,25 @@ void KeyEventHandler::handle_timeout(millisec now) {
 }
 
 inline void KeyEventHandler::handle_key_event(ChangedKeyEvent event, millisec now) {
+#if DEBUG
+    if (event.type != EVENT_TIMEOUT) {
+        Serial.print("ChangedKeyEvent <");
+        if (event.type == EVENT_KEY_PRESS) {
+            Serial.print("PRE");
+        } else {
+            Serial.print("REL");
+        }
+        Serial.print("|ROW:");
+        Serial.print(event.coords.row);
+        Serial.print("|COL:");
+        Serial.print(event.coords.col);
+        Serial.print(">");
+        Serial.print(" now:");
+        Serial.print(now);
+        Serial.print("\n");
+    }
+#endif
+
 #if COMBOS_ENABLED
     this->combos_handler.handle_key_event(event, now);
 #else

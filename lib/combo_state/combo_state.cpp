@@ -73,7 +73,7 @@ bool ComboState::is_fully_released() {
     return this->state == 0;
 }
 
-void ComboState::print_internal_state(uint8_t index) {
+void ComboState::print_internal_state(uint8_t index, millisec now) {
     Serial.print("ComboState #");
     Serial.print(index);
     Serial.print(" coords_count:");
@@ -86,6 +86,8 @@ void ComboState::print_internal_state(uint8_t index) {
     Serial.print(this->flags, BIN);
     Serial.print(" timestamp:");
     Serial.print(this->timestamp);
+    Serial.print(" now-timestamp:");
+    Serial.print(now - this->timestamp);
     Serial.print(" keys:<");
     for (uint8_t i = 0; i < this->coords_count; i++) {
         KeyCoords coords = this->read_coords_at(i);

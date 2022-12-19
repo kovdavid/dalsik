@@ -34,7 +34,7 @@ void print_hid_reports() {
 void print_combo_states() {
     printf("\nComboStates:\n");
     for (uint8_t i = 0; i < COMBOS_COUNT; i++) {
-        combos[i].print_internal_state(i);
+        combos[i].print_internal_state(i, 0);
     }
 }
 

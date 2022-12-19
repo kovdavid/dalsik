@@ -30,5 +30,5 @@ class CombosHandler {
         CombosHandler(Keyboard* keyboard);
 
         bool handle_key_event(ChangedKeyEvent e, millisec now);
-        void print_internal_state();
+        void print_internal_state(millisec now);
 };

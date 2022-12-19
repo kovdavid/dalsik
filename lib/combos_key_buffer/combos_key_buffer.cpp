@@ -57,11 +57,11 @@ CombosBufferedKey* CombosKeyBuffer::get(uint8_t index) {
     return &(this->keys[index]);
 }
 
-void CombosKeyBuffer::print_internal_state() {
+void CombosKeyBuffer::print_internal_state(millisec now) {
     Serial.print("\nCombosKeyBuffer count:");
     Serial.print(this->count);
     Serial.print("\n");
-    for (uint8_t i = 0; i < COMBOS_KEY_BUFFER_SIZE; i++) {
+    for (uint8_t i = 0; i < this->count; i++) {
         CombosBufferedKey cbk = this->keys[i];
         Serial.print("\t R:");
         Serial.print(cbk.coords.row);
@@ -69,6 +69,8 @@ void CombosKeyBuffer::print_internal_state() {
         Serial.print(cbk.coords.col);
         Serial.print(" timestamp:");
         Serial.print(cbk.timestamp);
+        Serial.print(" now-timestamp:");
+        Serial.print(now - cbk.timestamp);
         Serial.print(" part_of_active_combo:");
         Serial.print(cbk.part_of_active_combo);
         Serial.print(" active_combo_index:");

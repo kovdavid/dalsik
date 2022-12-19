@@ -17,7 +17,7 @@ class ComboState {
         uint8_t state = 0x00;
         uint8_t flags = 0x00;
 
-        void print_internal_state(uint8_t index);
+        void print_internal_state(uint8_t index, millisec now);
 
         ComboState(const KeyCoords* coords, uint32_t target_key, uint8_t coords_count);
         bool update_state_if_affected(KeyCoords coords, millisec now);

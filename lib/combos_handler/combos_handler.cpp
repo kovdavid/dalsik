@@ -6,6 +6,12 @@
 #define SKIP_KEYBOARD_PROCESSING false
 #define PROCESS_EVENT_WITH_KEYBOARD true
 
+#if DEBUG_COMBOS_HANDLER_STATE
+#define PRINT_INTERNAL_STATE this->print_internal_state(now);
+#else
+#define PRINT_INTERNAL_STATE
+#endif
+
 CombosHandler::CombosHandler(Keyboard* keyboard) {
     this->keyboard = keyboard;
     this->key_buffer = CombosKeyBuffer {};
@@ -22,10 +28,6 @@ bool CombosHandler::handle_key_event(ChangedKeyEvent event, millisec now) {
 
     if (result == PROCESS_EVENT_WITH_KEYBOARD) {
         this->keyboard->handle_key_event(event, now);
-    } else {
-#if DEBUG_COMBOS_HANDLER_STATE
-    this->print_internal_state();
-#endif
     }
 
     return result;
@@ -61,6 +63,10 @@ bool CombosHandler::start_pending_combo_processing(ChangedKeyEvent event, millis
         cbk->clear();
         this->key_buffer.normalize();
 
+        if (result == SKIP_KEYBOARD_PROCESSING) {
+            PRINT_INTERNAL_STATE
+        }
+
         return result;
     }
 
@@ -83,6 +89,7 @@ bool CombosHandler::start_pending_combo_processing(ChangedKeyEvent event, millis
         // The event was for a combo key, so we keep it
         this->key_buffer.add(event.coords, now);
         this->pending_combos_start = now;
+        PRINT_INTERNAL_STATE
         return SKIP_KEYBOARD_PROCESSING;
     } else {
         // Clear DISABLED combos marked above
@@ -93,6 +100,8 @@ bool CombosHandler::start_pending_combo_processing(ChangedKeyEvent event, millis
 
                 combo_state->clear_disabled();
             }
+
+            PRINT_INTERNAL_STATE
         }
 
         // No combo is active/pending; just pass the execution to Keyboard
@@ -168,6 +177,8 @@ bool CombosHandler::resume_pending_combo_processing_press(
             // Do nothing at this point.
         }
 
+        PRINT_INTERNAL_STATE
+
         return SKIP_KEYBOARD_PROCESSING;
     } else if (disabled_combos_count > 0) {
         // So there were no affected pending combos, but we've disabled
@@ -194,9 +205,11 @@ bool CombosHandler::resume_pending_combo_processing_press(
         // don't have any fully pressed pending combo.
         if (fully_pressed_combo_index >= 0) {
             this->activate_combo(fully_pressed_combo_index);
+            PRINT_INTERNAL_STATE
             return this->handle_key_event(event, now);
         } else {
             this->abort_pending_combos_processing();
+            PRINT_INTERNAL_STATE
             return PROCESS_EVENT_WITH_KEYBOARD;
         }
     }
@@ -246,12 +259,15 @@ bool CombosHandler::resume_pending_combo_processing_release(
         } else {
             // This handles clear/key_buffer.normalize
             this->abort_pending_combos_processing();
+            PRINT_INTERNAL_STATE
             return SKIP_KEYBOARD_PROCESSING;
         }
     }
 
     cbk->clear();
     this->key_buffer.normalize();
+
+    PRINT_INTERNAL_STATE
 
     return SKIP_KEYBOARD_PROCESSING;
 }
@@ -286,6 +302,8 @@ bool CombosHandler::resume_pending_combo_processing_timeout(millisec now) {
     } else { // We have no fully pressed combos
         this->abort_pending_combos_processing();
     }
+
+    PRINT_INTERNAL_STATE
 
     return PROCESS_EVENT_WITH_KEYBOARD;
 }
@@ -346,14 +364,16 @@ void CombosHandler::activate_combo(int8_t index) {
     this->keyboard->handle_key_press(key_info, combo_state->timestamp);
 }
 
-void CombosHandler::print_internal_state() {
+void CombosHandler::print_internal_state(millisec now) {
     Serial.print("\nCombosHandler pending_combos_start:");
-    Serial.print(pending_combos_start);
-    this->key_buffer.print_internal_state();
+    Serial.print(this->pending_combos_start);
+    Serial.print(" now-pending_combos_start:");
+    Serial.print(now - this->pending_combos_start);
+    this->key_buffer.print_internal_state(now);
 
     Serial.print("\nComboState\n");
     for (uint8_t i = 0; i < COMBOS_COUNT; i++) {
         ComboState* combo_state = COMBO_STATE(i);
-        combo_state->print_internal_state(i);
+        combo_state->print_internal_state(i, now);
     }
 }
