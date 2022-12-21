@@ -29,10 +29,10 @@ $(BUILD_ROOT):
 $(BUILD_ROOT)/%.o: test/%
 	$(COMPILER) -c $< -o $@
 
-$(BUILD_ROOT)/%.o: lib/*/%
+$(BUILD_ROOT)/%.o: test/*/%
 	$(COMPILER) -c $< -o $@
 
-$(BUILD_ROOT)/%.o: test/*/%
+$(BUILD_ROOT)/%.o: lib/*/%
 	$(COMPILER) -c $< -o $@
 
 TEST_OBJS = \
@@ -49,11 +49,11 @@ TEST_OBJS = \
 	  HID.cpp.o \
 	  Serial.cpp.o
 
-test_suite: $(addprefix $(BUILD_ROOT)/, $(TEST_OBJS) test_suite.cpp.o) | $(BUILD_ROOT)
-	echo ">> Linking $(BUILD_ROOT)/$@"
-	$(COMPILER) $^ -o $(BUILD_ROOT)/$@
+$(BUILD_ROOT)/test_suite: $(addprefix $(BUILD_ROOT)/, $(TEST_OBJS) test_suite.cpp.o) | $(BUILD_ROOT)
+	echo ">> Linking $@"
+	$(COMPILER) $^ -o $@
 
-test: $(BUILD_ROOT) test_suite
+test: $(BUILD_ROOT) $(BUILD_ROOT)/test_suite
 	$(BUILD_ROOT)/test_suite $(TEST_NAME)
 
 # https://www.youtube.com/watch?v=NPdagdEOBnI
