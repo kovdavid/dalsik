@@ -2,7 +2,7 @@
 #include "combos.h"
 
 // Sample keymap. To use it, set the `KEYMAP` env variable to this file
-// $ export KEYMAP=keymap/keymap.cpp
+// $ export DALSIK_KEYMAP=keymap/keymap.cpp
 // $ make
 
 #define CTRL_ESC  D(MOD_LCTRL, KC_ESCAPE)
