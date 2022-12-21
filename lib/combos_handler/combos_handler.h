@@ -28,6 +28,7 @@ class CombosHandler {
 
         void abort_pending_combos_processing();
         void activate_combo(int8_t index);
+        void release_active_combo_key(CombosBufferedKey* cbk, millisec now);
     public:
         CombosHandler(Keyboard* keyboard);
 

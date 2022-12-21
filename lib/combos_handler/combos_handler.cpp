@@ -51,16 +51,7 @@ bool CombosHandler::start_pending_combo_processing(ChangedKeyEvent event, millis
         if (cbk == NULL) return result;
 
         if (cbk->part_of_active_combo) {
-            ComboState* combo_state = COMBO_STATE(cbk->active_combo_index);
-            combo_state->remove_coords_from_state(event.coords);
-
-            if (combo_state->is_fully_released()) {
-                KeyCoords coords = COMBO_TARGET_KEY_COORDS(cbk->active_combo_index);
-                this->keyboard->handle_key_release(coords, now);
-
-                combo_state->clear_state_and_flags();
-            }
-
+            this->release_active_combo_key(cbk, now);
             result = SKIP_KEYBOARD_PROCESSING;
         }
 
@@ -237,15 +228,7 @@ bool CombosHandler::resume_pending_combo_processing_release(
     if (cbk == NULL) return PROCESS_EVENT_WITH_KEYBOARD;
 
     if (cbk->part_of_active_combo) {
-        ComboState* combo_state = COMBO_STATE(cbk->active_combo_index);
-        combo_state->remove_coords_from_state(event.coords);
-
-        if (combo_state->is_fully_released()) {
-            KeyCoords coords = COMBO_TARGET_KEY_COORDS(cbk->active_combo_index);
-            this->keyboard->handle_key_release(coords, now);
-
-            combo_state->clear_state_and_flags();
-        }
+        this->release_active_combo_key(cbk, now);
     } else {
         // We are releasing a key, that was part of a pending combo.
         // We must check if there is any fully pressed pending combo;
@@ -373,6 +356,18 @@ void CombosHandler::activate_combo(int8_t index) {
     KeyCoords coords = COMBO_TARGET_KEY_COORDS(index);
     KeyInfo key_info = KeyInfo(combo_state->target_key, coords);
     this->keyboard->handle_key_press(key_info, combo_state->timestamp);
+}
+
+void CombosHandler::release_active_combo_key(CombosBufferedKey* cbk, millisec now) {
+    ComboState* combo_state = COMBO_STATE(cbk->active_combo_index);
+    combo_state->remove_coords_from_state(cbk->coords);
+
+    if (combo_state->is_fully_released()) {
+        KeyCoords coords = COMBO_TARGET_KEY_COORDS(cbk->active_combo_index);
+        this->keyboard->handle_key_release(coords, now);
+
+        combo_state->clear_state_and_flags();
+    }
 }
 
 void CombosHandler::print_internal_state(millisec now) {
