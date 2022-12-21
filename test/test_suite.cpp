@@ -1319,7 +1319,7 @@ void test_combo_multiple_active_combos(void) {
 // Test stuck combo key - sometimes the release event is not sent to the keyboard
 // Apparently it is happening, when after activating a combo I release-then-press-again
 // one of the combo keys
-void test_combo_stuck_key(void) {
+void test_combo_stuck_key1(void) {
     Keyboard keyboard;
     CombosHandler combos_handler(&keyboard);
 
@@ -1352,6 +1352,25 @@ void test_combo_stuck_key(void) {
     // the KC_A key is stuck = the release event was never sent to the keyboard
 
     BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// When tapping a single combo key, only the PRESS event was sent to the keyboard
+// upon aborting pending combo processing. In this case the RELEASE event should
+// be sent as well.
+void test_combo_stuck_key2(void) {
+    Keyboard keyboard;
+    CombosHandler combos_handler(&keyboard);
+
+    millisec now = 10000;
+
+    // We activate the combo - everything according to the plan
+    combos_handler.handle_key_event(PRESS(3,0), now++);
+    HID_SIZE_CHECK(0);
+    combos_handler.handle_key_event(RELEASE(3,0), now++);
+    HID_SIZE_CHECK(2);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_Q, 0x00, 0x00, 0x00, 0x00, 0x00 });
     BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
@@ -1426,7 +1445,8 @@ TEST_LIST = {
     { "test_combo_timeout_abort", test_combo_timeout_abort },
     { "test_combo_timeout_activate", test_combo_timeout_activate },
     { "test_combo_multiple_active_combos", test_combo_multiple_active_combos },
-    { "test_combo_stuck_key", test_combo_stuck_key },
+    { "test_combo_stuck_key1", test_combo_stuck_key1 },
+    { "test_combo_stuck_key2", test_combo_stuck_key2 },
     { "test_combo_start_threshold", test_combo_start_threshold },
     { NULL, NULL }
 };

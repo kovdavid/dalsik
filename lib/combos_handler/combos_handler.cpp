@@ -28,9 +28,6 @@ bool CombosHandler::handle_key_event(ChangedKeyEvent event, millisec now) {
     }
 
     if (result == PROCESS_EVENT_WITH_KEYBOARD) {
-        if (this->pending_combos_start == 0) {
-            this->last_passthrough_event = now;
-        }
         this->keyboard->handle_key_event(event, now);
     }
 
@@ -69,6 +66,7 @@ bool CombosHandler::start_pending_combo_processing(ChangedKeyEvent event, millis
     // to start combo processing. This is to prevent accidental combo firing
     // when typing
     if (this->last_passthrough_event + COMBO_START_THRESHOLD_MS > now) {
+        this->last_passthrough_event = now;
         return PROCESS_EVENT_WITH_KEYBOARD;
     }
 
@@ -105,6 +103,8 @@ bool CombosHandler::start_pending_combo_processing(ChangedKeyEvent event, millis
 
             PRINT_INTERNAL_STATE
         }
+
+        this->last_passthrough_event = now;
 
         // No combo is active/pending; just pass the execution to Keyboard
         return PROCESS_EVENT_WITH_KEYBOARD;
@@ -254,7 +254,8 @@ bool CombosHandler::resume_pending_combo_processing_release(
             // This handles clear/key_buffer.normalize
             this->abort_pending_combos_processing();
             PRINT_INTERNAL_STATE
-            return SKIP_KEYBOARD_PROCESSING;
+            // Process the release key event with Keyboard
+            return PROCESS_EVENT_WITH_KEYBOARD;
         }
     }
 
