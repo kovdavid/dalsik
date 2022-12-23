@@ -23,10 +23,20 @@
 
 const KeyCoords combo1[] PROGMEM = { { 1, 2 }, { 1, 3 } };
 const KeyCoords combo2[] PROGMEM = { { 1, 3 }, { 1, 4 } };
+const KeyCoords combo3[] PROGMEM = { { 1, 2 }, { 1, 3 }, { 1, 4 } };
+
+const KeyCoords combo4[] PROGMEM = { { 1, 7 }, { 1, 8 } };
+const KeyCoords combo5[] PROGMEM = { { 1, 8 }, { 1, 9 } };
+const KeyCoords combo6[] PROGMEM = { { 1, 7 }, { 1, 8 }, { 1, 9 } };
 
 ComboState combos[] = COMBOS({
-    COMBO(combo1, OSM_CTRL),
-    COMBO(combo2, OSM_GUI),
+    COMBO(combo1, OSM(MOD_LSHIFT)),
+    COMBO(combo2, OSM(MOD_LGUI)),
+    COMBO(combo3, OSM(MOD_LSHIFT | MOD_LGUI)),
+
+    COMBO(combo4, OSM(MOD_LCTRL)),
+    COMBO(combo5, OSM(MOD_LALT)),
+    COMBO(combo6, OSM(MOD_LCTRL | MOD_LALT)),
 });
 
 const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] PROGMEM = KEYMAP({
