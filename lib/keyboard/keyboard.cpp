@@ -115,7 +115,7 @@ void Keyboard::set_layer(uint8_t layer) {
     }
 
 #ifdef REPORT_LAYER_CHANGE
-    Serial.print("LAYER_CHANGE:");
+    Serial.print("L:");
     Serial.print(layer, HEX);
     Serial.print("\n");
 #endif
@@ -494,7 +494,7 @@ inline void Keyboard::send_hid_report() {
     if (memcmp(base, last_base, base_size)) {
 #ifdef REPORT_MODIFIER_CHANGE
         if (base->modifiers != last_base->modifiers) {
-            Serial.print("MODIFIER_CHANGE:");
+            Serial.print("M:");
             Serial.print(this->current_hid_reports.base.modifiers, HEX);
             Serial.print("\n");
         }
