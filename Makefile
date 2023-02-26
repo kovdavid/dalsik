@@ -2,6 +2,8 @@ DEVICE=$(shell ls /dev/ttyACM*)
 
 clean_verify: clean verify
 
+clean_upload: clean verify upload clean
+
 verify:
 	make -C src
 
