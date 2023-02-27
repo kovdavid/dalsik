@@ -1,10 +1,14 @@
 DEVICE=$(shell ls /dev/ttyACM*)
+CHECKSUM_FILE := "lib/dalsik/dalsik_checksum.h"
 
 clean_verify: clean verify
 
 clean_upload: clean verify upload clean
 
-verify:
+$(CHECKSUM_FILE):
+	./utils/checksum.sh > $@
+
+verify: $(CHECKSUM_FILE)
 	make -C src
 
 upload:
@@ -32,4 +36,4 @@ test:
 ctags:
 	ctags -f tags -R --extras=+q --languages=C,C++ .
 
-.PHONY: test
+.PHONY: test $(CHECKSUM_FILE)
