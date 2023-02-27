@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "dalsik.h"
 #include "dalsik_eeprom.h"
+#include "dalsik_checksum.h"
 #include "serial_command.h"
 #include "keymap.h"
 
@@ -16,6 +17,7 @@ static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 #define CMD_GET_FULL_KEYMAP     0x0E
 #define CMD_GET_KEYBOARD_SIDE   0x0F
 #define CMD_SET_KEYBOARD_SIDE   0x10
+#define CMD_GET_CHECKSUM        0x11
 
 // +1 for the command type
 // +5 is the max size of arguments (for SET_KEY)
@@ -139,6 +141,9 @@ uint8_t execute_command() {
             return 0;
         }
         return 9;
+    } else if (buffer[0] == CMD_GET_CHECKSUM) {
+        Serial.println(DALSIK_CHECKSUM);
+        return 0;
     }
 
     return 1;

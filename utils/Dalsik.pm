@@ -161,7 +161,7 @@ sub get_cmd {
         return "DALSIK-\x0F".join("", ("\x00")x5);
     } elsif ($cmd eq 'SET_KEYBOARD_SIDE') {
         return "DALSIK-\x10".$args[0]."\x00\x00\x00\x00";
-    } elsif ($cmd eq 'GET_LAYER_INDEX') {
+    } elsif ($cmd eq 'GET_CHECKSUM') {
         return "DALSIK-\x11".join("", ("\x00")x5);
     }
 }
