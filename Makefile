@@ -6,7 +6,13 @@ clean_verify: clean verify
 clean_upload: clean verify upload clean
 
 $(CHECKSUM_FILE):
-	./utils/checksum.sh > $@
+	./utils/checksum.sh --header > $@
+
+verify_checksum:
+	@echo -n "Calculated checksum: "
+	@./utils/checksum.sh
+	@echo -n "Received checksum: "
+	@./utils/cmd_get_checksum.pl
 
 verify: $(CHECKSUM_FILE)
 	make -C src

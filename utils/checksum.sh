@@ -12,6 +12,10 @@ FINAL_CHECKSUM=$(echo -e "$SOURCE_CHECKSUMS\n$KEYMAP_CHECKSUM" | sha256sum)
 
 SHORT_CHECKSUM=${FINAL_CHECKSUM:0:7}
 
-echo "#pragma once"
-echo ""
-echo "#define DALSIK_CHECKSUM \"$SHORT_CHECKSUM\""
+if [ "$1" == "--header" ] ; then
+    echo "#pragma once"
+    echo ""
+    echo "#define DALSIK_CHECKSUM \"$SHORT_CHECKSUM\""
+else
+    echo "$SHORT_CHECKSUM"
+fi
