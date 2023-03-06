@@ -13,6 +13,10 @@ PressedKeys get_keyboard_pressed_keys(Keyboard k) {
     return k.pressed_keys;
 }
 
+bool get_caps_word_enabled(Keyboard k) {
+    return k.caps_word_enabled;
+}
+
 CombosKeyBuffer get_combos_key_buffer(CombosHandler c) {
     return c.key_buffer;
 }
@@ -59,6 +63,8 @@ KeyCoords normal_KC_A = { 1, 1 };
 KeyCoords normal_KC_B = { 1, 2 };
 KeyCoords dual_ctrl_KC_C = { 1, 3 };
 KeyCoords dual_shift_KC_D = { 1, 4 };
+KeyCoords normal_KC_1 = { 2, 3 };
+KeyCoords normal_KC_SPACE = { 2, 4 };
 
 KeyCoords dual_layer_1 = { 1, 7 };
 KeyCoords dual_layer_2 = { 2, 0 };
@@ -68,6 +74,8 @@ KeyCoords one_shot_ctrl = { 1, 9 };
 KeyCoords layer_hold_or_toggle = { 1, 10 };
 
 KeyCoords layer_press_1 = { 1, 11 };
+
+KeyCoords caps_word = { 2, 2 };
 
 // Simple press test with short delay between events
 void test_normal_key_1(void) {
@@ -1393,6 +1401,120 @@ void test_combo_start_threshold(void) {
     TEST_CHECK(ckb.count == 0);
 }
 
+// Test caps_word happy path. Pressing A/B should add the caps_word_modifier.
+// Pressing 1 should keep caps_word on but without adding caps_word_modifier.
+void test_caps_word_1(void) {
+    Keyboard keyboard;
+    CombosHandler combos_handler(&keyboard);
+
+    millisec now = 10000;
+
+    // Toggle caps_word
+    keyboard.handle_key_event({ P, caps_word }, now++);
+    HID_SIZE_CHECK(0);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == true);
+
+    keyboard.handle_key_event({ R, caps_word }, now++);
+    HID_SIZE_CHECK(0);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == true);
+
+    // Press A
+    combos_handler.handle_key_event({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == true);
+
+    combos_handler.handle_key_event({ R, normal_KC_A }, now++);
+    HID_SIZE_CHECK(2);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == true);
+
+    // Press B
+    combos_handler.handle_key_event({ P, normal_KC_B }, now++);
+    HID_SIZE_CHECK(3);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == true);
+
+    combos_handler.handle_key_event({ R, normal_KC_B }, now++);
+    HID_SIZE_CHECK(4);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == true);
+
+    // Press 1
+    combos_handler.handle_key_event({ P, normal_KC_1 }, now++);
+    HID_SIZE_CHECK(5);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == true);
+
+    combos_handler.handle_key_event({ R, normal_KC_1 }, now++);
+    HID_SIZE_CHECK(6);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == true);
+
+    // Toggle caps_word
+    keyboard.handle_key_event({ P, caps_word }, now++);
+    HID_SIZE_CHECK(6);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == false);
+
+    keyboard.handle_key_event({ R, caps_word }, now++);
+    HID_SIZE_CHECK(6);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == false);
+
+    BREP_COMP(0, { 0x02, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(2, { 0x02, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(4, { 0x00, 0x00, KC_1, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// Pressing SPACE should turn off caps_word. No caps_word_modifier is sent at all.
+void test_caps_word_2(void) {
+    Keyboard keyboard;
+    CombosHandler combos_handler(&keyboard);
+
+    millisec now = 10000;
+
+    // Toggle caps_word
+    keyboard.handle_key_event({ P, caps_word }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_key_event({ R, caps_word }, now++);
+    HID_SIZE_CHECK(0);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == true);
+
+    // Press Space
+    combos_handler.handle_key_event({ P, normal_KC_SPACE }, now++);
+    HID_SIZE_CHECK(1);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == false);
+
+    combos_handler.handle_key_event({ R, normal_KC_SPACE }, now++);
+    HID_SIZE_CHECK(2);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_SPC, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+// Automatically turn off caps_word after timeout
+void test_caps_word_3(void) {
+    Keyboard keyboard;
+    CombosHandler combos_handler(&keyboard);
+
+    millisec now = 10000;
+
+    // Toggle caps_word
+    keyboard.handle_key_event({ P, caps_word }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_key_event({ R, caps_word }, now++);
+    HID_SIZE_CHECK(0);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == true);
+
+    now += CAPS_WORD_TIMEOUT - 2;
+    keyboard.handle_key_event({ T }, now);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == true);
+
+    now += 1;
+    keyboard.handle_key_event({ T }, now);
+    TEST_CHECK(get_caps_word_enabled(keyboard) == false);
+
+    HID_SIZE_CHECK(0);
+}
+
 TEST_LIST = {
     { "test_normal_key_1", test_normal_key_1 },
     { "test_normal_key_2", test_normal_key_2 },
@@ -1437,5 +1559,8 @@ TEST_LIST = {
     { "test_combo_stuck_key1", test_combo_stuck_key1 },
     { "test_combo_stuck_key2", test_combo_stuck_key2 },
     { "test_combo_start_threshold", test_combo_start_threshold },
+    { "test_caps_word_1", test_caps_word_1 },
+    { "test_caps_word_2", test_caps_word_2 },
+    { "test_caps_word_3", test_caps_word_3 },
     { NULL, NULL }
 };

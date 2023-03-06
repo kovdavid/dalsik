@@ -19,6 +19,8 @@ Keyboard::Keyboard() {
     this->last_hid_reports = HIDReports {};
     this->key_press_counter = 0;
     this->one_shot_modifiers = 0x00;
+    this->caps_word_enabled = false;
+    this->caps_word_apply_modifier = false;
     this->pressed_keys = PressedKeys();
 
     memset(this->layer_history, 0, sizeof(this->layer_history));
@@ -36,6 +38,14 @@ void Keyboard::handle_key_event(ChangedKeyEvent event, millisec now) {
 }
 
 inline void Keyboard::handle_timeout(millisec now) {
+#ifdef CAPS_WORD_TIMEOUT
+    if (this->caps_word_enabled && this->pressed_keys.is_empty()) {
+        if (now - this->pressed_keys.last_press > CAPS_WORD_TIMEOUT) {
+            this->caps_word_turn_off();
+        }
+    }
+#endif
+
     if (this->pressed_keys.is_empty()) {
         return; // No key is pressed
     }
@@ -206,6 +216,8 @@ void Keyboard::press(PressedKey *pk) {
             this->press_system_key(key_info);
         } else if (key_info.is_multimedia_key()) {
             this->press_multimedia_key(key_info);
+        } else if (key_info.type == KEY_TOGGLE_CAPS_WORD) {
+            this->press_toggle_caps_word();
         }
     }
 }
@@ -234,6 +246,7 @@ void Keyboard::release(PressedKey *pk, millisec now) {
             this->release_system_key(key_info);
         } else if (key_info.is_multimedia_key()) {
             this->release_multimedia_key(key_info);
+        } else if (key_info.type == KEY_TOGGLE_CAPS_WORD) {
         }
     }
 }
@@ -272,6 +285,10 @@ inline void Keyboard::run_press_hook(uint8_t key_index) {
 inline void Keyboard::press_normal_key(KeyInfo key_info) {
     if (key_info.mod) {
         BIT_SET(this->current_hid_reports.base.modifiers, key_info.mod);
+    }
+
+    if (this->caps_word_enabled) {
+        this->caps_word_check(key_info);
     }
 
     if (key_info.key) {
@@ -346,6 +363,8 @@ inline void Keyboard::press_toggle_layer_key(uint8_t layer) {
 // }}}
 // System key {{{
 inline void Keyboard::press_system_key(KeyInfo key_info) {
+    this->caps_word_turn_off();
+
     this->current_hid_reports.system.key = key_info.key;
 }
 
@@ -357,6 +376,8 @@ inline void Keyboard::release_system_key(KeyInfo key_info) {
 // }}}
 // Multimedia key {{{
 inline void Keyboard::press_multimedia_key(KeyInfo key_info) {
+    this->caps_word_turn_off();
+
     this->current_hid_reports.multimedia.key = key_info.key;
     if (key_info.type == KEY_MULTIMEDIA_2) {
         this->current_hid_reports.multimedia.prefix = 0x02;
@@ -485,6 +506,65 @@ inline void Keyboard::release_layer_toggle_or_hold(PressedKey *pk) {
 }
 // }}}
 
+// Caps Word {{{
+inline void Keyboard::press_toggle_caps_word() {
+    this->caps_word_toggle();
+}
+
+inline void Keyboard::caps_word_turn_off() {
+    if (this->caps_word_enabled) {
+        this->caps_word_toggle();
+    }
+}
+
+inline void Keyboard::caps_word_toggle() {
+    this->caps_word_enabled = !this->caps_word_enabled;
+#ifdef REPORT_CAPS_WORD_CHANGE
+    Serial.print("CW:");
+    Serial.print(this->caps_word_enabled, HEX);
+    Serial.print("\n");
+#endif
+}
+
+inline void Keyboard::caps_word_check(KeyInfo key_info) {
+    uint8_t key = key_info.key;
+    uint8_t mod = key_info.mod;
+
+    uint8_t mod_without_shift = BIT_CLEAR(mod, MOD_RAW_LSHIFT | MOD_RAW_RSHIFT);
+
+    if (key == KC_NO) {
+        // Pressing LSHIFT/RSHIFT keeps caps_word on. If we press any other
+        // mod, we turn it off.
+        if (mod_without_shift) {
+            this->caps_word_turn_off();
+        }
+    } else if ((KC_A <= key && key <= KC_Z) || key == KC_MINUS) {
+        // Keys A-Z + `-` keeps caps_word on (if pressed without mods other
+        // than LSHIFT/RSHIFT) and we apply LSHIFT to them (`-` becomes `_`)
+        if (mod_without_shift) {
+            this->caps_word_turn_off();
+        } else {
+            this->caps_word_apply_modifier = true;
+        }
+    } else if (
+        (KC_1 <= key && key <= KC_0)
+        || key == KC_BACKSPACE
+        || key == KC_DELETE
+    ) {
+        // Keys 1-9,0 + BACKSPACE + DELETE keeps caps_word on (if pressed
+        // without other mods - e.g. `LSHIFT(KC_1)` turns it off), but we don'to
+        // apply LSHIFT to them - we want to keep numbers as numbers.
+        if (mod) {
+            this->caps_word_turn_off();
+        } else {
+            this->caps_word_apply_modifier = false;
+        }
+    } else {
+        this->caps_word_turn_off();
+    }
+}
+// }}}
+
 inline void Keyboard::send_hid_report() {
     // Base
     size_t base_size = sizeof(BaseHIDReport);
@@ -499,8 +579,20 @@ inline void Keyboard::send_hid_report() {
             Serial.print("\n");
         }
 #endif
+
+        if (this->caps_word_apply_modifier) {
+            BIT_SET(base->modifiers, MOD_RAW_LSHIFT);
+        }
+
         this->print_base_report_to_serial();
         DalsikHid::send_report(BASE_KEYBOARD_REPORT_ID, base, base_size);
+
+        if (this->caps_word_apply_modifier) {
+            this->caps_word_apply_modifier = false;
+            BIT_CLEAR(base->modifiers, MOD_RAW_LSHIFT);
+            BIT_SET(base->modifiers, this->one_shot_modifiers);
+        }
+
         *last_base = *base;
     }
 
@@ -563,12 +655,20 @@ void Keyboard::print_internal_state(millisec now) {
     Serial.print("=========================PRESSED_KEYS\n");
     Serial.print("  -count:");
     Serial.print(this->pressed_keys.count);
+    Serial.print(" last_press:");
+    Serial.print(this->pressed_keys.last_press);
+    Serial.print(" now-last_press:");
+    Serial.print(now - this->pressed_keys.last_press);
     Serial.print(" this->key_press_counter:");
     Serial.print(this->key_press_counter);
     Serial.print(" layer:");
     Serial.print(this->layer_index);
     Serial.print(" toggled_layer:");
     Serial.print(this->toggled_layer_index);
+    Serial.print("\n  -caps_word_enabled:");
+    Serial.print(this->caps_word_enabled);
+    Serial.print(" caps_word_apply_modifier:");
+    Serial.print(this->caps_word_apply_modifier);
     Serial.print("\n");
     for (uint8_t i = 0; i < this->pressed_keys.count; i++) {
         PressedKey* pk = this->pressed_keys.get(i);

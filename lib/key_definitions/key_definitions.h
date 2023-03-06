@@ -18,6 +18,7 @@ enum key_types {
     KEY_DUAL_LAYER,
     KEY_SOLO_DUAL_LAYER,
     KEY_TIMED_DUAL_LAYER,
+    KEY_TOGGLE_CAPS_WORD,
     KEY_TRANSPARENT = 0xFF,
 };
 
@@ -191,14 +192,24 @@ enum hid_keyboard_keys {
 };
 
 #define MOD_CLEAR  0x00
-#define MOD_LCTRL  ((1 << 0) << 8)
-#define MOD_LSHIFT ((1 << 1) << 8)
-#define MOD_LALT   ((1 << 2) << 8)
-#define MOD_LGUI   ((1 << 3) << 8)
-#define MOD_RCTRL  ((1 << 4) << 8)
-#define MOD_RSHIFT ((1 << 5) << 8)
-#define MOD_RALT   ((1 << 6) << 8)
-#define MOD_RGUI   ((1 << 7) << 8)
+
+#define MOD_RAW_LCTRL  (1 << 0)
+#define MOD_RAW_LSHIFT (1 << 1)
+#define MOD_RAW_LALT   (1 << 2)
+#define MOD_RAW_LGUI   (1 << 3)
+#define MOD_RAW_RCTRL  (1 << 4)
+#define MOD_RAW_RSHIFT (1 << 5)
+#define MOD_RAW_RALT   (1 << 6)
+#define MOD_RAW_RGUI   (1 << 7)
+
+#define MOD_LCTRL  (MOD_RAW_LCTRL  << 8)
+#define MOD_LSHIFT (MOD_RAW_LSHIFT << 8)
+#define MOD_LALT   (MOD_RAW_LALT   << 8)
+#define MOD_LGUI   (MOD_RAW_LGUI   << 8)
+#define MOD_RCTRL  (MOD_RAW_RCTRL  << 8)
+#define MOD_RSHIFT (MOD_RAW_RSHIFT << 8)
+#define MOD_RALT   (MOD_RAW_RALT   << 8)
+#define MOD_RGUI   (MOD_RAW_RGUI   << 8)
 
 #define KEY_TYPE(t) (((uint32_t)t) << 24)
 #define LAYER(l) (((uint32_t)l) << 16)
@@ -235,6 +246,8 @@ enum hid_keyboard_keys {
 #define DL(layer, key)  ( KEY_TYPE(KEY_DUAL_LAYER)       | LAYER(layer) | key )
 #define DSL(layer, key) ( KEY_TYPE(KEY_SOLO_DUAL_LAYER)  | LAYER(layer) | key )
 #define DTL(layer, key) ( KEY_TYPE(KEY_TIMED_DUAL_LAYER) | LAYER(layer) | key )
+
+#define CAPS_WORD       ( KEY_TYPE(KEY_TOGGLE_CAPS_WORD) )
 
 #define XXXXXXX         ( KEY_TYPE(KEY_NORMAL) | KC_NO )
 #define KEY_NO_ACTION   XXXXXXX

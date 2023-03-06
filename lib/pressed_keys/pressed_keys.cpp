@@ -2,6 +2,7 @@
 
 PressedKeys::PressedKeys() {
     this->count = 0;
+    this->last_press = 0;
     for (uint8_t i = 0; i < PRESSED_KEY_BUFFER; i++) {
         this->keys[i] = PressedKey {};
     }
@@ -11,6 +12,8 @@ PressedKey* PressedKeys::add(KeyInfo key_info, millisec now, uint8_t key_press_c
     if (this->count >= PRESSED_KEY_BUFFER) {
         return NULL;
     }
+
+    this->last_press = now;
 
     uint8_t key_index = this->count++;
 

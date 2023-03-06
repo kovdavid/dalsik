@@ -33,6 +33,8 @@ class Keyboard {
         uint8_t layer_history[LAYER_HISTORY_CAPACITY];
 
         uint8_t one_shot_modifiers;
+        bool caps_word_enabled;
+        bool caps_word_apply_modifier;
         HIDReports current_hid_reports;
         HIDReports last_hid_reports;
 
@@ -87,6 +89,12 @@ class Keyboard {
 
         inline void press_layer_toggle_or_hold(PressedKey *pk);
         inline void release_layer_toggle_or_hold(PressedKey *pk);
+
+        inline void press_toggle_caps_word();
+
+        inline void caps_word_toggle();
+        inline void caps_word_turn_off();
+        inline void caps_word_check(KeyInfo key_info);
 
         inline void send_hid_report();
 

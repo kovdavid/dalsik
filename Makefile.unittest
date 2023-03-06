@@ -17,6 +17,7 @@ CFLAGS += -fno-threadsafe-statics
 CFLAGS += -fpermissive
 CFLAGS += -pedantic
 CFLAGS += -D COMBOS_ENABLED
+CFLAGS += -D CAPS_WORD_TIMEOUT=1000
 CFLAGS += -include test/mocks/misc.h
 
 HEADERS = $(dir $(wildcard test/*/ test/*/*/ lib/*/))

@@ -23,6 +23,7 @@ typedef struct {
 class PressedKeys {
     public:
         uint8_t count;
+        millisec last_press;
         PressedKey keys[PRESSED_KEY_BUFFER];
 
         PressedKeys();
