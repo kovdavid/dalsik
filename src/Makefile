@@ -72,6 +72,12 @@ ifdef DALSIK_COMBOS_ENABLED
 CXXFLAGS         += -D COMBOS_ENABLED
 endif
 
+ifdef DALSIK_CHECKSUM
+CXXFLAGS         += -D DALSIK_CHECKSUM='"$(DALSIK_CHECKSUM)"'
+else
+CXXFLAGS         += -D DALSIK_CHECKSUM='"UNKNOWN"'
+endif
+
 LDFLAGS          += -fdiagnostics-color
 
 ### OBJDIR

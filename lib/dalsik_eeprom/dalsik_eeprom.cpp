@@ -23,12 +23,11 @@ static void update(int address, uint8_t value) {
     }
 }
 
-// The keyboard side can be hardcoded in code or it can be set dynamically
-// into the EEPROM.
-// See dalsik.h
+// The keyboard side can be set during flashing. See dalsik.h
 uint8_t EEPROM::get_keyboard_side() {
 #ifdef KEYBOARD_SIDE
-    return KEYBOARD_SIDE
+    set_keyboard_side(KEYBOARD_SIDE);
+    return KEYBOARD_SIDE;
 #else
     return read(KEYBOARD_SIDE_EEPROM_ADDRESS);
 #endif

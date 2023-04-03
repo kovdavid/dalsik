@@ -5,17 +5,11 @@ if [ ! -f "$DALSIK_KEYMAP" ] ; then
     exit 1
 fi
 
-SOURCE_CHECKSUMS=$(find lib/ src/ \( -name '*.h' -or -name '*.cpp' \) -exec sha256sum {} \; | sort -k2) | grep -v dalsik_checksum.h
+SOURCE_CHECKSUMS=$(find lib/ src/ \( -name '*.h' -or -name '*.cpp' \) -exec sha256sum {} \; | sort -k2)
 KEYMAP_CHECKSUM=$(sha256sum $DALSIK_KEYMAP | awk '{ print $1 }')
 
 FINAL_CHECKSUM=$(echo -e "$SOURCE_CHECKSUMS\n$KEYMAP_CHECKSUM" | sha256sum)
 
 SHORT_CHECKSUM=${FINAL_CHECKSUM:0:7}
 
-if [ "$1" == "--header" ] ; then
-    echo "#pragma once"
-    echo ""
-    echo "#define DALSIK_CHECKSUM \"$SHORT_CHECKSUM\""
-else
-    echo "$SHORT_CHECKSUM"
-fi
+echo "$SHORT_CHECKSUM"
