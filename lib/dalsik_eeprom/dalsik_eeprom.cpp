@@ -2,11 +2,7 @@
 #include "dalsik.h"
 #include "dalsik_eeprom.h"
 
-static uint16_t length() {
-    return E2END + 1;
-}
-
-#define KEYBOARD_SIDE_EEPROM_ADDRESS length() - 1
+#define KEYBOARD_SIDE_ADDRESS 0
 
 static uint8_t read(int address) {
     return eeprom_read_byte((uint8_t*)(address));
@@ -29,10 +25,10 @@ uint8_t EEPROM::get_keyboard_side() {
     set_keyboard_side(KEYBOARD_SIDE);
     return KEYBOARD_SIDE;
 #else
-    return read(KEYBOARD_SIDE_EEPROM_ADDRESS);
+    return read(KEYBOARD_SIDE_ADDRESS);
 #endif
 }
 
 void EEPROM::set_keyboard_side(uint8_t side) {
-    update(KEYBOARD_SIDE_EEPROM_ADDRESS, side);
+    update(KEYBOARD_SIDE_ADDRESS, side);
 }

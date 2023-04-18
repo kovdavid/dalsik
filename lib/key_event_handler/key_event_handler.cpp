@@ -73,20 +73,11 @@ ChangedKeyEvent KeyEventHandler::decode_slave_event(uint8_t data) {
     }
 }
 
-void KeyEventHandler::handle_received_data_from_slave(uint8_t data, millisec now) {
-    ChangedKeyEvent event = this->decode_slave_event(data);
-    this->process_slave_changed_key(event, now);
-}
-
-void KeyEventHandler::handle_key_event_from_master(ChangedKeyEvent event, millisec now) {
-    this->process_master_changed_key(event, now);
-}
-
 // The right side PCB of the Let's Split is reversed, so if it sends col 0, it is actually col 5.
 // Also, the keyboard is represented in EEPROM as a whole, so the reported col must be incremented
 // by ONE_SIDE_COL_PIN_COUNT (col 4 becomes col 10, as there are 6 columns per side)
 // The right side sends columns 0-5 and thus we offset it to 6-11
-void KeyEventHandler::process_master_changed_key(ChangedKeyEvent event, millisec now) {
+void KeyEventHandler::handle_key_event_from_master(ChangedKeyEvent event, millisec now) {
     if (this->keyboard_side == KEYBOARD_SIDE_RIGHT) {
         event.coords.col = 2*ONE_SIDE_COL_PIN_COUNT - event.coords.col - 1;
     }
@@ -94,7 +85,8 @@ void KeyEventHandler::process_master_changed_key(ChangedKeyEvent event, millisec
 }
 
 // KeyMap is used only on the master side; The slave is the right side if the master is the left
-void KeyEventHandler::process_slave_changed_key(ChangedKeyEvent event, millisec now) {
+void KeyEventHandler::handle_key_event_from_slave(uint8_t data, millisec now) {
+    ChangedKeyEvent event = this->decode_slave_event(data);
     if (this->keyboard_side == KEYBOARD_SIDE_LEFT) {
         event.coords.col = 2*ONE_SIDE_COL_PIN_COUNT - event.coords.col - 1;
     }

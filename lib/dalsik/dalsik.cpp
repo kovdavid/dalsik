@@ -66,7 +66,7 @@ void Dalsik::loop() {
 
         while (DalsikSerial::has_data()) {
             uint8_t slave_data = DalsikSerial::get_next_elem();
-            key_event_handler.handle_received_data_from_slave(slave_data, now);
+            key_event_handler.handle_key_event_from_slave(slave_data, now);
         }
     }
 
