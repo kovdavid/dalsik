@@ -15,9 +15,11 @@ enum key_types {
     KEY_DUAL_MOD,
     KEY_SOLO_DUAL_MOD,
     KEY_TIMED_DUAL_MOD,
+    KEY_DUAL_DTH_MOD, // DTH - Double-tap-hold
     KEY_DUAL_LAYER,
     KEY_SOLO_DUAL_LAYER,
     KEY_TIMED_DUAL_LAYER,
+    KEY_DUAL_DTH_LAYER, // DTH - Double-tap-hold
     KEY_TOGGLE_CAPS_WORD,
     KEY_TRANSPARENT = 0xFF,
 };
@@ -242,10 +244,12 @@ enum hid_keyboard_keys {
 #define D(mod, key)     ( KEY_TYPE(KEY_DUAL_MOD)         | mod | key )
 #define DS(mod, key)    ( KEY_TYPE(KEY_SOLO_DUAL_MOD)    | mod | key )
 #define DT(mod, key)    ( KEY_TYPE(KEY_TIMED_DUAL_MOD)   | mod | key )
+#define DTHM(mod, key)  ( KEY_TYPE(KEY_DUAL_DTH_MOD)     | mod | key )
 
-#define DL(layer, key)  ( KEY_TYPE(KEY_DUAL_LAYER)       | LAYER(layer) | key )
-#define DSL(layer, key) ( KEY_TYPE(KEY_SOLO_DUAL_LAYER)  | LAYER(layer) | key )
-#define DTL(layer, key) ( KEY_TYPE(KEY_TIMED_DUAL_LAYER) | LAYER(layer) | key )
+#define DL(layer, key)   ( KEY_TYPE(KEY_DUAL_LAYER)       | LAYER(layer) | key )
+#define DSL(layer, key)  ( KEY_TYPE(KEY_SOLO_DUAL_LAYER)  | LAYER(layer) | key )
+#define DTL(layer, key)  ( KEY_TYPE(KEY_TIMED_DUAL_LAYER) | LAYER(layer) | key )
+#define DTHL(layer, key) ( KEY_TYPE(KEY_DUAL_DTH_LAYER)   | LAYER(layer) | key )
 
 #define CAPS_WORD       ( KEY_TYPE(KEY_TOGGLE_CAPS_WORD) )
 

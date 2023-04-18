@@ -22,6 +22,7 @@ Keyboard::Keyboard() {
     this->caps_word_enabled = false;
     this->caps_word_apply_modifier = false;
     this->pressed_keys = PressedKeys();
+    this->last_key_event = KeyEvent {};
 
     memset(this->layer_history, 0, sizeof(this->layer_history));
 }
@@ -171,7 +172,8 @@ inline void Keyboard::handle_key_press(KeyInfo key_info, millisec now) {
         this->run_press_hooks(pk->key_index);
     }
 
-    this->press(pk);
+    this->press(pk, now);
+    this->last_key_event = KeyEvent { pk->key_info, now };
     this->send_hid_report();
 
     PRINT_INTERNAL_STATE
@@ -182,21 +184,21 @@ inline void Keyboard::handle_key_release(KeyCoords coords, millisec now) {
     if (pk == NULL) return;
 
     this->release(pk, now);
+    this->last_key_event = KeyEvent { pk->key_info, now };
+    this->send_hid_report();
 
     this->pressed_keys.remove(pk);
-
-    this->send_hid_report();
 
     PRINT_INTERNAL_STATE
 }
 
-void Keyboard::press(PressedKey *pk) {
+void Keyboard::press(PressedKey *pk, millisec now) {
     KeyInfo key_info = pk->key_info;
 
     if (key_info.is_any_dual_mod_key()) {
-        this->press_dual_mod_key(pk);
+        this->press_dual_mod_key(pk, now);
     } else if (key_info.is_any_dual_layer_key()) {
-        this->press_dual_layer_key(pk);
+        this->press_dual_layer_key(pk, now);
     } else if (key_info.type == KEY_ONE_SHOT_MODIFIER) {
         this->press_one_shot_modifier_key(pk);
     } else if (key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
@@ -267,10 +269,10 @@ inline void Keyboard::run_press_hook(uint8_t key_index) {
     }
 
     if (key_info.is_any_dual_mod_key()) {
-        this->press_dual_mod_key(pk);
+        this->press_dual_mod_key(pk, pk->timestamp);
         this->send_hid_report();
     } else if (key_info.is_any_dual_layer_key()) {
-        this->press_dual_layer_key(pk);
+        this->press_dual_layer_key(pk, pk->timestamp);
         this->reload_keys_on_new_layer(key_index);
     } else if (pk->key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
         this->press_layer_toggle_or_hold(pk);
@@ -406,12 +408,14 @@ inline void Keyboard::release_multimedia_key(KeyInfo key_info) {
 }
 // }}}
 // Dual key {{{
-inline void Keyboard::press_dual_mod_key(PressedKey *pk) {
+inline void Keyboard::press_dual_mod_key(PressedKey *pk, millisec now) {
     if (pk->state == STATE_NOT_PROCESSED) {
         if (pk->key_index > 0 && pk->key_info.is_any_solo_dual_key()) {
             // Not the first key
             this->press_normal_key(pk->key_info.use_key());
             pk->state = STATE_ACTIVE_KEY;
+        } else if (pk->key_info.type == KEY_DUAL_DTH_MOD) {
+            this->press_dual_dth_key(pk, now);
         } else {
             pk->state = STATE_PENDING;
         }
@@ -447,12 +451,14 @@ inline void Keyboard::release_dual_mod_key(PressedKey *pk) {
 // }}}
 
 // Dual layer key {{{
-inline void Keyboard::press_dual_layer_key(PressedKey *pk) {
+inline void Keyboard::press_dual_layer_key(PressedKey *pk, millisec now) {
     if (pk->state == STATE_NOT_PROCESSED) {
         if (pk->key_index > 0 && pk->key_info.is_any_solo_dual_key()) {
             // Not the first key
             this->press_normal_key(pk->key_info.use_key());
             pk->state = STATE_ACTIVE_KEY;
+        } else if (pk->key_info.type == KEY_DUAL_DTH_LAYER) {
+            this->press_dual_dth_key(pk, now);
         } else {
             pk->state = STATE_PENDING;
         }
@@ -564,6 +570,20 @@ inline void Keyboard::caps_word_check(KeyInfo key_info) {
     }
 }
 // }}}
+
+inline void Keyboard::press_dual_dth_key(PressedKey *pk, millisec now) {
+    // If the last key event was the same as the current one within the threshold,
+    // we immediately trigger the normal key.
+    if (
+        this->last_key_event.key_info.equals(pk->key_info)
+        && now - this->last_key_event.timestamp < DUAL_TAP_HOLD_THRESHOLD_MS
+    ) {
+        this->press_normal_key(pk->key_info.use_key());
+        pk->state = STATE_ACTIVE_KEY;
+    } else {
+        pk->state = STATE_PENDING;
+    }
+}
 
 inline void Keyboard::send_hid_report() {
     // Base

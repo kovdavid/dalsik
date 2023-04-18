@@ -24,6 +24,11 @@ const uint32_t LED_LAYER_COLORS[MAX_LAYER_COUNT] = {
 };
 #endif
 
+typedef struct {
+    KeyInfo key_info;
+    millisec timestamp;
+} KeyEvent;
+
 class Keyboard {
     TEST_KEYBOARD_FRIENDS
     private:
@@ -45,6 +50,7 @@ class Keyboard {
         uint8_t key_press_counter;
 
         PressedKeys pressed_keys;
+        KeyEvent last_key_event;
 
         // Functions
 
@@ -56,7 +62,7 @@ class Keyboard {
         KeyInfo get_key(KeyCoords c);
         void reload_keys_on_new_layer(uint8_t key_index);
 
-        void press(PressedKey *pk);
+        void press(PressedKey *pk, millisec now);
         void release(PressedKey *pk, millisec now);
         inline void run_press_hooks(uint8_t event_key_index);
         inline void run_press_hook(uint8_t key_index);
@@ -78,10 +84,10 @@ class Keyboard {
         inline void press_multimedia_key(KeyInfo key_info);
         inline void release_multimedia_key(KeyInfo key_info);
 
-        inline void press_dual_mod_key(PressedKey *pk);
+        inline void press_dual_mod_key(PressedKey *pk, millisec now);
         inline void release_dual_mod_key(PressedKey *pk);
 
-        inline void press_dual_layer_key(PressedKey *pk);
+        inline void press_dual_layer_key(PressedKey *pk, millisec now);
         inline void release_dual_layer_key(PressedKey *pk);
 
         inline void press_key_with_mod(KeyInfo key_info);
@@ -91,6 +97,8 @@ class Keyboard {
         inline void release_layer_toggle_or_hold(PressedKey *pk);
 
         inline void press_toggle_caps_word();
+
+        inline void press_dual_dth_key(PressedKey *pk, millisec now);
 
         inline void caps_word_toggle();
         inline void caps_word_turn_off();

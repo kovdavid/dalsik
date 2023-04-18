@@ -34,6 +34,11 @@
 #define COMBO_ACTIVATION_TIMEOUT_MS 75
 #define COMBO_START_THRESHOLD_MS 300
 
+// If we tap then press&hold a DTH (Dual-tap-hold) key within the threshold,
+// we automatically activate the key instead of the modifier.
+// E.g. Tapping and holding a `D(SHIFT, SPACE)` key will send `SPACE` immediately on the second press
+#define DUAL_TAP_HOLD_THRESHOLD_MS 300
+
 #define COORD_UNKNOWN 255
 #define COORD_COMBO 127
 #define COORDS_INVALID KeyCoords { COORD_UNKNOWN, COORD_UNKNOWN }

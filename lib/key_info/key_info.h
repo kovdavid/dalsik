@@ -49,6 +49,15 @@ class KeyInfo {
             return KeyInfo(this->type, 0, MOD_CLEAR, this->key, this->coords);
         }
 
+        bool equals(KeyInfo other) {
+            return
+                this->type == other.type
+                && this->layer == other.layer
+                && this->mod == other.mod
+                && this->key == other.key
+                && this->coords.equals(other.coords);
+        }
+
         void print_internal_state() {
             Serial.print(">> KEY_INFO ROW:");
             Serial.print(this->coords.row);
@@ -61,7 +70,8 @@ class KeyInfo {
             Serial.print(" MOD:");
             Serial.print(this->mod);
             Serial.print(" KEY:");
-            Serial.println(this->key);
+            Serial.print(this->key);
+            Serial.print("\n");
         }
 
         uint8_t skip_layer_reload() {
@@ -75,7 +85,8 @@ class KeyInfo {
             return
                 this->type == KEY_DUAL_MOD
                 || this->type == KEY_SOLO_DUAL_MOD
-                || this->type == KEY_TIMED_DUAL_MOD;
+                || this->type == KEY_TIMED_DUAL_MOD
+                || this->type == KEY_DUAL_DTH_MOD;
         }
         uint8_t is_any_timed_dual_key() {
             return
@@ -86,7 +97,8 @@ class KeyInfo {
             return
                 this->type == KEY_DUAL_LAYER
                 || this->type == KEY_SOLO_DUAL_LAYER
-                || this->type == KEY_TIMED_DUAL_LAYER;
+                || this->type == KEY_TIMED_DUAL_LAYER
+                || this->type == KEY_DUAL_DTH_LAYER;
         }
         uint8_t is_any_dual_key() {
             return

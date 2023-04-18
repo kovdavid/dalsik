@@ -77,6 +77,8 @@ KeyCoords layer_press_1 = { 1, 11 };
 
 KeyCoords caps_word = { 2, 2 };
 
+KeyCoords dth_ctrl_j = { 2, 5 };
+
 // Simple press test with short delay between events
 void test_normal_key_1(void) {
     Keyboard keyboard;
@@ -1515,6 +1517,95 @@ void test_caps_word_3(void) {
     HID_SIZE_CHECK(0);
 }
 
+// When pressing a DTH dual_mod key after a different key, it should go to pending state
+// and not trigger any action at that moment
+void test_double_tap_hold_mod_1(void) {
+    Keyboard keyboard;
+    CombosHandler combos_handler(&keyboard);
+
+    millisec now = 10000;
+
+    keyboard.handle_key_event({ P, normal_KC_A }, now++);
+    HID_SIZE_CHECK(1);
+
+    keyboard.handle_key_event({ R, normal_KC_A }, now++);
+    HID_SIZE_CHECK(2);
+
+    keyboard.handle_key_event({ P, dth_ctrl_j }, now++);
+    HID_SIZE_CHECK(2);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+
+    PressedKeys pressed_keys = get_keyboard_pressed_keys(keyboard);
+    PressedKey* pk = pressed_keys.find(dth_ctrl_j);
+
+    if (pk) {
+        TEST_CHECK(pk->state == STATE_PENDING);
+        TEST_MSG("expected state %d, got %d", STATE_PENDING, pk->state);
+    }
+}
+
+// When pressing the DTH mod the second time, we immediately trigger KC_J
+void test_double_tap_hold_mod_2(void) {
+    Keyboard keyboard;
+    CombosHandler combos_handler(&keyboard);
+
+    millisec now = 10000;
+
+    keyboard.handle_key_event({ P, dth_ctrl_j }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_key_event({ R, dth_ctrl_j }, now++);
+    HID_SIZE_CHECK(2);
+
+    keyboard.handle_key_event({ P, dth_ctrl_j }, now++);
+    HID_SIZE_CHECK(3);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_J, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(2, { 0x00, 0x00, KC_J, 0x00, 0x00, 0x00, 0x00, 0x00 });
+
+    PressedKeys pressed_keys = get_keyboard_pressed_keys(keyboard);
+    PressedKey* pk = pressed_keys.find(dth_ctrl_j);
+
+    if (pk) {
+        TEST_CHECK(pk->state == STATE_ACTIVE_KEY);
+        TEST_MSG("expected state %d, got %d", STATE_ACTIVE_KEY, pk->state);
+    }
+}
+
+// When pressing the DTH mod the second time after the threshold, we don't immediately
+// trigger KC_J as in the previous test
+void test_double_tap_hold_mod_3(void) {
+    Keyboard keyboard;
+    CombosHandler combos_handler(&keyboard);
+
+    millisec now = 10000;
+
+    keyboard.handle_key_event({ P, dth_ctrl_j }, now++);
+    HID_SIZE_CHECK(0);
+
+    keyboard.handle_key_event({ R, dth_ctrl_j }, now++);
+    HID_SIZE_CHECK(2);
+
+    now += DUAL_TAP_HOLD_THRESHOLD_MS;
+
+    keyboard.handle_key_event({ P, dth_ctrl_j }, now++);
+    HID_SIZE_CHECK(2);
+
+    BREP_COMP(0, { 0x00, 0x00, KC_J, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    BREP_COMP(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+
+    PressedKeys pressed_keys = get_keyboard_pressed_keys(keyboard);
+    PressedKey* pk = pressed_keys.find(dth_ctrl_j);
+
+    if (pk) {
+        TEST_CHECK(pk->state == STATE_PENDING);
+        TEST_MSG("expected state %d, got %d", STATE_PENDING, pk->state);
+    }
+}
+
 TEST_LIST = {
     { "test_normal_key_1", test_normal_key_1 },
     { "test_normal_key_2", test_normal_key_2 },
@@ -1562,5 +1653,8 @@ TEST_LIST = {
     { "test_caps_word_1", test_caps_word_1 },
     { "test_caps_word_2", test_caps_word_2 },
     { "test_caps_word_3", test_caps_word_3 },
+    { "test_double_tap_hold_mod_1", test_double_tap_hold_mod_1 },
+    { "test_double_tap_hold_mod_2", test_double_tap_hold_mod_2 },
+    { "test_double_tap_hold_mod_3", test_double_tap_hold_mod_3 },
     { NULL, NULL }
 };

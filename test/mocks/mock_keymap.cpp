@@ -15,6 +15,7 @@
 #define KEY10 DL(1, KC_H)
 #define KEY11 DL(1, KC_I)
 #define KEY12 CAPS_WORD
+#define KEY13 DTHM(MOD_LCTRL, KC_J)
 
 const KeyCoords combo1[] PROGMEM = { { 3, 0 }, { 3, 7 } };
 const KeyCoords combo2[] PROGMEM = { { 3, 0 }, { 3, 1 }, { 3, 2 } };
@@ -34,7 +35,7 @@ const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] = KEYMAP({
     LAYOUT_4x12(
          KC_NO , _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
          KEY0  ,  KC_A  ,  KC_B  ,  KEY1  ,  KEY2  ,  KEY3  ,  KEY4  ,  KEY5  ,  KEY6  ,  KEY7  ,  KEY8  ,  KEY9  ,
-         KEY10 ,  KEY11 ,  KEY12 ,  KC_1  , KC_SPC , _______, _______, _______, _______, _______, _______, _______,
+         KEY10 ,  KEY11 ,  KEY12 ,  KC_1  , KC_SPC ,  KEY13 , _______, _______, _______, _______, _______, _______,
         // Combo row
           KC_Q ,   KC_W ,   KC_R , _______, _______, _______, _______, _______, _______, _______, _______, _______
     ),
