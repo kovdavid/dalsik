@@ -7,10 +7,6 @@
 #include "key_info.h"
 #include "pressed_keys.h"
 
-#ifndef TEST_KEYBOARD_FRIENDS
-#define TEST_KEYBOARD_FRIENDS
-#endif
-
 #ifdef LED_PIN
 const uint32_t LED_LAYER_COLORS[MAX_LAYER_COUNT] = {
     0x00000000, // Layer 0 - default (LED off)
@@ -30,7 +26,9 @@ typedef struct {
 } KeyEvent;
 
 class Keyboard {
+#ifdef TEST_KEYBOARD_FRIENDS
     TEST_KEYBOARD_FRIENDS
+#endif
     private:
         // State
         uint8_t layer_index;
@@ -50,7 +48,7 @@ class Keyboard {
         uint8_t key_press_counter;
 
         PressedKeys pressed_keys;
-        KeyEvent last_key_event;
+        KeyEvent last_pressed_key;
 
         // Functions
 

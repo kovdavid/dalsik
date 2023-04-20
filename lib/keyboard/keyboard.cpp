@@ -22,7 +22,7 @@ Keyboard::Keyboard() {
     this->caps_word_enabled = false;
     this->caps_word_apply_modifier = false;
     this->pressed_keys = PressedKeys();
-    this->last_key_event = KeyEvent {};
+    this->last_pressed_key = KeyEvent {};
 
     memset(this->layer_history, 0, sizeof(this->layer_history));
 }
@@ -173,7 +173,7 @@ inline void Keyboard::handle_key_press(KeyInfo key_info, millisec now) {
     }
 
     this->press(pk, now);
-    this->last_key_event = KeyEvent { pk->key_info, now };
+    this->last_pressed_key = KeyEvent { pk->key_info, now };
     this->send_hid_report();
 
     PRINT_INTERNAL_STATE
@@ -184,7 +184,6 @@ inline void Keyboard::handle_key_release(KeyCoords coords, millisec now) {
     if (pk == NULL) return;
 
     this->release(pk, now);
-    this->last_key_event = KeyEvent { pk->key_info, now };
     this->send_hid_report();
 
     this->pressed_keys.remove(pk);
@@ -575,8 +574,8 @@ inline void Keyboard::press_dual_dth_key(PressedKey *pk, millisec now) {
     // If the last key event was the same as the current one within the threshold,
     // we immediately trigger the normal key.
     if (
-        this->last_key_event.key_info.equals(pk->key_info)
-        && now - this->last_key_event.timestamp < DUAL_TAP_HOLD_THRESHOLD_MS
+        this->last_pressed_key.key_info.equals(pk->key_info)
+        && now - this->last_pressed_key.timestamp < DUAL_TAP_HOLD_THRESHOLD_MS
     ) {
         this->press_normal_key(pk->key_info.use_key());
         pk->state = STATE_ACTIVE_KEY;

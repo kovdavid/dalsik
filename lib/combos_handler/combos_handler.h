@@ -5,12 +5,10 @@
 #include "combos_key_buffer.h"
 #include "combos_buffered_key.h"
 
-#ifndef TEST_COMBOS_HANDLER_FRIENDS
-#define TEST_COMBOS_HANDLER_FRIENDS
-#endif
-
 class CombosHandler {
+#ifdef TEST_COMBOS_HANDLER_FRIENDS
     TEST_COMBOS_HANDLER_FRIENDS
+#endif
     private:
         Keyboard* keyboard;
         CombosKeyBuffer key_buffer;
