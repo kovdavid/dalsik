@@ -46,6 +46,7 @@ TEST_OBJS = \
 	  combos_handler.cpp.o \
 	  dalsik_eeprom.cpp.o \
 	  keyboard.cpp.o \
+	  key_info.cpp.o \
 	  array_utils.cpp.o \
 	  pressed_keys.cpp.o \
 	  HID.cpp.o \
