@@ -276,8 +276,6 @@ inline void Keyboard::run_press_hook(uint8_t key_index) {
     } else if (pk->key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
         this->press_layer_toggle_or_hold(pk);
         this->reload_keys_on_new_layer(key_index);
-    } else if (key_info.type == KEY_ONE_SHOT_MODIFIER) {
-        this->press_one_shot_modifier_key(pk);
     }
 }
 // }}}
