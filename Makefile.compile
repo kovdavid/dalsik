@@ -1,0 +1,201 @@
+.DEFAULT_GOAL := verify
+
+PROJECT_DIR ?= $(realpath .)
+
+ifndef DALSIK_KEYMAP
+$(error DALSIK_KEYMAP environment variable is not set)
+endif
+
+# Variables
+ARDUINO_VARIANT ?= leonardo
+MCU ?= atmega32u4
+F_CPU ?= 16000000L
+DEVICE_PATH ?= /dev/ttyACM*
+USB_VID = 0x2341 # Arduino
+USB_PID = 0x8036 # Leonardo
+
+TOOL_DIR     ?= /usr/bin
+CC_NAME      ?= avr-gcc
+CXX_NAME     ?= avr-g++
+AR_NAME      ?= avr-gcc-ar
+OBJCOPY_NAME ?= avr-objcopy
+SIZE_NAME    ?= avr-size
+AVRDUDE_NAME ?= avrdude
+AVRDUDE_CONF ?= /etc/avrdude.conf
+
+CC      = $(TOOL_DIR)/$(CC_NAME)
+CXX     = $(TOOL_DIR)/$(CXX_NAME)
+AR      = $(TOOL_DIR)/$(AR_NAME)
+OBJCOPY = $(TOOL_DIR)/$(OBJCOPY_NAME)
+SIZE    = $(TOOL_DIR)/$(SIZE_NAME)
+AVRDUDE = $(TOOL_DIR)/$(AVRDUDE_NAME)
+
+ARDUINO_BASE_DIR ?= /usr/share/arduino
+ARDUINO_HW_DIR ?= $(ARDUINO_BASE_DIR)/hardware/archlinux-arduino
+ARDUINO_VERSION_FILE ?= $(ARDUINO_BASE_DIR)/lib/version.txt
+BOARDS_TXT ?= $(ARDUINO_HW_DIR)/avr/boards.txt
+
+MAXIMUM_HEX_SIZE = $(shell grep '${ARDUINO_VARIANT}.upload.maximum_size=' ${BOARDS_TXT} | cut -d = -f 2-)
+UPLOAD_PROTOCOL = $(shell grep '${ARDUINO_VARIANT}.upload.protocol=' ${BOARDS_TXT} | cut -d = -f 2-)
+UPLOAD_SPEED = $(shell grep '${ARDUINO_VARIANT}.upload.speed=' ${BOARDS_TXT} | cut -d = -f 2-)
+
+ARDUINO_VERSION=$(shell cat ${ARDUINO_VERSION_FILE} | sed -e 's/^[0-9]://' -e 's/\+.*//' -e 's/\.//g' | head -c 5)
+
+TARGET     = dalsik
+OBJDIR     = $(PROJECT_DIR)/build/release
+TARGET_HEX = $(OBJDIR)/$(TARGET).hex
+TARGET_ELF = $(OBJDIR)/$(TARGET).elf
+CORE_LIB   = $(OBJDIR)/libcore.a
+
+SIZE_CHECK_COMMAND = $(SIZE) --mcu=$(MCU) -C --format=avr $(TARGET_ELF)
+SIZE_CHECK_FILE = $(OBJDIR)/.size_ok
+
+get_upload_port = $(if $(wildcard $(DEVICE_PATH)),$(firstword $(wildcard $(DEVICE_PATH))),$(error Arduino port $(DEVICE_PATH) not found!))
+
+# Flags
+
+# C flags
+CFLAGS   += -std=gnu11 -flto -fno-fat-lto-objects -fdiagnostics-color=always
+
+# C++ flags
+CXXFLAGS += -fpermissive -fno-exceptions -std=gnu++14
+CXXFLAGS += -fno-threadsafe-statics -flto -fno-devirtualize -fdiagnostics-color=always
+CXXFLAGS += -pedantic -Wall -Wextra -Wfatal-errors -Werror
+
+# PreProcessor flags
+CPPFLAGS += -D__PROG_TYPES_COMPAT__ -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DARDUINO=$(ARDUINO_VERSION) -DARDUINO_ARCH_AVR
+CPPFLAGS += -I$(ARDUINO_CORE_LIB_DIR) -I$(ARDUINO_VARIANT_DIR) -I$(ARDUINO_HID_LIB_DIR) $(addprefix -I,$(DALSIK_LIB_INCLUDES))
+CPPFLAGS += -Wall -ffunction-sections -fdata-sections -Os
+CPPFLAGS += -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID)
+CPPFLAGS += -DUSB_PRODUCT='"Dalsik"' -DUSB_MANUFACTURER='"Davs"'
+
+LDFLAGS  += -mmcu=$(MCU) -Wl,--gc-sections -Os -flto -fuse-linker-plugin
+
+ifdef DALSIK_DEBUG
+CXXFLAGS += -D DEBUG -D DEBUG_KEYREPORT_BASE -D DEBUG_KEYBOARD_STATE -D DEBUG_COMBOS_HANDLER_STATE -D DEBUG_TAPDANCE_HANDLER_STATE
+endif
+
+ifdef DALSIK_REPORT_LAYER_CHANGE
+CXXFLAGS += -D REPORT_LAYER_CHANGE
+endif
+
+ifdef DALSIK_REPORT_MODIFIER_CHANGE
+CXXFLAGS += -D REPORT_MODIFIER_CHANGE
+endif
+
+ifdef DALSIK_REPORT_CAPS_WORD_CHANGE
+CXXFLAGS += -D REPORT_CAPS_WORD_CHANGE
+endif
+
+ifdef DALSIK_COMBOS_ENABLED
+CXXFLAGS += -D COMBOS_ENABLED
+endif
+
+ifdef DALSIK_TAPDANCE_ENABLED
+CXXFLAGS += -D TAPDANCE_ENABLED
+endif
+
+ifdef DALSIK_CHECKSUM
+CXXFLAGS += -D DALSIK_CHECKSUM='"$(DALSIK_CHECKSUM)"'
+else
+CXXFLAGS += -D DALSIK_CHECKSUM='"UNKNOWN"'
+endif
+
+# Core Arduino libraries
+ARDUINO_CORE_LIB_DIR ?= $(ARDUINO_HW_DIR)/avr/cores/arduino
+ARDUINO_CORE_LIB_CPP = $(wildcard $(ARDUINO_CORE_LIB_DIR)/*.cpp)
+ARDUINO_CORE_LIB_CPP_O = $(ARDUINO_CORE_LIB_CPP:.cpp=.cpp.o)
+ARDUINO_CORE_LIB_C = $(wildcard $(ARDUINO_CORE_LIB_DIR)/*.c)
+ARDUINO_CORE_LIB_C_O = $(ARDUINO_CORE_LIB_C:.c=.c.o)
+ARDUINO_CORE_LIB_S = $(wildcard $(ARDUINO_CORE_LIB_DIR)/*.S)
+ARDUINO_CORE_LIB_S_O = $(ARDUINO_CORE_LIB_S:.S=.S.o)
+
+ARDUINO_CORE_LIB_O += $(patsubst $(ARDUINO_CORE_LIB_DIR)/%,$(OBJDIR)/core/%,$(ARDUINO_CORE_LIB_CPP_O))
+ARDUINO_CORE_LIB_O += $(patsubst $(ARDUINO_CORE_LIB_DIR)/%,$(OBJDIR)/core/%,$(ARDUINO_CORE_LIB_C_O))
+ARDUINO_CORE_LIB_O += $(patsubst $(ARDUINO_CORE_LIB_DIR)/%,$(OBJDIR)/core/%,$(ARDUINO_CORE_LIB_S_O))
+
+ARDUINO_VARIANT_DIR = $(ARDUINO_HW_DIR)/avr/variants/$(ARDUINO_VARIANT)
+
+$(OBJDIR)/core/%.c.o: $(ARDUINO_CORE_LIB_DIR)/%.c | $(OBJDIR)
+	@mkdir -p $(dir $@)
+	$(CC) -MMD -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+
+$(OBJDIR)/core/%.cpp.o: $(ARDUINO_CORE_LIB_DIR)/%.cpp $(COMMON_DEPS) | $(OBJDIR)
+	@mkdir -p $(dir $@)
+	$(CXX) -MMD -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+
+$(OBJDIR)/core/%.S.o: $(ARDUINO_CORE_LIB_DIR)/%.S $(COMMON_DEPS) | $(OBJDIR)
+	@mkdir -p $(dir $@)
+	$(CC) -MMD -c $(CPPFLAGS) $(ASFLAGS) $< -o $@
+
+# Warnings in the Arduino core libraries
+%core/Print.cpp.o : CXXFLAGS += -Wno-deprecated-declarations
+%core/new.cpp.o : CXXFLAGS += -Wno-sized-deallocation
+
+# Arduino HID library
+ARDUINO_HID_LIB_DIR ?= $(ARDUINO_HW_DIR)/avr/libraries/HID/src
+ARDUINO_HID_LIB_CPP = $(ARDUINO_HID_LIB_DIR)/HID.cpp
+ARDUINO_HID_LIB_CPP_O = $(ARDUINO_HID_LIB_CPP:.cpp=.cpp.o)
+
+ARDUINO_HID_LIB_O = $(patsubst $(ARDUINO_HID_LIB_DIR)/%, $(OBJDIR)/hid/%, $(ARDUINO_HID_LIB_CPP_O))
+
+$(OBJDIR)/hid/%.cpp.o: $(ARDUINO_HID_LIB_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) -MMD -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+
+# Dalsik files
+DALSIK_SRC_DIR = $(PROJECT_DIR)/src
+DALSIK_LIB_CPP = $(wildcard $(DALSIK_SRC_DIR)/*/*.cpp)
+DALSIK_LIB_CPP_O = $(DALSIK_LIB_CPP:.cpp=.cpp.o)
+
+DALSIK_LIB_O = $(patsubst $(DALSIK_SRC_DIR)/%, $(OBJDIR)/dalsik/%, $(DALSIK_LIB_CPP_O))
+
+DALSIK_LIB_INCLUDES = $(shell find $(DALSIK_SRC_DIR) -maxdepth 1 -type d)
+
+DALSIK_MAIN_CPP = $(DALSIK_SRC_DIR)/main.cpp
+DALSIK_MAIN_CPP_O = $(DALSIK_MAIN_CPP:.cpp=.cpp.o)
+
+DALSIK_MAIN_O = $(patsubst $(DALSIK_SRC_DIR)/%, $(OBJDIR)/dalsik/%, $(DALSIK_MAIN_CPP_O))
+
+$(OBJDIR)/dalsik/%.cpp.o: $(DALSIK_SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) -MMD -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+
+# User keymap
+
+USER_KEYMAP_O = $(OBJDIR)/dalsik/user_keymap.cpp.o
+
+$(USER_KEYMAP_O): $(DALSIK_KEYMAP)
+	@mkdir -p $(dir $@)
+	$(CXX) -MMD -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+
+# Compilation
+
+$(CORE_LIB): $(ARDUINO_CORE_LIB_O) $(ARDUINO_HID_LIB_O) $(DALSIK_LIB_O) $(USER_KEYMAP_O) | $(OBJDIR)
+	$(AR) rcs $@ $(ARDUINO_CORE_LIB_O) $(ARDUINO_HID_LIB_O) $(DALSIK_LIB_O) $(USER_KEYMAP_O)
+
+$(TARGET_ELF): $(CORE_LIB) $(DALSIK_MAIN_O)
+	$(CC) $(LDFLAGS) -o $@ $(DALSIK_MAIN_O) $(CORE_LIB) -lc -lm
+	$(SIZE_CHECK_COMMAND)
+
+$(TARGET_HEX): $(TARGET_ELF)
+	@mkdir -p $(dir $@)
+	$(OBJCOPY) -O ihex -R .eeprom $< $@
+
+size_check:
+	$(SIZE_CHECK_COMMAND)
+	@rm -f $(SIZE_CHECK_FILE)
+	@if [ `${SIZE_CHECK_COMMAND} | grep '^Program' | awk '{print $$2}'` -le ${MAXIMUM_HEX_SIZE} ] ; then touch $(SIZE_CHECK_FILE); fi
+
+verify: $(TARGET_HEX)
+
+upload: $(TARGET_HEX) size_check
+	$(PROJECT_DIR)/utils/arduino-reset $(call get_upload_port)
+	$(shell sleep 0.5)
+	$(AVRDUDE) -q -V -p $(MCU) -C $(AVRDUDE_CONF) -D -c $(UPLOAD_PROTOCOL) -b $(UPLOAD_SPEED) -P $(call get_upload_port) -U flash:w:$(TARGET_HEX):i
+
+clean:
+	rm -rf $(OBJDIR)
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)

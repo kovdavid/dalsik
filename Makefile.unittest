@@ -16,12 +16,13 @@ CFLAGS += -fno-devirtualize
 CFLAGS += -fno-threadsafe-statics
 CFLAGS += -fpermissive
 CFLAGS += -pedantic
+CFLAGS += -D TAPDANCE_ENABLED
 CFLAGS += -D COMBOS_ENABLED
 CFLAGS += -D CAPS_WORD_TIMEOUT=1000
 CFLAGS += -include test/mocks/misc.h
 CFLAGS += -include test/mocks/test_friends.h
 
-HEADERS = $(dir $(wildcard test/*/ test/*/*/ lib/*/))
+HEADERS = $(dir $(wildcard test/*/ test/*/*/ src/*/))
 
 COMPILER := $(CXX) $(CFLAGS) $(addprefix  -I,$(HEADERS))
 
@@ -34,7 +35,7 @@ $(BUILD_ROOT)/%.o: test/%
 $(BUILD_ROOT)/%.o: test/*/%
 	$(COMPILER) -c $< -o $@
 
-$(BUILD_ROOT)/%.o: lib/*/%
+$(BUILD_ROOT)/%.o: src/*/%
 	$(COMPILER) -c $< -o $@
 
 TEST_OBJS = \
@@ -47,8 +48,11 @@ TEST_OBJS = \
 	  dalsik_eeprom.cpp.o \
 	  keyboard.cpp.o \
 	  key_info.cpp.o \
+	  key_event_handler.cpp.o \
+	  keymap.cpp.o \
 	  array_utils.cpp.o \
 	  pressed_keys.cpp.o \
+	  tapdance_handler.cpp.o \
 	  HID.cpp.o \
 	  Serial.cpp.o
 

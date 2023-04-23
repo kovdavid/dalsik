@@ -1,3 +1,2 @@
-build-*
 build/
-lib/dalsik/dalsik_checksum.h
+inotifyrun_test.sh

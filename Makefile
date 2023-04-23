@@ -11,15 +11,12 @@ verify_checksum:
 	@./utils/cmd_get_checksum.pl
 
 verify:
-	DALSIK_CHECKSUM=$(shell ./utils/checksum.sh) make -C src
+	DALSIK_CHECKSUM=$(shell ./utils/checksum.sh) make -f Makefile.compile verify
 
 upload:
 	$(PRE_UPLOAD_COMMAND)
-	make -C src upload
+	make -f Makefile.compile upload
 	$(POST_UPLOAD_COMMAND)
-
-Arduino-Makefile:
-	git submodule add --force https://github.com/DavsX/Arduino-Makefile Arduino-Makefile
 
 acutest:
 	mkdir -p test/acutest
@@ -36,6 +33,6 @@ test:
 	make -f Makefile.unittest test
 
 ctags:
-	ctags -f tags -R --extras=+q --languages=C,C++ .
+	ctags -f tags -R --extras=+q --languages=C,C++ src/
 
 .PHONY: test
