@@ -1,9 +1,44 @@
 #pragma once
 
-#include "dalsik.h"
-#include "HID.h"
+#include <avr/pgmspace.h>
 
-const uint8_t KEYBOARD_HID_DESC[] PROGMEM = {
+#define BASE_KEYBOARD_REPORT_ID       0x01
+#define SYSTEM_KEYBOARD_REPORT_ID     0x02
+#define MULTIMEDIA_KEYBOARD_REPORT_ID 0x03
+#define MOUSE_REPORT_ID               0x04
+
+#define BASE_HID_REPORT_KEYS 6
+
+typedef struct {
+    uint8_t modifiers;
+    uint8_t reserved;
+    uint8_t keys[BASE_HID_REPORT_KEYS];
+} BaseHIDReport;
+
+typedef struct {
+    uint8_t key;
+} SystemHIDReport;
+
+typedef struct {
+    uint8_t key;
+    uint8_t prefix;
+} MultimediaHIDReport;
+
+typedef struct {
+    uint8_t buttons;
+    int8_t x;
+    int8_t y;
+    int8_t wheel;
+} MouseHIDReport;
+
+typedef struct {
+    BaseHIDReport base;
+    SystemHIDReport system;
+    MultimediaHIDReport multimedia;
+    MouseHIDReport mouse;
+} HIDReports;
+
+const uint8_t KEYBOARD_HID_DESCRIPTOR[] PROGMEM = {
     //  Base Keyboard
     0x05, 0x01, // USAGE_PAGE (Generic Desktop)
     0x09, 0x06, // USAGE (Keyboard)
@@ -90,14 +125,3 @@ const uint8_t KEYBOARD_HID_DESC[] PROGMEM = {
     0xC0,             //   END_COLLECTION
     0xC0,             // END COLLECTION
 };
-
-namespace DalsikHid {
-    inline void init_descriptor() {
-        static HIDSubDescriptor node(KEYBOARD_HID_DESC, sizeof(KEYBOARD_HID_DESC));
-        HID().AppendDescriptor(&node);
-    }
-
-    inline void send_report(uint8_t id, const void* data, int len) {
-        HID().SendReport(id, data, len);
-    }
-}

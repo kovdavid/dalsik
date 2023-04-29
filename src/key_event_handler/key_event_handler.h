@@ -1,7 +1,7 @@
 #pragma once
 
 #include "combos_handler.h"
-#include "dalsik_global.h"
+#include "dalsik.h"
 #include "keyboard.h"
 #include "keymap.h"
 #include "tapdance_handler.h"

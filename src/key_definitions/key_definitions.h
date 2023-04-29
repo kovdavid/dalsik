@@ -21,6 +21,7 @@ enum key_types {
     KEY_TIMED_DUAL_LAYER,
     KEY_DUAL_DTH_LAYER, // DTH - Double-tap-hold
     KEY_TOGGLE_CAPS_WORD,
+    KEY_MOUSE,
     KEY_TRANSPARENT = 0xFF,
 };
 
@@ -193,6 +194,25 @@ enum hid_keyboard_keys {
     KC_EXSEL,
 };
 
+// https://en.wikipedia.org/wiki/Mouse_keys
+enum hid_mouse_keys {
+    MOUSE_BUTTON1 = (1 << 0),
+    MOUSE_BUTTON2 = (1 << 1),
+    MOUSE_BUTTON3 = (1 << 2),
+    MOUSE_BUTTON4 = (1 << 3),
+    MOUSE_BUTTON5 = (1 << 4),
+};
+
+#define MOUSE_LEFT_BUTTON MOUSE_BUTTON1
+#define MOUSE_RIGHT_BUTTON MOUSE_BUTTON2
+#define MOUSE_MIDDLE_BUTTON MOUSE_BUTTON3
+
+#define BTN1 MOUSE_BUTTON1
+#define BTN2 MOUSE_BUTTON2
+#define BTN3 MOUSE_BUTTON3
+#define BTN4 MOUSE_BUTTON4
+#define BTN5 MOUSE_BUTTON5
+
 #define MOD_CLEAR  0x00
 
 #define MOD_RAW_LCTRL  (1 << 0)
@@ -250,6 +270,8 @@ enum hid_keyboard_keys {
 #define DSL(layer, key)  ( KEY_TYPE(KEY_SOLO_DUAL_LAYER)  | LAYER(layer) | key )
 #define DTL(layer, key)  ( KEY_TYPE(KEY_TIMED_DUAL_LAYER) | LAYER(layer) | key )
 #define DTHL(layer, key) ( KEY_TYPE(KEY_DUAL_DTH_LAYER)   | LAYER(layer) | key )
+
+#define MS(button)       ( KEY_TYPE(KEY_MOUSE) | button )
 
 #define CAPS_WORD       ( KEY_TYPE(KEY_TOGGLE_CAPS_WORD) )
 

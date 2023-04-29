@@ -1,5 +1,8 @@
 #include "Arduino.h"
+#include "HID.h"
+
 #include "array_utils.h"
+#include "dalsik_hid_descriptor.h"
 #include "keyboard.h"
 #include "keymap.h"
 #include "key_event.h"
@@ -11,7 +14,8 @@
 #endif
 
 Keyboard::Keyboard(KeyMap *keymap) {
-    DalsikHid::init_descriptor();
+    static HIDSubDescriptor node(KEYBOARD_HID_DESCRIPTOR, sizeof(KEYBOARD_HID_DESCRIPTOR));
+    HID().AppendDescriptor(&node);
 
     this->keymap = keymap;
     this->current_hid_reports = HIDReports {};
@@ -127,6 +131,8 @@ void Keyboard::press(PressedKey *pk) {
         this->press_one_shot_modifier_key(pk);
     } else if (key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
         this->press_layer_toggle_or_hold(pk);
+    } else if (key_info.type == KEY_MOUSE) {
+        this->press_mouse_button(pk);
     } else if (key_info.type == KEY_LAYER_PRESS) {
         this->press_layer_key(key_info.layer);
         pk->state = STATE_ACTIVE_LAYER;
@@ -159,6 +165,8 @@ void Keyboard::release(PressedKey *pk, millisec now) {
         this->release_one_shot_modifier_key(pk, now);
     } else if (key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
         this->release_layer_toggle_or_hold(pk);
+    } else if (key_info.type == KEY_MOUSE) {
+        this->release_mouse_button(pk);
     } else {
         pk->state = STATE_RELEASED;
 
@@ -431,6 +439,15 @@ inline void Keyboard::release_layer_toggle_or_hold(PressedKey *pk) {
 }
 // }}}
 
+// Mouse {{{
+inline void Keyboard::press_mouse_button(PressedKey *pk) {
+    BIT_SET(this->current_hid_reports.mouse.buttons, pk->key_info.key);
+}
+inline void Keyboard::release_mouse_button(PressedKey *pk) {
+    BIT_CLEAR(this->current_hid_reports.mouse.buttons, pk->key_info.key);
+}
+// }}}
+
 // Caps Word {{{
 inline void Keyboard::press_toggle_caps_word() {
     this->caps_word_toggle();
@@ -524,7 +541,7 @@ inline void Keyboard::send_hid_report() {
         }
 
         this->print_base_report_to_serial();
-        DalsikHid::send_report(BASE_KEYBOARD_REPORT_ID, base, base_size);
+        HID().SendReport(BASE_KEYBOARD_REPORT_ID, base, base_size);
 
         if (this->caps_word_apply_modifier) {
             this->caps_word_apply_modifier = false;
@@ -542,7 +559,7 @@ inline void Keyboard::send_hid_report() {
 
     if (memcmp(system, last_system, system_size)) {
         this->print_system_report_to_serial();
-        DalsikHid::send_report(SYSTEM_KEYBOARD_REPORT_ID, system, system_size);
+        HID().SendReport(SYSTEM_KEYBOARD_REPORT_ID, system, system_size);
         *last_system = *system;
     }
 
@@ -553,8 +570,18 @@ inline void Keyboard::send_hid_report() {
 
     if (memcmp(multimedia, last_multimedia, multimedia_size)) {
         this->print_multimedia_report_to_serial();
-        DalsikHid::send_report(MULTIMEDIA_KEYBOARD_REPORT_ID, multimedia, multimedia_size);
+        HID().SendReport(MULTIMEDIA_KEYBOARD_REPORT_ID, multimedia, multimedia_size);
         *last_multimedia = *multimedia;
+    }
+
+    // Mouse
+    size_t mouse_size = sizeof(MouseHIDReport);
+    MouseHIDReport* mouse = &(this->current_hid_reports.mouse);
+    MouseHIDReport* last_mouse = &(this->last_hid_reports.mouse);
+
+    if (memcmp(mouse, last_mouse, mouse_size)) {
+        HID().SendReport(MOUSE_REPORT_ID, mouse, mouse_size);
+        *last_mouse = *mouse;
     }
 }
 

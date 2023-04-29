@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Arduino.h"
-#include "key_definitions.h"
-#include "dalsik_global.h"
+#include "dalsik.h"
 
 class KeyInfo {
     public:

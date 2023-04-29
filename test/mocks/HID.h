@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "dalsik.h"
+#include "dalsik_hid_descriptor.h"
 
 class HIDSubDescriptor {
     public:

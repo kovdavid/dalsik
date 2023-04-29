@@ -1,8 +1,5 @@
 #include <avr/eeprom.h>
-#include "dalsik.h"
 #include "dalsik_eeprom.h"
-
-#define KEYBOARD_SIDE_ADDRESS 0
 
 static uint8_t read(int address) {
     return eeprom_read_byte((uint8_t*)(address));

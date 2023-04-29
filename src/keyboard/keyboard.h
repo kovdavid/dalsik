@@ -1,9 +1,6 @@
 #pragma once
 
-#include "matrix.h"
 #include "dalsik.h"
-#include "dalsik_hid.h"
-#include "dalsik_global.h"
 #include "keymap.h"
 #include "key_event.h"
 #include "key_info.h"
@@ -72,6 +69,9 @@ class Keyboard {
 
         inline void press_layer_toggle_or_hold(PressedKey *pk);
         inline void release_layer_toggle_or_hold(PressedKey *pk);
+
+        inline void press_mouse_button(PressedKey *pk);
+        inline void release_mouse_button(PressedKey *pk);
 
         inline void press_toggle_caps_word();
 

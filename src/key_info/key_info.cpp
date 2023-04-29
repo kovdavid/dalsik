@@ -1,6 +1,6 @@
 #include "key_info.h"
 #include "key_definitions.h"
-#include "dalsik_global.h"
+#include "dalsik.h"
 
 KeyInfo::KeyInfo() {
     this->type = KEY_NORMAL;

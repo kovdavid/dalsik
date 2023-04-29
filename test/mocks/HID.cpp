@@ -1,15 +1,11 @@
 #include "HID.h"
 
-HIDSubDescriptor::HIDSubDescriptor(
-    const void *d UNUSED,
-    const uint16_t l UNUSED
-) {
+HIDSubDescriptor::HIDSubDescriptor(const void *d UNUSED, const uint16_t l UNUSED) {
 }
 
-TestHID& HID()
-{
-	static TestHID obj;
-	return obj;
+TestHID& HID() {
+    static TestHID obj;
+    return obj;
 }
 
 void TestHID::AppendDescriptor(HIDSubDescriptor *node UNUSED) {

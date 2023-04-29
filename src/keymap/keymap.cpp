@@ -3,7 +3,7 @@
 
 #include "keymap.h"
 #include "array_utils.h"
-#include "dalsik_global.h"
+#include "dalsik.h"
 #include "dalsik_led.h"
 #include "key_definitions.h"
 #include "key_info.h"

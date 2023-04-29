@@ -2,6 +2,7 @@
 
 #include "avr/io.h"
 #include <stdint.h>
+#include "keyboard_hardware.h"
 
 namespace PinUtils {
     inline void set_output_high(uint8_t pin) {

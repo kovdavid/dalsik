@@ -1,37 +1,16 @@
 #pragma once
 
-#include "dalsik_global.h"
+#include <stdint.h>
+#include "array_utils.h"
 #include "bit_utils.h"
+#include "pin_utils.h"
+#include "dalsik_hid_descriptor.h"
+#include "matrix.h"
+#include "dalsik_config.h"
+#include "dalsik_eeprom.h"
+#include "key_definitions.h"
 
-#ifndef DEBUG
-#define DEBUG 0
-#endif
-
-#ifndef DEBUG_KEYBOARD_STATE
-#define DEBUG_KEYBOARD_STATE 0
-#endif
-
-#ifndef DEBUG_KEYREPORT_BASE
-#define DEBUG_KEYREPORT_BASE 0
-#endif
-
-#ifndef DEBUG_KEYREPORT_SYSTEM
-#define DEBUG_KEYREPORT_SYSTEM 0
-#endif
-
-#ifndef DEBUG_KEYREPORT_MULTIMEDIA
-#define DEBUG_KEYREPORT_MULTIMEDIA 0
-#endif
-
-
-// Trigger key press after holding a key for X ms
-#define DUAL_MODE_TIMEOUT_MS 1000
-// Trigger the current tap_count if no tap occurs for this time
-#define TAPDANCE_TIMEOUT_MS 300
-// Trigger timed dual key secondary action (modifier, layer press) after X ms
-#define TIMED_DUAL_KEY_THRESHOLD_MS 300
-// Trigger OSM upon tapping the key with no longer than this value
-#define ONE_SHOT_MODIFIER_TAP_TIMEOUT_MS 300
+typedef unsigned long millisec;
 
 namespace Dalsik {
     void setup();

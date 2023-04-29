@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dalsik_global.h"
+#include "dalsik.h"
 #include "key_info.h"
 
 class KeyEvent {

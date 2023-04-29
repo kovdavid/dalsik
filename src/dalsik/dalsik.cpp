@@ -33,9 +33,6 @@ void Dalsik::setup() {
 
     Serial.begin(115200);
 
-#ifdef ON_OFF_PIN
-    PinUtils::pinmode_input_pullup(ON_OFF_PIN);
-#endif
 #ifdef LED_PIN
     PinUtils::pinmode_output_low(LED_PIN);
 #endif
@@ -53,10 +50,6 @@ void Dalsik::setup() {
 }
 
 void Dalsik::loop() {
-#if ON_OFF_PIN
-    while (!PinUtils::read_pin(ON_OFF_PIN));
-#endif
-
     millisec now = millis();
 
     if (is_master) {

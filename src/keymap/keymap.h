@@ -2,7 +2,7 @@
 
 #include <avr/pgmspace.h>
 
-#include "dalsik_global.h"
+#include "dalsik.h"
 #include "key_info.h"
 
 extern const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] PROGMEM;
