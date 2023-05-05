@@ -224,7 +224,7 @@ inline void Keyboard::press_normal_key(KeyInfo key_info) {
     }
 
     if (key_info.key) {
-        append_uniq_to_uint8_array(
+        ArrayUtils::append_uniq_uint8(
             this->current_hid_reports.base.keys, BASE_HID_REPORT_KEYS, key_info.key
         );
     }
@@ -241,7 +241,7 @@ inline void Keyboard::release_normal_key(KeyInfo key_info) {
     }
 
     if (key_info.key) {
-        remove_uniq_from_uint8_array(
+        ArrayUtils::remove_and_return_last_uint8(
             this->current_hid_reports.base.keys, BASE_HID_REPORT_KEYS, key_info.key
         );
     }
@@ -278,11 +278,11 @@ inline void Keyboard::release_one_shot_modifier_key(PressedKey *pk, millisec now
 // }}}
 // Layer key {{{
 inline void Keyboard::press_layer_key(uint8_t layer) {
-    this->keymap->set_layer(layer);
+    this->keymap->activate_layer(layer);
 }
 
 inline void Keyboard::release_layer_key(uint8_t layer) {
-    this->keymap->remove_layer(layer);
+    this->keymap->deactivate_layer(layer);
 }
 // }}}
 // Layer toggle key {{{
@@ -433,7 +433,7 @@ inline void Keyboard::release_layer_toggle_or_hold(PressedKey *pk) {
     ) {
         this->keymap->toggle_layer(pk->key_info.layer);
     } else {
-        this->keymap->remove_layer(pk->key_info.layer);
+        this->keymap->deactivate_layer(pk->key_info.layer);
     }
     pk->state = STATE_RELEASED;
 }

@@ -201,10 +201,13 @@ enum hid_mouse_keys {
     MOUSE_BUTTON3 = (1 << 2),
     MOUSE_BUTTON4 = (1 << 3),
     MOUSE_BUTTON5 = (1 << 4),
+    MOUSE_BUTTON6 = (1 << 5),
+    MOUSE_BUTTON7 = (1 << 6),
+    MOUSE_BUTTON8 = (1 << 7),
 };
 
-#define MOUSE_LEFT_BUTTON MOUSE_BUTTON1
-#define MOUSE_RIGHT_BUTTON MOUSE_BUTTON2
+#define MOUSE_LEFT_BUTTON   MOUSE_BUTTON1
+#define MOUSE_RIGHT_BUTTON  MOUSE_BUTTON2
 #define MOUSE_MIDDLE_BUTTON MOUSE_BUTTON3
 
 #define BTN1 MOUSE_BUTTON1
@@ -212,6 +215,9 @@ enum hid_mouse_keys {
 #define BTN3 MOUSE_BUTTON3
 #define BTN4 MOUSE_BUTTON4
 #define BTN5 MOUSE_BUTTON5
+#define BTN6 MOUSE_BUTTON6
+#define BTN7 MOUSE_BUTTON7
+#define BTN8 MOUSE_BUTTON8
 
 #define MOD_CLEAR  0x00
 
@@ -300,9 +306,15 @@ enum hid_mouse_keys {
 #define KC_SYS_SLEEP     KC_SYSTEM(0x82)
 #define KC_SYS_WAKE_UP   KC_SYSTEM(0x83)
 
+// See https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf#page=75
 #define KC_AUDIO_MUTE    KC_M0(0xE2)
 #define KC_AUDIO_VOLUP   KC_M0(0xE9)
 #define KC_AUDIO_VOLDOWN KC_M0(0xEA)
+#define KC_FAST_FORWARD  KC_M0(0xB3)
+#define KC_REWIND        KC_M0(0xB4)
+#define KC_NEXT_TRACK    KC_M0(0xB5)
+#define KC_PREV_TRACK    KC_M0(0xB6)
+#define KC_PLAY_PAUSE    KC_M0(0xCD)
 
 #define KC_LAUNCH_CALCULATOR    KC_M1(0x92)
 #define KC_LAUNCH_WWW           KC_M1(0x94)

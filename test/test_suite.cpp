@@ -4,6 +4,7 @@
 #include "acutest.h"
 #include "avr/eeprom.h"
 
+#include "array_utils.h"
 #include "combos.h"
 #include "combos_handler.h"
 #include "dalsik.h"
@@ -105,6 +106,31 @@ KeyCoords caps_word = { 2, 2 };
 KeyCoords dth_ctrl_j = { 2, 5 };
 
 KeyCoords td1 = { 2, 6 };
+
+void test_array_utils1(void) {
+    uint8_t array[] = { 1, 2, 3, 0 };
+
+    uint8_t result = ArrayUtils::remove_and_return_last_uint8(array, sizeof(array), 2);
+    TEST_CHECK(result == 3);
+    TEST_CHECK(array[0] == 1);
+    TEST_CHECK(array[1] == 3);
+    TEST_CHECK(array[2] == 0);
+    TEST_CHECK(array[3] == 0);
+
+    result = ArrayUtils::remove_and_return_last_uint8(array, sizeof(array), 1);
+    TEST_CHECK(result == 3);
+    TEST_CHECK(array[0] == 3);
+    TEST_CHECK(array[1] == 0);
+    TEST_CHECK(array[2] == 0);
+    TEST_CHECK(array[3] == 0);
+
+    result = ArrayUtils::remove_and_return_last_uint8(array, sizeof(array), 3);
+    TEST_CHECK(result == 0);
+    TEST_CHECK(array[0] == 0);
+    TEST_CHECK(array[1] == 0);
+    TEST_CHECK(array[2] == 0);
+    TEST_CHECK(array[3] == 0);
+}
 
 // Simple press test with short delay between events
 void test_normal_key_1(void) {
@@ -1861,6 +1887,7 @@ void test_tapdance_hold_and_different_key(void) {
 }
 
 TEST_LIST = {
+    { "test_array_utils1", test_array_utils1 },
     { "test_normal_key_1", test_normal_key_1 },
     { "test_normal_key_2", test_normal_key_2 },
     { "test_normal_key_3", test_normal_key_3 },

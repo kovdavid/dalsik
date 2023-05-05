@@ -5,7 +5,7 @@
 #endif
 
 #define MAX_LAYER_COUNT 8
-#define LAYER_HISTORY_CAPACITY 5
+#define ACTIVATED_LAYERS_CAPACITY 5
 
 // Trigger key press after holding a key for X ms
 #define DUAL_MODE_TIMEOUT_MS 1000

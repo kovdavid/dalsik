@@ -22,13 +22,12 @@ const uint32_t LED_LAYER_COLORS[MAX_LAYER_COUNT] = {
 #endif
 
 KeyMap::KeyMap() {
-    this->layer_index = 0;
-    this->toggled_layer_index = 0;
-    memset(this->layer_history, 0, sizeof(this->layer_history));
+    this->active_layer = 0;
+    memset(this->activated_layers, 0, sizeof(this->activated_layers));
 }
 
 KeyInfo KeyMap::get_key(KeyCoords c) {
-    KeyInfo key_info = this->get_key_from_layer(this->layer_index, c);
+    KeyInfo key_info = this->get_key_from_layer(this->active_layer, c);
 
     if (key_info.type == KEY_TRANSPARENT) { // Get the key from lower layers
         key_info = this->get_non_transparent_key(c);
@@ -43,8 +42,8 @@ KeyInfo KeyMap::get_key_from_layer(uint8_t layer, KeyCoords c) {
 }
 
 KeyInfo KeyMap::get_non_transparent_key(KeyCoords c) {
-    for (int8_t i = LAYER_HISTORY_CAPACITY-1; i >= 0; i--) {
-        uint8_t layer = this->layer_history[i];
+    for (int8_t i = ACTIVATED_LAYERS_CAPACITY-1; i >= 0; i--) {
+        uint8_t layer = this->activated_layers[i];
         if (layer == 0x00) {
             continue;
         }
@@ -63,8 +62,8 @@ KeyInfo KeyMap::get_non_transparent_key(KeyCoords c) {
     }
 }
 
-void KeyMap::set_layer(uint8_t layer) {
-    if (this->layer_index == layer || layer >= layer_count) {
+void KeyMap::activate_layer(uint8_t layer) {
+    if (this->active_layer == layer || layer >= layer_count) {
         return;
     }
 
@@ -74,45 +73,37 @@ void KeyMap::set_layer(uint8_t layer) {
     Serial.print("\n");
 #endif
 
-    this->layer_index = layer;
-    append_uniq_to_uint8_array(this->layer_history, LAYER_HISTORY_CAPACITY, layer);
+    this->active_layer = layer;
+    ArrayUtils::append_uniq_uint8(this->activated_layers, ACTIVATED_LAYERS_CAPACITY, layer);
 
 #ifdef LED_PIN
-    set_led_rgb(LED_LAYER_COLORS[layer]);
+    DalsikLED::set_rgb(LED_LAYER_COLORS[layer]);
 #endif
 }
 
-void KeyMap::remove_layer(uint8_t layer) {
-    remove_uniq_from_uint8_array(this->layer_history, LAYER_HISTORY_CAPACITY, layer);
-    uint8_t prev_layer = last_nonzero_elem_of_uint8_array(
-        this->layer_history, LAYER_HISTORY_CAPACITY
+void KeyMap::deactivate_layer(uint8_t layer) {
+    uint8_t prev_layer = ArrayUtils::remove_and_return_last_uint8(
+        this->activated_layers, ACTIVATED_LAYERS_CAPACITY, layer
     );
 
-    if (prev_layer > 0) {
-        this->set_layer(prev_layer);
-    } else {
-        this->set_layer(this->toggled_layer_index); // toggled layer or 0
-    }
+    this->activate_layer(prev_layer);
 }
 
 void KeyMap::toggle_layer(uint8_t layer) {
-    if (this->toggled_layer_index == layer) {
-        this->toggled_layer_index = 0;
-        this->remove_layer(layer);
+    bool already_active = ArrayUtils::contains_uint8(this->activated_layers, ACTIVATED_LAYERS_CAPACITY, layer);
+    if (already_active) {
+        this->deactivate_layer(layer);
     } else {
-        this->toggled_layer_index = layer;
-        this->set_layer(layer);
+        this->activate_layer(layer);
     }
 }
 
 void KeyMap::print_internal_state() {
-    Serial.print("KeyMap: layer_index:");
-    Serial.print(layer_index);
-    Serial.print(", toggled_layer_index:");
-    Serial.print(toggled_layer_index);
-    Serial.print(", layer_history:");
-    for (uint8_t i = 0; i < LAYER_HISTORY_CAPACITY-1; i++) {
-        uint8_t layer = this->layer_history[i];
+    Serial.print("KeyMap: active_layer:");
+    Serial.print(active_layer);
+    Serial.print(", activated_layers:");
+    for (uint8_t i = 0; i < ACTIVATED_LAYERS_CAPACITY-1; i++) {
+        uint8_t layer = this->activated_layers[i];
         if (layer == 0x00) {
             break;
         }

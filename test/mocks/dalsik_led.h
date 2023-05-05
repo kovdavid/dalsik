@@ -2,4 +2,6 @@
 
 #include <stdint.h>
 
-void set_led_rgb(uint32_t rgb UNUSED) {}
+namespace DalsikLED {
+    void set_rgb(uint32_t rgb UNUSED) {}
+}

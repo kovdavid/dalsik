@@ -28,7 +28,6 @@ tio:
 
 clean:
 	rm -rf build/
-	rm -f tags
 
 test:
 	make -f Makefile.unittest test

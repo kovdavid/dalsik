@@ -1,7 +1,8 @@
 #include <stdint.h>
+#include <stdbool.h>
 #include "array_utils.h"
 
-void append_uniq_to_uint8_array(uint8_t* array, uint8_t array_size, uint8_t elem) {
+void ArrayUtils::append_uniq_uint8(uint8_t* array, uint8_t array_size, uint8_t elem) {
     for (uint8_t i = 0; i < array_size-1; i++) {
         if (array[i] == elem) {
             return;
@@ -16,17 +17,16 @@ void append_uniq_to_uint8_array(uint8_t* array, uint8_t array_size, uint8_t elem
 // Keep every non-zero element on the left after the removal
 // Bad:  [0x01, 0x00, 0x03, 0x04, 0x00]
 // Good: [0x01, 0x03, 0x04, 0x00, 0x00]
-void remove_uniq_from_uint8_array(uint8_t* array, uint8_t array_size, uint8_t elem) {
-    if (elem == 0x00) {
-        return; // Nothing to do
-    }
-
+uint8_t ArrayUtils::remove_and_return_last_uint8(uint8_t* array, uint8_t array_size, uint8_t elem) {
     uint8_t last_nonzero_elem_index = 0;
+    uint8_t last_elem = 0x00;
     for (uint8_t i = 0; i < array_size; i++) {
         if (array[i] == elem || array[i] == 0x00) {
             array[i] = 0x00;
             continue;
         }
+
+        last_elem = array[i];
 
         if (last_nonzero_elem_index == i) {
             array[last_nonzero_elem_index++] = array[i];
@@ -35,14 +35,16 @@ void remove_uniq_from_uint8_array(uint8_t* array, uint8_t array_size, uint8_t el
             array[i] = 0x00;
         }
     }
+
+    return last_elem;
 }
 
-uint8_t last_nonzero_elem_of_uint8_array(uint8_t* array, uint8_t array_size) {
-    for (int8_t i = array_size-1; i >= 0; i--) {
-        if (array[i] != 0x00) {
-            return array[i];
+bool ArrayUtils::contains_uint8(uint8_t* array, uint8_t array_size, uint8_t elem) {
+    for (uint8_t i = 0; i < array_size; i++) {
+        if (array[i] == elem) {
+            return true;
         }
     }
 
-    return 0x00;
+    return false;
 }

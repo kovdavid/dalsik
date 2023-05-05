@@ -13,7 +13,7 @@ unsigned long last_led_ts = micros();
 // AA - red
 // BB - green
 // CC - blue
-void set_led_rgb(uint32_t rgb) {
+void DalsikLED::set_rgb(uint32_t rgb) {
     uint8_t green_red_blue_array[] = {
         uint8_t((rgb >>  8) & (0x000000FF)), //green
         uint8_t((rgb >> 16) & (0x000000FF)), //red

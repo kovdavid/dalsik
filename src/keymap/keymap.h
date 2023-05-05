@@ -12,9 +12,8 @@ extern const uint8_t layer_count;
 
 class KeyMap {
     private:
-        uint8_t layer_index;
-        uint8_t toggled_layer_index;
-        uint8_t layer_history[LAYER_HISTORY_CAPACITY];
+        uint8_t active_layer;
+        uint8_t activated_layers[ACTIVATED_LAYERS_CAPACITY];
 
         KeyInfo get_key_from_layer(uint8_t layer, KeyCoords c);
 
@@ -22,8 +21,8 @@ class KeyMap {
         KeyMap();
         KeyInfo get_key(KeyCoords c);
         KeyInfo get_non_transparent_key(KeyCoords c);
-        void set_layer(uint8_t layer);
-        void remove_layer(uint8_t layer);
+        void activate_layer(uint8_t layer);
+        void deactivate_layer(uint8_t layer);
         void toggle_layer(uint8_t layer);
         void print_internal_state();
 };

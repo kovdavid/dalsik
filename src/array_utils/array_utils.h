@@ -1,7 +1,10 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
-void append_uniq_to_uint8_array(uint8_t* array, uint8_t array_size, uint8_t elem);
-void remove_uniq_from_uint8_array(uint8_t* array, uint8_t array_size, uint8_t elem);
-uint8_t last_nonzero_elem_of_uint8_array(uint8_t* array, uint8_t array_size);
+namespace ArrayUtils {
+    void append_uniq_uint8(uint8_t* array, uint8_t array_size, uint8_t elem);
+    uint8_t remove_and_return_last_uint8(uint8_t* array, uint8_t array_size, uint8_t elem);
+    bool contains_uint8(uint8_t* array, uint8_t array_size, uint8_t elem);
+}
