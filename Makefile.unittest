@@ -1,4 +1,5 @@
 BUILD_ROOT = build/test
+ACUTEST = test/acutest.h
 
 CFLAGS =
 CFLAGS += -g
@@ -26,6 +27,9 @@ CFLAGS += -include test/mocks/test_friends.h
 HEADERS = $(dir $(wildcard test/*/ test/*/*/ src/*/))
 
 COMPILER := $(CXX) $(CFLAGS) $(addprefix  -I,$(HEADERS))
+
+$(ACUTEST):
+	wget -O $(ACUTEST) https://raw.githubusercontent.com/mity/acutest/master/include/acutest.h
 
 $(BUILD_ROOT):
 	mkdir -p $(BUILD_ROOT)
@@ -57,11 +61,13 @@ TEST_OBJS = \
 	  HID.cpp.o \
 	  Serial.cpp.o
 
-$(BUILD_ROOT)/test_suite: $(addprefix $(BUILD_ROOT)/, $(TEST_OBJS) test_suite.cpp.o) | $(BUILD_ROOT)
+TEST_SUITE_DEPS = $(addprefix $(BUILD_ROOT)/, $(TEST_OBJS) test_suite.cpp.o)
+
+$(BUILD_ROOT)/test_suite: $(TEST_SUITE_DEPS) | $(BUILD_ROOT)
 	echo ">> Linking $@"
 	$(COMPILER) $^ -o $@
 
-test: $(BUILD_ROOT) $(BUILD_ROOT)/test_suite
+test: $(BUILD_ROOT) $(ACUTEST) $(BUILD_ROOT)/test_suite
 	$(BUILD_ROOT)/test_suite $(TEST_NAME)
 
 # https://www.youtube.com/watch?v=NPdagdEOBnI

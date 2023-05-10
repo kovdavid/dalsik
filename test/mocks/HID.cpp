@@ -19,17 +19,11 @@ void TestHID::clear() {
 
 int TestHID::SendReport(uint8_t type, const void* data, int len) {
     if (type == BASE_KEYBOARD_REPORT_ID) {
-        BaseHIDReport r;
-        memcpy(&r, data, len);
-        this->base_hid_reports.push_back(r);
+        this->base_hid_reports.push_back(*(BaseHIDReport*)data);
     } else if (type == SYSTEM_KEYBOARD_REPORT_ID) {
-        SystemHIDReport r;
-        memcpy(&r, data, len);
-        this->system_hid_reports.push_back(r);
+        this->system_hid_reports.push_back(*(SystemHIDReport*)data);
     } else if (type == MULTIMEDIA_KEYBOARD_REPORT_ID) {
-        MultimediaHIDReport r;
-        memcpy(&r, data, len);
-        this->multimedia_hid_reports.push_back(r);
+        this->multimedia_hid_reports.push_back(*(MultimediaHIDReport*)data);
     }
 
     return 0;

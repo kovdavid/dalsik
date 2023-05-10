@@ -1,2 +1,3 @@
 build/
 inotifyrun_test.sh
+test/acutest.h
