@@ -21,6 +21,7 @@ CC_NAME      ?= avr-gcc
 CXX_NAME     ?= avr-g++
 AR_NAME      ?= avr-gcc-ar
 OBJCOPY_NAME ?= avr-objcopy
+OBJDUMP_NAME ?= avr-objdump
 SIZE_NAME    ?= avr-size
 AVRDUDE_NAME ?= avrdude
 AVRDUDE_CONF ?= /etc/avrdude.conf
@@ -29,6 +30,7 @@ CC      = $(TOOL_DIR)/$(CC_NAME)
 CXX     = $(TOOL_DIR)/$(CXX_NAME)
 AR      = $(TOOL_DIR)/$(AR_NAME)
 OBJCOPY = $(TOOL_DIR)/$(OBJCOPY_NAME)
+OBJDUMP = $(TOOL_DIR)/$(OBJDUMP_NAME)
 SIZE    = $(TOOL_DIR)/$(SIZE_NAME)
 AVRDUDE = $(TOOL_DIR)/$(AVRDUDE_NAME)
 
@@ -47,6 +49,7 @@ TARGET     = dalsik
 OBJDIR     = $(PROJECT_DIR)/build/release
 TARGET_HEX = $(OBJDIR)/$(TARGET).hex
 TARGET_ELF = $(OBJDIR)/$(TARGET).elf
+TARGET_LSS = $(OBJDIR)/$(TARGET).lss
 CORE_LIB   = $(OBJDIR)/libcore.a
 
 SIZE_CHECK_COMMAND = $(SIZE) --mcu=$(MCU) -C --format=avr $(TARGET_ELF)
@@ -183,6 +186,12 @@ $(TARGET_ELF): $(CORE_LIB) $(DALSIK_MAIN_O)
 $(TARGET_HEX): $(TARGET_ELF)
 	@mkdir -p $(dir $@)
 	$(OBJCOPY) -O ihex -R .eeprom $< $@
+
+$(TARGET_LSS): $(TARGET_ELF)
+	@mkdir -p $(dir $@)
+	$(OBJDUMP) -h --source --demangle --wide $< > $@
+
+disassembly: $(TARGET_LSS)
 
 size_check:
 	$(SIZE_CHECK_COMMAND)
