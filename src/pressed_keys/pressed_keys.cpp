@@ -56,3 +56,11 @@ void PressedKeys::remove(PressedKey *pk) {
 
     this->keys[last_index] = PressedKey {};
 }
+
+PressedKey* PressedKeys::get_before(PressedKey* pk) {
+    if (pk->key_index > 0) {
+        return &(this->keys[pk->key_index - 1]);
+    } else {
+        return NULL;
+    }
+}

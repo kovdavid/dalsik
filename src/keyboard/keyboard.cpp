@@ -71,18 +71,9 @@ inline void Keyboard::handle_timeout(KeyEvent event) {
     }
 }
 
-void Keyboard::reload_keys_on_new_layer(uint8_t key_index) {
-    for (uint8_t i = key_index + 1; i < PRESSED_KEY_BUFFER; i++) {
-        PressedKey *pk = this->pressed_keys.get(i);
-
-        if (!pk->timestamp || pk->state != STATE_NOT_PROCESSED) {
-            break;
-        }
-
-        if (pk->key_info.skip_layer_reload()) continue; // Missing coords info
-
-        pk->key_info = this->keymap->get_key(pk->key_info.coords);
-    }
+void Keyboard::reload_keys_on_new_layer(PressedKey *pk) {
+    if (pk->key_info.skip_layer_reload()) return; // Missing coords info
+    pk->key_info = this->keymap->get_key(pk->key_info.coords);
 }
 
 // Handle key press & release {{{
@@ -98,7 +89,7 @@ inline void Keyboard::handle_key_press(KeyEvent event) {
     if (pk == NULL) return;
 
     if (this->pressed_keys.count > 1) { // Not the first pressed key
-        this->run_press_hooks(pk->key_index);
+        this->run_press_hooks(pk);
     }
 
     this->press(pk);
@@ -187,28 +178,22 @@ void Keyboard::release(PressedKey *pk, millisec now) {
 // }}}
 
 // Press & Release hooks {{{
-inline void Keyboard::run_press_hooks(uint8_t event_key_index) {
-    for (uint8_t key_index = 0; key_index < event_key_index; key_index++) {
-        this->run_press_hook(key_index);
-    }
-}
-inline void Keyboard::run_press_hook(uint8_t key_index) {
-    PressedKey *pk = this->pressed_keys.get(key_index);
-    KeyInfo key_info = pk->key_info;
+inline void Keyboard::run_press_hooks(PressedKey* new_pk) {
+    PressedKey *pk = this->pressed_keys.get_before(new_pk);
+    if (pk == NULL) return;
+    if (pk->state != STATE_PENDING) return;
 
-    if (pk->state != STATE_PENDING) {
-        return;
-    }
+    KeyInfo key_info = pk->key_info;
 
     if (key_info.is_any_dual_mod_key()) {
         this->press_dual_mod_key(pk);
         this->send_hid_report();
     } else if (key_info.is_any_dual_layer_key()) {
         this->press_dual_layer_key(pk);
-        this->reload_keys_on_new_layer(key_index);
+        this->reload_keys_on_new_layer(new_pk);
     } else if (pk->key_info.type == KEY_LAYER_TOGGLE_OR_HOLD) {
         this->press_layer_toggle_or_hold(pk);
-        this->reload_keys_on_new_layer(key_index);
+        this->reload_keys_on_new_layer(new_pk);
     }
 }
 // }}}
@@ -259,7 +244,7 @@ inline void Keyboard::release_one_shot_modifier_key(PressedKey *pk, millisec now
 
         uint8_t modifier = pk->key_info.mod;
 
-        if (now < pk->timestamp + ONE_SHOT_MODIFIER_TAP_TIMEOUT_MS) {
+        if (pk->timestamp + ONE_SHOT_MODIFIER_TAP_TIMEOUT_MS > now) {
             // Toggle OSM
             if (this->one_shot_modifiers & modifier) {
                 BIT_CLEAR(this->one_shot_modifiers, modifier);
@@ -494,7 +479,7 @@ inline void Keyboard::caps_word_check(KeyInfo key_info) {
         || key == KC_DELETE
     ) {
         // Keys 1-9,0 + BACKSPACE + DELETE keeps caps_word on (if pressed
-        // without other mods - e.g. `LSHIFT(KC_1)` turns it off), but we don'to
+        // without other mods - e.g. `LSHIFT(KC_1)` turns it off), but we don't
         // apply LSHIFT to them - we want to keep numbers as numbers.
         if (mod) {
             this->caps_word_turn_off();
@@ -536,6 +521,8 @@ inline void Keyboard::send_hid_report() {
         }
 #endif
 
+        uint8_t current_modifiers = base->modifiers;
+
         if (this->caps_word_apply_modifier) {
             BIT_SET(base->modifiers, MOD_RAW_LSHIFT);
         }
@@ -545,8 +532,7 @@ inline void Keyboard::send_hid_report() {
 
         if (this->caps_word_apply_modifier) {
             this->caps_word_apply_modifier = false;
-            BIT_CLEAR(base->modifiers, MOD_RAW_LSHIFT);
-            BIT_SET(base->modifiers, this->one_shot_modifiers);
+            base->modifiers = current_modifiers;
         }
 
         *last_base = *base;

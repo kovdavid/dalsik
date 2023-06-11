@@ -32,12 +32,11 @@ class Keyboard {
         void handle_key_release(KeyEvent event);
         void handle_timeout(KeyEvent event);
 
-        void reload_keys_on_new_layer(uint8_t key_index);
+        void reload_keys_on_new_layer(PressedKey *pk);
 
         void press(PressedKey *pk);
         void release(PressedKey *pk, millisec now);
-        inline void run_press_hooks(uint8_t event_key_index);
-        inline void run_press_hook(uint8_t key_index);
+        inline void run_press_hooks(PressedKey *new_pk);
 
         inline void press_normal_key(KeyInfo key_info);
         inline void release_normal_key(KeyInfo key_info);

@@ -15,6 +15,7 @@ class PressedKeys {
         PressedKeys();
         PressedKey* add(KeyEvent event, uint8_t key_press_counter);
         PressedKey* find(KeyCoords coords);
+        PressedKey* get_before(PressedKey* pk);
         void remove(PressedKey* pk);
 
         inline bool is_empty() { return this->count == 0; }
