@@ -7,9 +7,7 @@
 #include "pressed_keys.h"
 
 class Keyboard {
-#ifdef TEST_KEYBOARD_FRIENDS
-    TEST_KEYBOARD_FRIENDS
-#endif
+    TEST_FRIEND_CLASS
     private:
         // State
         uint8_t one_shot_modifiers;

@@ -22,7 +22,7 @@ TapDanceHandler::TapDanceHandler(Keyboard *next_event_handler, KeyMap *keymap) {
 void TapDanceHandler::handle_key_event(KeyEvent event) {
     uint8_t action = CALL_NEXT_EVENT_HANDLER;
 
-#if TAPDANCE_ENABLED
+#ifdef TAPDANCE_ENABLED
     if (!event.key_looked_up && event.type != EVENT_TIMEOUT) {
         // Most of the time `event.key_looked_up` will be false, so we will do
         // the lookup here. However, when a combo is triggered, the KeyInfo will

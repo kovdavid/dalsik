@@ -1,15 +1,13 @@
 #pragma once
 
-#include "combos_handler.h"
 #include "dalsik.h"
+#include "combos_handler.h"
 #include "keyboard.h"
 #include "keymap.h"
 #include "tapdance_handler.h"
 
 class KeyEventHandler {
-#ifdef TEST_KEY_EVENT_HANDLER_FRIENDS
-    TEST_KEY_EVENT_HANDLER_FRIENDS
-#endif
+    TEST_FRIEND_CLASS
     private:
         KeyMap keymap;
         Keyboard keyboard;

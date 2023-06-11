@@ -7,9 +7,7 @@
 #include "tapdance_handler_internal_state.h"
 
 class TapDanceHandler {
-#ifdef TEST_TAPDANCE_HANDLER_FRIENDS
-    TEST_TAPDANCE_HANDLER_FRIENDS
-#endif
+    TEST_FRIEND_CLASS
     private:
         Keyboard *next_event_handler;
         KeyMap *keymap;

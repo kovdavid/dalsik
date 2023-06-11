@@ -1,4 +1,5 @@
 #include "HID.h"
+#include "Arduino.h"
 
 HIDSubDescriptor::HIDSubDescriptor(const void *d UNUSED, const uint16_t l UNUSED) {
 }

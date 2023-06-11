@@ -1,6 +1,4 @@
-#include <stdio.h>
 #include "Arduino.h"
-#include "misc.h"
 
 Serial_CLS Serial;
 

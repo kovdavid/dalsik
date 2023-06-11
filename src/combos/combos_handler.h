@@ -7,9 +7,7 @@
 #include "tapdance_handler.h"
 
 class CombosHandler {
-#ifdef TEST_COMBOS_HANDLER_FRIENDS
-    TEST_COMBOS_HANDLER_FRIENDS
-#endif
+    TEST_FRIEND_CLASS
     private:
         TapDanceHandler *next_event_handler;
         CombosKeyBuffer key_buffer;

@@ -18,13 +18,9 @@ CFLAGS += -fno-devirtualize
 CFLAGS += -fno-threadsafe-statics
 CFLAGS += -fpermissive
 CFLAGS += -pedantic
-CFLAGS += -D TAPDANCE_ENABLED
-CFLAGS += -D COMBOS_ENABLED
-CFLAGS += -D CAPS_WORD_TIMEOUT=1000
-CFLAGS += -include test/mocks/misc.h
-CFLAGS += -include test/mocks/test_friends.h
+CFLAGS += -D TEST
 
-HEADERS = $(dir $(wildcard test/*/ test/*/*/ src/*/))
+HEADERS = $(dir $(wildcard test/ test/*/ test/*/*/ src/*/))
 
 COMPILER := $(CXX) $(CFLAGS) $(addprefix  -I,$(HEADERS))
 

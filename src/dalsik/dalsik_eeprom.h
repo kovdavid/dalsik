@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dalsik.h"
+
 #define KEYBOARD_SIDE_ADDRESS 0
 
 #define KEYBOARD_SIDE_LEFT  0x00

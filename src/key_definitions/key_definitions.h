@@ -305,6 +305,7 @@ enum hid_mouse_keys {
 #define KC_SYS_POWER_OFF KC_SYSTEM(0x81)
 #define KC_SYS_SLEEP     KC_SYSTEM(0x82)
 #define KC_SYS_WAKE_UP   KC_SYSTEM(0x83)
+#define KC_SYS_RESTART   KC_SYSTEM(0x8F)
 
 // See https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf#page=75
 #define KC_AUDIO_MUTE    KC_M0(0xE2)

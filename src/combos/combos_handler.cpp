@@ -24,7 +24,7 @@ CombosHandler::CombosHandler(TapDanceHandler* next_event_handler) {
 uint8_t CombosHandler::handle_key_event(KeyEvent event) {
     uint8_t action = CALL_NEXT_EVENT_HANDLER;
 
-#if COMBOS_ENABLED
+#ifdef COMBOS_ENABLED
     if (this->pending_combos_start) {
         action = this->resume_pending_combo_processing(event);
     } else {

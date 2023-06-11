@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #define E2END 1023
 
 uint8_t eeprom_read_byte(uint8_t* addr);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #define PROGMEM
 #define memcpy_P memcpy
 
