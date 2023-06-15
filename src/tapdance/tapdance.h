@@ -3,7 +3,7 @@
 #include "keymap.h"
 #include "key_info.h"
 
-#define TAPDANCE(...) TapDance(__VA_ARGS__, sizeof(__VA_ARGS__)/sizeof(uint32_t))
+#define TAPDANCE(keys) TapDance(keys, sizeof(keys)/sizeof(keys[0]))
 
 class TapDance {
     public:

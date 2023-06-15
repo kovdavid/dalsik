@@ -96,7 +96,7 @@ uint8_t TapDanceHandler::handle_key_release(KeyEvent event) {
         this->state.key_event = event;
     }
     // We always call next_event_handler. If we've already triggered a TapDance target key,
-    // then we need to release it based on its KeyCoords. Otherwise these KeyCoords won'td
+    // then we need to release it based on its KeyCoords. Otherwise these KeyCoords won't
     // be in PressedKeys and so this event will be ignored.
     return CALL_NEXT_EVENT_HANDLER;
 }
@@ -109,7 +109,7 @@ uint8_t TapDanceHandler::handle_timeout(KeyEvent event) {
     millisec threshold_timestamp =
         this->state.key_event.type == EVENT_KEY_PRESS
         ? TAPDANCE_HOLD_TRIGGER_THRESHOLD_MS  // The TapDance key is still pressed
-        : TAPDANCE_IDLE_TRIGGER_THRESHOLD_MS; // The TapDance key released
+        : TAPDANCE_IDLE_TRIGGER_THRESHOLD_MS; // The TapDance key is released
 
     if (this->state.key_event.timestamp + threshold_timestamp < event.timestamp) {
         this->trigger_tapdance(event.timestamp);
