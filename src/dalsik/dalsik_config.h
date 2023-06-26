@@ -17,7 +17,7 @@
 #define ONE_SHOT_MODIFIER_TAP_TIMEOUT_MS 300
 
 // Time limit for a pending combo processing.
-#define COMBO_ACTIVATION_TIMEOUT_MS 75
+#define COMBO_PROCESSING_LIMIT_MS 75
 // To start a combo processing, this amount of time needs to pass without
 // any events. This is to prevent accidental combo firing when typing fast.
 #define COMBO_START_THRESHOLD_MS 300
@@ -27,6 +27,8 @@
 // If this amount of time ellapses after tapping a tapdance key (and no other event occurs), we will trigger the
 // target key for the current tap count
 #define TAPDANCE_IDLE_TRIGGER_THRESHOLD_MS 300
+
+#define CAPS_WORD_TIMEOUT_MS 2000
 
 // If we tap then press&hold a DTH (Dual-tap-hold) key within the threshold,
 // we automatically activate the key instead of the modifier.

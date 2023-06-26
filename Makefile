@@ -1,4 +1,4 @@
-DEVICE=$(shell ls /dev/ttyACM*)
+quick_verify: partial_clean verify
 
 clean_verify: clean verify
 
@@ -11,16 +11,21 @@ verify_checksum:
 	@./utils/cmd_get_checksum.pl
 
 verify:
-	make -f Makefile.compile verify
+	make -f Makefile.release verify
 
 upload:
 	$(PRE_UPLOAD_COMMAND)
-	make -f Makefile.compile upload
+	make -f Makefile.release upload
 	$(POST_UPLOAD_COMMAND)
 
 # ctrl-t + q => quit tio session
 tio:
-	tio --map INLCRNL --log-file /tmp/tio.log $(DEVICE)
+	tio --map INLCRNL --log-file /tmp/tio.log $(shell ls /dev/ttyACM*)
+
+partial_clean:
+	rm -rf build/release/dalsik/
+	rm -rf build/release/dalsik.*
+	rm -rf build/release/libcore.a
 
 clean:
 	rm -rf build/

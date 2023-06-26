@@ -1,28 +1,28 @@
 BUILD_ROOT = build/test
 ACUTEST = test/acutest.h
 
-CFLAGS =
-CFLAGS += -g
-CFLAGS += -std=gnu++14
-CFLAGS += -w
-CFLAGS += -Wall
-CFLAGS += -Wextra
-CFLAGS += -Wfatal-errors
-CFLAGS += -Werror
-CFLAGS += -O0
-CFLAGS += -fdata-sections
-CFLAGS += -fdiagnostics-color=always
-CFLAGS += -ffunction-sections
-CFLAGS += -flto
-CFLAGS += -fno-devirtualize
-CFLAGS += -fno-threadsafe-statics
-CFLAGS += -fpermissive
-CFLAGS += -pedantic
-CFLAGS += -D TEST
+CXXFLAGS =
+CXXFLAGS += -g
+CXXFLAGS += -std=gnu++14
+CXXFLAGS += -w
+CXXFLAGS += -Wall
+CXXFLAGS += -Wextra
+CXXFLAGS += -Wfatal-errors
+CXXFLAGS += -Werror
+CXXFLAGS += -O0
+CXXFLAGS += -fdata-sections
+CXXFLAGS += -fdiagnostics-color=always
+CXXFLAGS += -ffunction-sections
+CXXFLAGS += -flto
+CXXFLAGS += -fno-devirtualize
+CXXFLAGS += -fno-threadsafe-statics
+CXXFLAGS += -fpermissive
+CXXFLAGS += -pedantic
+CXXFLAGS += -D TEST
 
-HEADERS = $(dir $(wildcard test/ test/*/ test/*/*/ src/*/))
+INCLUDE_DIRECTORIES = $(dir $(wildcard test/ test/*/ test/*/*/ src/*/))
 
-COMPILER := $(CXX) $(CFLAGS) $(addprefix  -I,$(HEADERS))
+COMPILER := $(CXX) $(CXXFLAGS) $(addprefix  -I,$(INCLUDE_DIRECTORIES))
 
 $(ACUTEST):
 	wget -O $(ACUTEST) https://raw.githubusercontent.com/mity/acutest/master/include/acutest.h
@@ -40,30 +40,33 @@ $(BUILD_ROOT)/%.o: src/*/%
 	$(COMPILER) -c $< -o $@
 
 TEST_OBJS = \
+	  array_utils.cpp.o \
+	  combo.cpp.o \
+	  combo_handler.cpp.o \
+	  dalsik_eeprom.cpp.o \
+	  extended_key_event.cpp.o \
+	  held_up_key.cpp.o \
+	  held_up_keys.cpp.o \
+	  key.cpp.o \
+	  key_event_handler.cpp.o \
+	  keyboard.cpp.o \
+	  keymap.cpp.o \
 	  mock_eeprom.cpp.o \
 	  mock_keymap.cpp.o \
-	  combo_state.cpp.o \
-	  combos_key_buffer.cpp.o \
-	  combos_buffered_key.cpp.o \
-	  combos_handler.cpp.o \
-	  dalsik_eeprom.cpp.o \
-	  keyboard.cpp.o \
-	  key_info.cpp.o \
-	  key_event_handler.cpp.o \
-	  keymap.cpp.o \
-	  array_utils.cpp.o \
 	  pressed_keys.cpp.o \
+	  tapdance.cpp.o \
 	  tapdance_handler.cpp.o \
 	  HID.cpp.o \
-	  Serial.cpp.o
+	  Serial.cpp.o \
+	  test_suite.cpp.o
 
-TEST_SUITE_DEPS = $(addprefix $(BUILD_ROOT)/, $(TEST_OBJS) test_suite.cpp.o)
+TEST_DEPS = $(addprefix $(BUILD_ROOT)/, $(TEST_OBJS))
 
-$(BUILD_ROOT)/test_suite: $(TEST_SUITE_DEPS) | $(BUILD_ROOT)
+$(BUILD_ROOT)/test_suite: $(TEST_DEPS)
 	echo ">> Linking $@"
 	$(COMPILER) $^ -o $@
 
-test: $(BUILD_ROOT) $(ACUTEST) $(BUILD_ROOT)/test_suite
+test: $(ACUTEST) $(BUILD_ROOT) $(BUILD_ROOT)/test_suite
 	$(BUILD_ROOT)/test_suite $(TEST_NAME)
 
 # https://www.youtube.com/watch?v=NPdagdEOBnI

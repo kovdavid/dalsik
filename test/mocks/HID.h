@@ -15,9 +15,7 @@ class TestHID {
         void AppendDescriptor(HIDSubDescriptor* node);
         void clear();
 
-        std::vector<BaseHIDReport> base_hid_reports;
-        std::vector<SystemHIDReport> system_hid_reports;
-        std::vector<MultimediaHIDReport> multimedia_hid_reports;
+        std::vector<KeyboardHIDReport> keyboard_reports;
 };
 
 TestHID& HID();

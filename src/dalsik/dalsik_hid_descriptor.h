@@ -2,27 +2,28 @@
 
 #include <avr/pgmspace.h>
 
-#define BASE_KEYBOARD_REPORT_ID       0x01
-#define SYSTEM_KEYBOARD_REPORT_ID     0x02
-#define MULTIMEDIA_KEYBOARD_REPORT_ID 0x03
-#define MOUSE_REPORT_ID               0x04
+enum hid_report_ids {
+    KEYBOARD_REPORT_ID = 0x01,
+    DESKTOP_REPORT_ID,
+    CONSUMER_REPORT_ID,
+    MOUSE_REPORT_ID
+};
 
-#define BASE_HID_REPORT_KEYS 6
+#define KEYBOARD_REPORT_KEYS 6
 
 typedef struct {
     uint8_t modifiers;
     uint8_t reserved;
-    uint8_t keys[BASE_HID_REPORT_KEYS];
-} BaseHIDReport;
+    uint8_t keys[KEYBOARD_REPORT_KEYS];
+} KeyboardHIDReport;
 
 typedef struct {
     uint8_t key;
-} SystemHIDReport;
+} DesktopHIDReport;
 
 typedef struct {
-    uint8_t key;
-    uint8_t prefix;
-} MultimediaHIDReport;
+    uint16_t key;
+} ConsumerHIDReport;
 
 typedef struct {
     uint8_t buttons;
@@ -32,9 +33,9 @@ typedef struct {
 } MouseHIDReport;
 
 typedef struct {
-    BaseHIDReport base;
-    SystemHIDReport system;
-    MultimediaHIDReport multimedia;
+    KeyboardHIDReport keyboard;
+    DesktopHIDReport desktop;
+    ConsumerHIDReport consumer;
     MouseHIDReport mouse;
 } HIDReports;
 
@@ -43,7 +44,7 @@ const uint8_t KEYBOARD_HID_DESCRIPTOR[] PROGMEM = {
     0x05, 0x01, // USAGE_PAGE (Generic Desktop)
     0x09, 0x06, // USAGE (Keyboard)
     0xA1, 0x01, // COLLECTION (Application)
-    0x85, BASE_KEYBOARD_REPORT_ID,
+    0x85, KEYBOARD_REPORT_ID,
     0x05, 0x07, //   USAGE_PAGE (Keyboard)
 
     0x19, 0xE0, //   USAGE_MINIMUM (Keyboard Left Control)
@@ -71,7 +72,7 @@ const uint8_t KEYBOARD_HID_DESCRIPTOR[] PROGMEM = {
     0x05, 0x01, // USAGE_PAGE (Generic Desktop)
     0x09, 0x80, // USAGE (System Control)
     0xA1, 0x01, // COLLECTION (Application)
-    0x85, SYSTEM_KEYBOARD_REPORT_ID,
+    0x85, DESKTOP_REPORT_ID,
     0x19, 0x81, //   USAGE_MINIMUM (System Power Down)
     0x29, 0x83, //   USAGE_MAXIMUM (System Wake Up)
     0x15, 0x81, //   LOGICAL_MINIMUM (129)
@@ -85,7 +86,7 @@ const uint8_t KEYBOARD_HID_DESCRIPTOR[] PROGMEM = {
     0x05, 0x0C,       // USAGE_PAGE (Consumer Devices)
     0x09, 0x01,       // USAGE (Consumer Control)
     0xA1, 0x01,       // COLLECTION (Application)
-    0x85, MULTIMEDIA_KEYBOARD_REPORT_ID,
+    0x85, CONSUMER_REPORT_ID,
     0x19, 0x01,       //   USAGE_MINIMUM (+10)
     0x2A, 0x9C, 0x02, //   USAGE_MAXIMUM (AC Distribute Vertically)
     0x15, 0x01,       //   LOGICAL_MINIMUM (1)

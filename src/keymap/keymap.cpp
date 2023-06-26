@@ -4,61 +4,54 @@
 #include "keymap.h"
 #include "array_utils.h"
 #include "dalsik.h"
-#include "dalsik_led.h"
 #include "key_definitions.h"
-#include "key_info.h"
+#include "key.h"
 
-#ifdef LED_PIN
-const uint32_t LED_LAYER_COLORS[MAX_LAYER_COUNT] = {
-    0x00000000, // Layer 0 - default (LED off)
-    0x00FF0000,
-    0x0000FF00,
-    0x000000FF,
-    0x00FFFF00,
-    0x00FF00FF,
-    0x00000000,
-    0x00000000,
-};
-#endif
+KeyMap::KeyMap()
+    : active_layer(0)
+    , activated_layers()
+{}
 
-KeyMap::KeyMap() {
-    this->active_layer = 0;
-    memset(this->activated_layers, 0, sizeof(this->activated_layers));
-}
+Key KeyMap::get_key(KeyCoords coords) {
+    Key key = this->get_key_from_layer(this->active_layer, coords);
 
-KeyInfo KeyMap::get_key(KeyCoords c) {
-    KeyInfo key_info = this->get_key_from_layer(this->active_layer, c);
-
-    if (key_info.type == KEY_TRANSPARENT) { // Get the key from lower layers
-        key_info = this->get_non_transparent_key(c);
+    if (key.type == KEY_TRANSPARENT) { // Get the key from lower layers
+        key = this->get_non_transparent_key(coords);
     }
 
-    return key_info;
+    return key;
 }
 
-KeyInfo KeyMap::get_key_from_layer(uint8_t layer, KeyCoords c) {
-    uint32_t progmem_data = pgm_read_dword(&keymap[layer][c.row][c.col]);
-    return KeyInfo(progmem_data, c);
+Key KeyMap::get_key_from_layer(uint8_t layer, KeyCoords coords) {
+    if (
+        layer < layer_count
+        && coords.row <= KEYBOARD_ROWS
+        && coords.col <= 2*KEYBOARD_COLS
+    ) {
+        uint32_t progmem_data = pgm_read_dword(&keymap[layer][coords.row][coords.col]);
+        return Key(progmem_data, coords);
+    }
+    return Key(KC_NO, coords);
 }
 
-KeyInfo KeyMap::get_non_transparent_key(KeyCoords c) {
+Key KeyMap::get_non_transparent_key(KeyCoords coords) {
     for (int8_t i = ACTIVATED_LAYERS_CAPACITY-1; i >= 0; i--) {
         uint8_t layer = this->activated_layers[i];
         if (layer == 0x00) {
             continue;
         }
 
-        KeyInfo key_info = this->get_key_from_layer(layer, c);
-        if (key_info.type != KEY_TRANSPARENT) {
-            return key_info;
+        Key key = this->get_key_from_layer(layer, coords);
+        if (key.type != KEY_TRANSPARENT) {
+            return key;
         }
     }
 
-    KeyInfo key_info = this->get_key_from_layer(0, c);
-    if (key_info.type == KEY_TRANSPARENT) {
-        return KeyInfo(KEY_NO_ACTION, c);
+    Key key = this->get_key_from_layer(0, coords);
+    if (key.type == KEY_TRANSPARENT) {
+        return Key(KEY_NO_ACTION, coords);
     } else {
-        return key_info;
+        return key;
     }
 }
 
@@ -75,10 +68,6 @@ void KeyMap::activate_layer(uint8_t layer) {
 
     this->active_layer = layer;
     ArrayUtils::append_uniq_uint8(this->activated_layers, ACTIVATED_LAYERS_CAPACITY, layer);
-
-#ifdef LED_PIN
-    DalsikLED::set_rgb(LED_LAYER_COLORS[layer]);
-#endif
 }
 
 void KeyMap::deactivate_layer(uint8_t layer) {

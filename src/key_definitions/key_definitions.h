@@ -1,27 +1,22 @@
 #pragma once
 
-// Key types
 enum key_types {
-    KEY_NORMAL = 0x00,
-    KEY_LAYER_PRESS,
+    KEY_BASIC = 0x00,
+    KEY_LAYER_HOLD,
     KEY_LAYER_TOGGLE,
-    KEY_LAYER_TOGGLE_OR_HOLD,
-    KEY_SYSTEM,
-    KEY_MULTIMEDIA_0,
-    KEY_MULTIMEDIA_1,
-    KEY_MULTIMEDIA_2,
+    KEY_LAYER_HOLD_OR_TOGGLE,
+    KEY_DESKTOP,
+    KEY_CONSUMER,
     KEY_TAPDANCE,
     KEY_ONE_SHOT_MODIFIER,
-    KEY_DUAL_MOD,
-    KEY_SOLO_DUAL_MOD,
-    KEY_TIMED_DUAL_MOD,
-    KEY_DUAL_DTH_MOD, // DTH - Double-tap-hold
+    KEY_DUAL_MODIFIERS,
+    KEY_SOLO_DUAL_MODIFIERS,
+    KEY_TAP_HOLD_DUAL_MODIFIERS,
     KEY_DUAL_LAYER,
     KEY_SOLO_DUAL_LAYER,
-    KEY_TIMED_DUAL_LAYER,
-    KEY_DUAL_DTH_LAYER, // DTH - Double-tap-hold
+    KEY_TAP_HOLD_DUAL_LAYER,
     KEY_TOGGLE_CAPS_WORD,
-    KEY_MOUSE,
+    KEY_MOUSE_BUTTON,
     KEY_TRANSPARENT = 0xFF,
 };
 
@@ -194,6 +189,72 @@ enum hid_keyboard_keys {
     KC_EXSEL,
 };
 
+// Copied from https://github.com/qmk/qmk_firmware/blob/master/tmk_core/protocol/report.h
+enum hid_desktop_keys {
+    // 4.5.1 System Controls - Power Controls
+    SYSTEM_POWER_DOWN             = 0x81,
+    SYSTEM_SLEEP                  = 0x82,
+    SYSTEM_WAKE_UP                = 0x83,
+    SYSTEM_RESTART                = 0x8F,
+};
+
+// Copied from https://github.com/qmk/qmk_firmware/blob/master/tmk_core/protocol/report.h
+enum hid_consumer_keys {
+    // 15.5 Display Controls
+    SNAPSHOT               = 0x065,
+    BRIGHTNESS_UP          = 0x06F,
+    BRIGHTNESS_DOWN        = 0x070,
+    // 15.7 Transport Controls
+    TRANSPORT_RECORD       = 0x0B2,
+    TRANSPORT_FAST_FORWARD = 0x0B3,
+    TRANSPORT_REWIND       = 0x0B4,
+    TRANSPORT_NEXT_TRACK   = 0x0B5,
+    TRANSPORT_PREV_TRACK   = 0x0B6,
+    TRANSPORT_STOP         = 0x0B7,
+    TRANSPORT_EJECT        = 0x0B8,
+    TRANSPORT_RANDOM_PLAY  = 0x0B9,
+    TRANSPORT_STOP_EJECT   = 0x0CC,
+    TRANSPORT_PLAY_PAUSE   = 0x0CD,
+    // 15.9.1 Audio Controls - Volume
+    AUDIO_MUTE             = 0x0E2,
+    AUDIO_VOL_UP           = 0x0E9,
+    AUDIO_VOL_DOWN         = 0x0EA,
+    // 15.15 Application Launch Buttons
+    AL_CC_CONFIG           = 0x183,
+    AL_EMAIL               = 0x18A,
+    AL_CALCULATOR          = 0x192,
+    AL_LOCAL_BROWSER       = 0x194,
+    AL_LOCK                = 0x19E,
+    AL_CONTROL_PANEL       = 0x19F,
+    AL_ASSISTANT           = 0x1CB,
+    AL_KEYBOARD_LAYOUT     = 0x1AE,
+    // 15.16 Generic GUI Application Controls
+    AC_NEW                 = 0x201,
+    AC_OPEN                = 0x202,
+    AC_CLOSE               = 0x203,
+    AC_EXIT                = 0x204,
+    AC_MAXIMIZE            = 0x205,
+    AC_MINIMIZE            = 0x206,
+    AC_SAVE                = 0x207,
+    AC_PRINT               = 0x208,
+    AC_PROPERTIES          = 0x209,
+    AC_UNDO                = 0x21A,
+    AC_COPY                = 0x21B,
+    AC_CUT                 = 0x21C,
+    AC_PASTE               = 0x21D,
+    AC_SELECT_ALL          = 0x21E,
+    AC_FIND                = 0x21F,
+    AC_SEARCH              = 0x221,
+    AC_HOME                = 0x223,
+    AC_BACK                = 0x224,
+    AC_FORWARD             = 0x225,
+    AC_STOP                = 0x226,
+    AC_REFRESH             = 0x227,
+    AC_BOOKMARKS           = 0x22A,
+    AC_MISSION_CONTROL     = 0x29F,
+    AC_LAUNCHPAD           = 0x2A0
+};
+
 // https://en.wikipedia.org/wiki/Mouse_keys
 enum hid_mouse_keys {
     MOUSE_BUTTON1 = (1 << 0),
@@ -244,44 +305,40 @@ enum hid_mouse_keys {
 
 // Key constructor macros
 
-#define KC(code)        ( KEY_TYPE(KEY_NORMAL) | code )
-#define KCM(mod)        ( KEY_TYPE(KEY_NORMAL) | mod  )
-#define LCTRL(key)      ( KEY_TYPE(KEY_NORMAL) | MOD_LCTRL  | key )
-#define RCTRL(key)      ( KEY_TYPE(KEY_NORMAL) | MOD_RCTRL  | key )
-#define LSHIFT(key)     ( KEY_TYPE(KEY_NORMAL) | MOD_LSHIFT | key )
-#define RSHIFT(key)     ( KEY_TYPE(KEY_NORMAL) | MOD_RSHIFT | key )
-#define LGUI(key)       ( KEY_TYPE(KEY_NORMAL) | MOD_LGUI   | key )
-#define RGUI(key)       ( KEY_TYPE(KEY_NORMAL) | MOD_LGUI   | key )
-#define LALT(key)       ( KEY_TYPE(KEY_NORMAL) | MOD_LALT   | key )
-#define RALT(key)       ( KEY_TYPE(KEY_NORMAL) | MOD_LALT   | key )
+#define KC(code)        ( KEY_TYPE(KEY_BASIC) | code )
+#define KCM(mod)        ( KEY_TYPE(KEY_BASIC) | mod  )
+#define LCTRL(key)      ( KEY_TYPE(KEY_BASIC) | MOD_LCTRL  | key )
+#define RCTRL(key)      ( KEY_TYPE(KEY_BASIC) | MOD_RCTRL  | key )
+#define LSHIFT(key)     ( KEY_TYPE(KEY_BASIC) | MOD_LSHIFT | key )
+#define RSHIFT(key)     ( KEY_TYPE(KEY_BASIC) | MOD_RSHIFT | key )
+#define LGUI(key)       ( KEY_TYPE(KEY_BASIC) | MOD_LGUI   | key )
+#define RGUI(key)       ( KEY_TYPE(KEY_BASIC) | MOD_LGUI   | key )
+#define LALT(key)       ( KEY_TYPE(KEY_BASIC) | MOD_LALT   | key )
+#define RALT(key)       ( KEY_TYPE(KEY_BASIC) | MOD_LALT   | key )
 
-#define LP(layer)       ( KEY_TYPE(KEY_LAYER_PRESS)          | LAYER(layer) )
+#define LH(layer)       ( KEY_TYPE(KEY_LAYER_HOLD)           | LAYER(layer) )
 #define LT(layer)       ( KEY_TYPE(KEY_LAYER_TOGGLE)         | LAYER(layer) )
-#define LHT(layer)      ( KEY_TYPE(KEY_LAYER_TOGGLE_OR_HOLD) | LAYER(layer) )
+#define LHT(layer)      ( KEY_TYPE(KEY_LAYER_HOLD_OR_TOGGLE) | LAYER(layer) )
 
-#define KC_SYSTEM(code) ( KEY_TYPE(KEY_SYSTEM)       | code )
-#define KC_M0(code)     ( KEY_TYPE(KEY_MULTIMEDIA_0) | code )
-#define KC_M1(code)     ( KEY_TYPE(KEY_MULTIMEDIA_1) | code )
-#define KC_M2(code)     ( KEY_TYPE(KEY_MULTIMEDIA_2) | code )
+#define DESKTOP(code)   ( KEY_TYPE(KEY_DESKTOP)  | code )
+#define CONSUMER(key)   ( KEY_TYPE(KEY_CONSUMER) | key )
 
 #define TD(index)       ( KEY_TYPE(KEY_TAPDANCE)          | index )
 #define OSM(mod)        ( KEY_TYPE(KEY_ONE_SHOT_MODIFIER) | mod )
 
-#define D(mod, key)     ( KEY_TYPE(KEY_DUAL_MOD)         | mod | key )
-#define DS(mod, key)    ( KEY_TYPE(KEY_SOLO_DUAL_MOD)    | mod | key )
-#define DT(mod, key)    ( KEY_TYPE(KEY_TIMED_DUAL_MOD)   | mod | key )
-#define DTHM(mod, key)  ( KEY_TYPE(KEY_DUAL_DTH_MOD)     | mod | key )
+#define DM(mod, key)    ( KEY_TYPE(KEY_DUAL_MODIFIERS)          | mod | key )
+#define DS(mod, key)    ( KEY_TYPE(KEY_SOLO_DUAL_MODIFIERS)     | mod | key )
+#define THDM(mod, key)  ( KEY_TYPE(KEY_TAP_HOLD_DUAL_MODIFIERS) | mod | key )
 
-#define DL(layer, key)   ( KEY_TYPE(KEY_DUAL_LAYER)       | LAYER(layer) | key )
-#define DSL(layer, key)  ( KEY_TYPE(KEY_SOLO_DUAL_LAYER)  | LAYER(layer) | key )
-#define DTL(layer, key)  ( KEY_TYPE(KEY_TIMED_DUAL_LAYER) | LAYER(layer) | key )
-#define DTHL(layer, key) ( KEY_TYPE(KEY_DUAL_DTH_LAYER)   | LAYER(layer) | key )
+#define DL(layer, key)   ( KEY_TYPE(KEY_DUAL_LAYER)          | LAYER(layer) | key )
+#define DSL(layer, key)  ( KEY_TYPE(KEY_SOLO_DUAL_LAYER)     | LAYER(layer) | key )
+#define THDL(layer, key) ( KEY_TYPE(KEY_TAP_HOLD_DUAL_LAYER) | LAYER(layer) | key )
 
-#define MS(button)       ( KEY_TYPE(KEY_MOUSE) | button )
+#define MOUSE_BUTTON(button) ( KEY_TYPE(KEY_MOUSE_BUTTON) | button )
 
-#define CAPS_WORD       ( KEY_TYPE(KEY_TOGGLE_CAPS_WORD) )
+#define CAPS_WORD       ( KEY_TYPE(KEY_TOGGLE_CAPS_WORD) | KC_NO )
 
-#define XXXXXXX         ( KEY_TYPE(KEY_NORMAL) | KC_NO )
+#define XXXXXXX         ( KEY_TYPE(KEY_BASIC) | KC_NO )
 #define KEY_NO_ACTION   XXXXXXX
 #define _______         KEY_TYPE(KEY_TRANSPARENT)
 
@@ -300,33 +357,11 @@ enum hid_mouse_keys {
 #define KC_RALT    KCM(MOD_RALT)
 #define KC_RGUI    KCM(MOD_RGUI)
 
-// Aliases
-
-#define KC_SYS_POWER_OFF KC_SYSTEM(0x81)
-#define KC_SYS_SLEEP     KC_SYSTEM(0x82)
-#define KC_SYS_WAKE_UP   KC_SYSTEM(0x83)
-#define KC_SYS_RESTART   KC_SYSTEM(0x8F)
-
-// See https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf#page=75
-#define KC_AUDIO_MUTE    KC_M0(0xE2)
-#define KC_AUDIO_VOLUP   KC_M0(0xE9)
-#define KC_AUDIO_VOLDOWN KC_M0(0xEA)
-#define KC_FAST_FORWARD  KC_M0(0xB3)
-#define KC_REWIND        KC_M0(0xB4)
-#define KC_NEXT_TRACK    KC_M0(0xB5)
-#define KC_PREV_TRACK    KC_M0(0xB6)
-#define KC_PLAY_PAUSE    KC_M0(0xCD)
-
-#define KC_LAUNCH_CALCULATOR    KC_M1(0x92)
-#define KC_LAUNCH_WWW           KC_M1(0x94)
-#define KC_LAUNCH_FILE_BROWSER  KC_M1(0x96)
-#define KC_LAUNCH_SCREEN_SAVER  KC_M1(0x9E)
-
-#define KC_SCR_SVR KC_LAUNCH_SCREEN_SAVER
-#define KC_CALC KC_LAUNCH_CALCULATOR
-#define KC_VOLUP KC_AUDIO_VOLUP
-#define KC_VOLDN KC_AUDIO_VOLDOWN
-#define KC_MUTE KC_AUDIO_MUTE
+#define KC_SCR_SVR CONSUMER(AL_LOCK)
+#define KC_CALC    CONSUMER(AL_CALCULATOR)
+#define KC_VOLUP   CONSUMER(AUDIO_VOL_UP)
+#define KC_VOLDN   CONSUMER(AUDIO_VOL_DOWN)
+#define KC_MUTE    CONSUMER(AUDIO_MUTE)
 
 #define KC_TILDE LSHIFT(KC_GRAVE) // ~
 #define KC_TILD KC_TILDE

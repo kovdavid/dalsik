@@ -6,8 +6,6 @@ static const char CMD_PREFIX[] = {'D','A','L','S','I','K','-'};
 #define CMD_GET_CHECKSUM 0x01
 
 // +1 for the command type
-// I can't use '\n' as the indicator of the end of a command, because that is
-// the HID code for KC_G, so I made every command fixed-length
 #define CMD_LENGTH sizeof(CMD_PREFIX)+1
 
 static uint8_t execute_command();

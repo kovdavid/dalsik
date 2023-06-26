@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include "array_utils.h"
 
+// Add an element to the first position of the array with the value `0x00`
 void ArrayUtils::append_uniq_uint8(uint8_t* array, uint8_t array_size, uint8_t elem) {
     for (uint8_t i = 0; i < array_size-1; i++) {
         if (array[i] == elem) {
@@ -14,7 +15,7 @@ void ArrayUtils::append_uniq_uint8(uint8_t* array, uint8_t array_size, uint8_t e
     }
 }
 
-// Keep every non-zero element on the left after the removal
+// Remove (and replace with `0x00`) element from an array, keep every non-zero element on the beginning
 // Bad:  [0x01, 0x00, 0x03, 0x04, 0x00]
 // Good: [0x01, 0x03, 0x04, 0x00, 0x00]
 uint8_t ArrayUtils::remove_and_return_last_uint8(uint8_t* array, uint8_t array_size, uint8_t elem) {

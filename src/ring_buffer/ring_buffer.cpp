@@ -11,14 +11,12 @@ inline uint8_t increment_index(uint8_t current_value) {
     }
 }
 
-RingBuffer::RingBuffer() {
-    for (uint8_t i = 0; i < BUFFER_LENGTH; i++) {
-        this->buffer[i] = 0x00;
-    }
-    this->size = 0;
-    this->read_index = 0;
-    this->write_index = 0;
-}
+RingBuffer::RingBuffer()
+    : buffer()
+    , size(0)
+    , read_index(0)
+    , write_index(0)
+{}
 
 // Called from ISR
 void RingBuffer::append_elem(uint8_t elem) {

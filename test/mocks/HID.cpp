@@ -13,18 +13,12 @@ void TestHID::AppendDescriptor(HIDSubDescriptor *node UNUSED) {
 }
 
 void TestHID::clear() {
-    this->base_hid_reports.clear();
-    this->system_hid_reports.clear();
-    this->multimedia_hid_reports.clear();
+    this->keyboard_reports.clear();
 }
 
 int TestHID::SendReport(uint8_t type, const void* data, int len) {
-    if (type == BASE_KEYBOARD_REPORT_ID) {
-        this->base_hid_reports.push_back(*(BaseHIDReport*)data);
-    } else if (type == SYSTEM_KEYBOARD_REPORT_ID) {
-        this->system_hid_reports.push_back(*(SystemHIDReport*)data);
-    } else if (type == MULTIMEDIA_KEYBOARD_REPORT_ID) {
-        this->multimedia_hid_reports.push_back(*(MultimediaHIDReport*)data);
+    if (type == KEYBOARD_REPORT_ID) {
+        this->keyboard_reports.push_back(*(KeyboardHIDReport*)data);
     }
 
     return 0;

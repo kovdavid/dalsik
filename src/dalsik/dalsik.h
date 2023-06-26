@@ -27,12 +27,11 @@ namespace Dalsik {
 #define TEST_FRIEND_CLASS friend class TestFriendClass;
 #define TAPDANCE_ENABLED 1
 #define COMBOS_ENABLED 1
-#define CAPS_WORD_TIMEOUT 1000
 #else
 #define TEST_FRIEND_CLASS
 #endif
 
-// Uncomment this to define KEYBOARD_SIDE in code instead of EEPROM
+// Uncomment this to define SET_KEYBOARD_SIDE in code instead of EEPROM
 // See EEPROM::get_keyboard_side
-// #define KEYBOARD_SIDE KEYBOARD_SIDE_LEFT
-// #define KEYBOARD_SIDE KEYBOARD_SIDE_RIGHT
+// #define SET_KEYBOARD_SIDE KEYBOARD_SIDE_LEFT
+// #define SET_KEYBOARD_SIDE KEYBOARD_SIDE_RIGHT
