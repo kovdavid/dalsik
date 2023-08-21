@@ -15,19 +15,16 @@ void ArrayUtils::append_uniq_uint8(uint8_t* array, uint8_t array_size, uint8_t e
     }
 }
 
-// Remove (and replace with `0x00`) element from an array, keep every non-zero element on the beginning
+// Remove element from an array, keep every non-zero element on the beginning
 // Bad:  [0x01, 0x00, 0x03, 0x04, 0x00]
 // Good: [0x01, 0x03, 0x04, 0x00, 0x00]
-uint8_t ArrayUtils::remove_and_return_last_uint8(uint8_t* array, uint8_t array_size, uint8_t elem) {
+void ArrayUtils::remove_uint8(uint8_t* array, uint8_t array_size, uint8_t elem) {
     uint8_t last_nonzero_elem_index = 0;
-    uint8_t last_elem = 0x00;
     for (uint8_t i = 0; i < array_size; i++) {
         if (array[i] == elem || array[i] == 0x00) {
             array[i] = 0x00;
             continue;
         }
-
-        last_elem = array[i];
 
         if (last_nonzero_elem_index == i) {
             array[last_nonzero_elem_index++] = array[i];
@@ -36,16 +33,4 @@ uint8_t ArrayUtils::remove_and_return_last_uint8(uint8_t* array, uint8_t array_s
             array[i] = 0x00;
         }
     }
-
-    return last_elem;
-}
-
-bool ArrayUtils::contains_uint8(uint8_t* array, uint8_t array_size, uint8_t elem) {
-    for (uint8_t i = 0; i < array_size; i++) {
-        if (array[i] == elem) {
-            return true;
-        }
-    }
-
-    return false;
 }

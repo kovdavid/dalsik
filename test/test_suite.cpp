@@ -16,7 +16,14 @@
 #include "tapdance.h"
 #include "test_friend.h"
 
+TestFriendClass test_friend;
+
 #define REPORT_COMPARE_AT(i, ...) TEST_CHECK(compare_keyboard_report(i, __VA_ARGS__))
+#define COMPARE_LAYERS(keymap, expected_size, ...) \
+    do { \
+        uint8_t expected_layers[ACTIVATED_LAYERS_CAPACITY] = __VA_ARGS__; \
+        compare_activated_layers(keymap, expected_size, expected_layers); \
+    } while(0);
 
 #define HID_SIZE_CHECK(expected) \
     TEST_CHECK(HID().keyboard_reports.size() == expected); \
@@ -25,6 +32,21 @@
 bool compare_keyboard_report(size_t index, KeyboardHIDReport expected) {
     KeyboardHIDReport got = HID().keyboard_reports.at(index);
     return memcmp(&got, &expected, sizeof(KeyboardHIDReport)) == 0;
+}
+
+void compare_activated_layers(KeyMap keymap, uint8_t expected_count, uint8_t* expected_layers) {
+    uint8_t activated_layers_count = test_friend.get_activated_layers_count(keymap);
+
+    TEST_CHECK(activated_layers_count == expected_count);
+    TEST_MSG("activated_layers_count expected:%d got:%d", expected_count, activated_layers_count);
+
+    for (uint8_t i = 0; i < activated_layers_count; i++) {
+        uint8_t activated_layer = test_friend.get_activated_layer_at(keymap, i);
+        uint8_t expected_layer = expected_layers[i];
+
+        TEST_CHECK(activated_layer == expected_layer);
+        TEST_MSG("activated_layers index:%d expected:%d got:%d", i, expected_layer, activated_layer);
+    }
 }
 
 void print_hid_reports() {
@@ -48,8 +70,6 @@ void dump_hid_reports() {
     TEST_CHECK(1 == 0);
     print_hid_reports();
 }
-
-TestFriendClass test_friend;
 
 #define SEC(x) x*1000
 #define P EVENT_KEY_PRESS
@@ -87,26 +107,90 @@ KeyCoords td1 = { 2, 6 };
 void test_array_utils1(void) {
     uint8_t array[] = { 1, 2, 3, 0 };
 
-    uint8_t result = ArrayUtils::remove_and_return_last_uint8(array, sizeof(array), 2);
-    TEST_CHECK(result == 3);
+    ArrayUtils::remove_uint8(array, sizeof(array), 2);
     TEST_CHECK(array[0] == 1);
     TEST_CHECK(array[1] == 3);
     TEST_CHECK(array[2] == 0);
     TEST_CHECK(array[3] == 0);
 
-    result = ArrayUtils::remove_and_return_last_uint8(array, sizeof(array), 1);
-    TEST_CHECK(result == 3);
+    ArrayUtils::remove_uint8(array, sizeof(array), 1);
     TEST_CHECK(array[0] == 3);
     TEST_CHECK(array[1] == 0);
     TEST_CHECK(array[2] == 0);
     TEST_CHECK(array[3] == 0);
 
-    result = ArrayUtils::remove_and_return_last_uint8(array, sizeof(array), 3);
-    TEST_CHECK(result == 0);
+    ArrayUtils::remove_uint8(array, sizeof(array), 3);
     TEST_CHECK(array[0] == 0);
     TEST_CHECK(array[1] == 0);
     TEST_CHECK(array[2] == 0);
     TEST_CHECK(array[3] == 0);
+}
+
+void test_keymap_1(void) {
+    KeyMap keymap;
+
+    // Invalid layer
+    keymap.activate_layer(99);
+    COMPARE_LAYERS(keymap, 0, { });
+    TEST_CHECK(keymap.active_layer() == 0);
+
+    // Activating layers
+    keymap.activate_layer(5);
+    TEST_CHECK(keymap.active_layer() == 5);
+
+    keymap.activate_layer(4);
+    TEST_CHECK(keymap.active_layer() == 4);
+
+    keymap.activate_layer(3);
+    TEST_CHECK(keymap.active_layer() == 3);
+
+    keymap.activate_layer(2);
+    TEST_CHECK(keymap.active_layer() == 2);
+
+    keymap.activate_layer(1);
+    TEST_CHECK(keymap.active_layer() == 1);
+
+    COMPARE_LAYERS(keymap, 5, { 5, 4, 3, 2, 1 });
+
+    // Layer capacity full
+    keymap.activate_layer(3);
+    TEST_CHECK(keymap.active_layer() == 1);
+    COMPARE_LAYERS(keymap, 5, { 5, 4, 3, 2, 1 });
+
+    // Deactivating layer from the beginning
+    keymap.deactivate_layer(5);
+    TEST_CHECK(keymap.active_layer() == 1);
+    COMPARE_LAYERS(keymap, 4, { 4, 3, 2, 1 });
+
+    // Deactivating layer from the end
+    keymap.deactivate_layer(1);
+    TEST_CHECK(keymap.active_layer() == 2);
+    COMPARE_LAYERS(keymap, 3, { 4, 3, 2 });
+
+    // Deactivating layer from the middle
+    keymap.deactivate_layer(3);
+    TEST_CHECK(keymap.active_layer() == 2);
+    COMPARE_LAYERS(keymap, 2, { 4, 2 });
+
+    // Deactivating the rest
+    keymap.deactivate_layer(4);
+    keymap.deactivate_layer(2);
+    TEST_CHECK(keymap.active_layer() == 0);
+    COMPARE_LAYERS(keymap, 0, { });
+
+    // No active layers
+    keymap.deactivate_layer(1);
+    TEST_CHECK(keymap.active_layer() == 0);
+    COMPARE_LAYERS(keymap, 0, { });
+
+    // Toggle
+    keymap.toggle_layer(1);
+    TEST_CHECK(keymap.active_layer() == 1);
+    COMPARE_LAYERS(keymap, 1, { 1 });
+
+    keymap.toggle_layer(1);
+    TEST_CHECK(keymap.active_layer() == 0);
+    COMPARE_LAYERS(keymap, 0, { });
 }
 
 // Simple press test with short delay between events
@@ -1851,6 +1935,7 @@ void test_tapdance_hold_and_different_key(void) {
 
 TEST_LIST = {
     { "test_array_utils1", test_array_utils1 },
+    { "test_keymap_1", test_keymap_1 },
     { "test_normal_key_1", test_normal_key_1 },
     { "test_normal_key_2", test_normal_key_2 },
     { "test_normal_key_3", test_normal_key_3 },

@@ -53,5 +53,10 @@ const uint32_t keymap[][KEYBOARD_ROWS][2*KEYBOARD_COLS] = KEYMAP({
          KEY10 ,  KEY11 , _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
         // Combo row
           KC_Q ,   KC_W ,   KC_R , _______, _______, _______, _______, _______, _______, _______, _______, _______
-    )
+    ),
+    // We need at least 6 layers for KeyMap tests
+    {},
+    {},
+    {},
+    {},
 });

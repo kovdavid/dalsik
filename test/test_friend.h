@@ -1,6 +1,7 @@
 #pragma once
 
 #include "key_event_handler.h"
+#include "keymap.h"
 #include "keyboard.h"
 #include "tapdance_handler.h"
 #include "combo_handler.h"
@@ -21,5 +22,13 @@ class TestFriendClass {
 
         TapDanceHandlerState* get_tapdance_state(KeyEventHandler* key_event_handler) {
             return &(key_event_handler->tapdance_handler.state);
+        }
+
+        uint8_t get_activated_layers_count(KeyMap keymap) {
+            return keymap.activated_layers_count;
+        }
+
+        uint8_t get_activated_layer_at(KeyMap keymap, uint8_t index) {
+            return keymap.activated_layers[index];
         }
 };

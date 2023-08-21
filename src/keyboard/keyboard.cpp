@@ -219,9 +219,7 @@ void Keyboard::release_basic_key(Key key) {
     }
 
     if (key.code) {
-        ArrayUtils::remove_and_return_last_uint8(
-            this->current_reports.keyboard.keys, KEYBOARD_REPORT_KEYS, key.code
-        );
+        ArrayUtils::remove_uint8(this->current_reports.keyboard.keys, KEYBOARD_REPORT_KEYS, key.code);
     }
 }
 // }}}

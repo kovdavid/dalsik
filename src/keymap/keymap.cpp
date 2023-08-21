@@ -7,19 +7,37 @@
 #include "key_definitions.h"
 #include "key.h"
 
+#define DEFAULT_LAYER 0
+
 KeyMap::KeyMap()
-    : active_layer(0)
-    , activated_layers()
+    : activated_layers()
+    , activated_layers_count(0)
 {}
 
-Key KeyMap::get_key(KeyCoords coords) {
-    Key key = this->get_key_from_layer(this->active_layer, coords);
+uint8_t KeyMap::active_layer() {
+    if (this->activated_layers_count > 0) {
+        return this->activated_layers[this->activated_layers_count-1];
+    } else {
+        return DEFAULT_LAYER;
+    }
+}
 
-    if (key.type == KEY_TRANSPARENT) { // Get the key from lower layers
-        key = this->get_non_transparent_key(coords);
+Key KeyMap::get_key(KeyCoords coords) {
+    for (int8_t i = this->activated_layers_count; i > 0; i--) {
+        uint8_t layer = this->activated_layers[i-1];
+
+        Key key = this->get_key_from_layer(layer, coords);
+        if (key.type != KEY_TRANSPARENT) {
+            return key;
+        }
     }
 
-    return key;
+    Key key = this->get_key_from_layer(DEFAULT_LAYER, coords);
+    if (key.type == KEY_TRANSPARENT) {
+        return Key(KEY_NO_ACTION, coords);
+    } else {
+        return key;
+    }
 }
 
 Key KeyMap::get_key_from_layer(uint8_t layer, KeyCoords coords) {
@@ -34,52 +52,65 @@ Key KeyMap::get_key_from_layer(uint8_t layer, KeyCoords coords) {
     return Key(KC_NO, coords);
 }
 
-Key KeyMap::get_non_transparent_key(KeyCoords coords) {
-    for (int8_t i = ACTIVATED_LAYERS_CAPACITY-1; i >= 0; i--) {
-        uint8_t layer = this->activated_layers[i];
-        if (layer == 0x00) {
-            continue;
-        }
-
-        Key key = this->get_key_from_layer(layer, coords);
-        if (key.type != KEY_TRANSPARENT) {
-            return key;
-        }
-    }
-
-    Key key = this->get_key_from_layer(0, coords);
-    if (key.type == KEY_TRANSPARENT) {
-        return Key(KEY_NO_ACTION, coords);
-    } else {
-        return key;
-    }
+void KeyMap::layer_change_hook() {
+#ifdef REPORT_LAYER_CHANGE
+    Serial.print("L:");
+    Serial.print(this->active_layer(), HEX);
+    Serial.print("\n");
+#endif
 }
 
 void KeyMap::activate_layer(uint8_t layer) {
-    if (this->active_layer == layer || layer >= layer_count) {
+    if (
+        layer >= layer_count
+        || this->activated_layers_count >= ACTIVATED_LAYERS_CAPACITY
+    ) {
+        // Invalid layer or too many activated layers
         return;
     }
 
-#ifdef REPORT_LAYER_CHANGE
-    Serial.print("L:");
-    Serial.print(layer, HEX);
-    Serial.print("\n");
-#endif
+    if (layer == this->active_layer()) {
+        // Layer already active
+        return;
+    }
 
-    this->active_layer = layer;
-    ArrayUtils::append_uniq_uint8(this->activated_layers, ACTIVATED_LAYERS_CAPACITY, layer);
+    this->activated_layers[this->activated_layers_count++] = layer;
+    this->layer_change_hook();
 }
 
 void KeyMap::deactivate_layer(uint8_t layer) {
-    uint8_t prev_layer = ArrayUtils::remove_and_return_last_uint8(
-        this->activated_layers, ACTIVATED_LAYERS_CAPACITY, layer
-    );
+    int8_t found_index = -1;
+    for (int8_t i = 0; i < this->activated_layers_count; i++) {
+        if (this->activated_layers[i] == layer) {
+            found_index = i;
+            break;
+        }
+    }
 
-    this->activate_layer(prev_layer);
+    if (found_index == -1) {
+        // The layer was not activated
+        return;
+    }
+
+    // Shift elements to the left to fill the gap
+    for (int8_t i = found_index; i < this->activated_layers_count - 1; i++) {
+        this->activated_layers[i] = this->activated_layers[i+1];
+    }
+
+    this->activated_layers_count--;
+
+    this->layer_change_hook();
 }
 
 void KeyMap::toggle_layer(uint8_t layer) {
-    bool already_active = ArrayUtils::contains_uint8(this->activated_layers, ACTIVATED_LAYERS_CAPACITY, layer);
+    bool already_active = false;
+    for (int8_t i = 0; i < this->activated_layers_count; i++) {
+        if (this->activated_layers[i] == layer) {
+            already_active = true;
+            break;
+        }
+    }
+
     if (already_active) {
         this->deactivate_layer(layer);
     } else {
@@ -89,14 +120,12 @@ void KeyMap::toggle_layer(uint8_t layer) {
 
 void KeyMap::print_internal_state() {
     Serial.print("KeyMap: active_layer:");
-    Serial.print(active_layer);
+    Serial.print(this->active_layer());
+    Serial.print(", activated_layers_count:");
+    Serial.print(this->activated_layers_count);
     Serial.print(", activated_layers:");
-    for (uint8_t i = 0; i < ACTIVATED_LAYERS_CAPACITY-1; i++) {
-        uint8_t layer = this->activated_layers[i];
-        if (layer == 0x00) {
-            break;
-        }
+    for (int8_t i = 0; i < this->activated_layers_count; i++) {
+        Serial.print(this->activated_layers[i]);
         Serial.print("|");
-        Serial.print(layer);
     }
 }
