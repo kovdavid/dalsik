@@ -25,15 +25,15 @@ class KeyCoords {
 typedef struct {
     uint8_t type;
     KeyCoords coords;
-} BasicKeyEvent;
+} BaseKeyEvent;
 
 class Matrix {
     private:
-        uint8_t debounce_input(uint8_t row, uint8_t col, uint8_t input);
+        uint8_t keystate[KEYBOARD_ROWS][KEYBOARD_COLS];
+        uint8_t debounce[KEYBOARD_ROWS][KEYBOARD_COLS];
 
-        uint8_t keystate[ROW_PIN_COUNT][ONE_SIDE_COL_PIN_COUNT];
-        uint8_t debounce[ROW_PIN_COUNT][ONE_SIDE_COL_PIN_COUNT];
+        uint8_t debounce_input(uint8_t row, uint8_t col, uint8_t input);
     public:
         Matrix();
-        BasicKeyEvent scan();
+        BaseKeyEvent scan();
 };

@@ -1,8 +1,11 @@
-#include <Arduino.h>
+#include "Arduino.h"
+#include "HID.h"
+
 #include "matrix.h"
 #include "keyboard.h"
 #include "key_event_handler.h"
 #include "dalsik_serial.h"
+#include "dalsik_hid_descriptor.h"
 #include "serial_command.h"
 #include "dalsik.h"
 #include "pin_utils.h"
@@ -11,7 +14,7 @@
 Matrix matrix;
 KeyEventHandler key_event_handler;
 
-uint8_t is_master = 0;
+bool is_master = false;
 millisec prev_millis = 0;
 
 uint8_t usb_connected() {
@@ -21,13 +24,16 @@ uint8_t usb_connected() {
 }
 
 void Dalsik::setup() {
+    static HIDSubDescriptor node(KEYBOARD_HID_DESCRIPTOR, sizeof(KEYBOARD_HID_DESCRIPTOR));
+    HID().AppendDescriptor(&node);
+
     // Disable JTAG, so we can use PORTF
     MCUCR |= _BV(JTD);
     MCUCR |= _BV(JTD);
 
     delay(100);
     if (usb_connected()) {
-        is_master = 1;
+        is_master = true;
     }
     delay(100);
 
@@ -59,7 +65,7 @@ void Dalsik::loop() {
 
         while (DalsikSerial::has_data()) {
             uint8_t slave_data = DalsikSerial::get_next_elem();
-            key_event_handler.handle_key_event_from_slave(slave_data, now);
+            key_event_handler.handle_received_data_from_slave(slave_data, now);
         }
     }
 
@@ -72,7 +78,7 @@ void Dalsik::loop() {
 
     key_event_handler.handle_timeout(now); // check once every millisecond
 
-    BasicKeyEvent event = matrix.scan();
+    BaseKeyEvent event = matrix.scan();
     if (event.type == EVENT_NONE) {
         return;
     }

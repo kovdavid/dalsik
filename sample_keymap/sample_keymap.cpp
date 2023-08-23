@@ -1,13 +1,13 @@
 #include "keymap.h"
-#include "combos.h"
+#include "combo.h"
 
 // Sample keymap. To use it, set the `KEYMAP` env variable to this file
 // $ export DALSIK_KEYMAP=keymap/sample_keymap.cpp
 // $ export DALSIK_COMBOS_ENABLED=1
 // $ make
 
-#define CTRL_ESC  D(MOD_LCTRL, KC_ESCAPE)
-#define SHIFT_SPC D(MOD_LSHIFT, KC_SPACE)
+#define CTRL_ESC  DM(MOD_LCTRL, KC_ESCAPE)
+#define SHIFT_SPC DM(MOD_LSHIFT, KC_SPACE)
 #define L3_SCOLON DSL(3, KC_SEMICOLON)
 #define L2_BSPC   DSL(2, KC_BACKSPACE)
 #define OSM_SHFT  OSM(MOD_LSHIFT)
@@ -24,12 +24,12 @@
 const KeyCoords combo1[] PROGMEM = { { 1,2 }, { 1,3 } };
 const KeyCoords combo2[] PROGMEM = { { 1,3 }, { 1,4 } };
 
-ComboState combos[] = COMBOS({
+Combo combos[] = COMBOS({
     COMBO(combo1, OSM(MOD_LSHIFT)),
     COMBO(combo2, OSM(MOD_LGUI)),
 });
 
-const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] PROGMEM = KEYMAP({
+const uint32_t keymap[][KEYBOARD_ROWS][2*KEYBOARD_COLS] PROGMEM = KEYMAP({
     /* Layer 0
      * ┌────────┬────────┬────────┬────────┬────────┬────────┐ ┌────────┬────────┬────────┬────────┬────────┬────────┐
      * │ Tab    │   Q    │   W    │   E    │   R    │   T    │ │   Y    │   U    │   I    │   O    │   P    │   '    │
@@ -49,7 +49,7 @@ const uint32_t keymap[][KEYBOARD_ROWS][KEYBOARD_COLS] PROGMEM = KEYMAP({
         KC_TAB,    KC_Q,   KC_W,     KC_E,     KC_R,   KC_T,       KC_Y,     KC_U,   KC_I,     KC_O,    KC_P,       KC_QUOT,
         CTRL_ESC,  KC_A,   KC_S,     KC_D,     KC_F,   KC_G,       KC_H,     KC_J,   KC_K,     KC_L,    L3_SCOLON,  KC_ENTER,
         OSM_SHFT,  KC_Z,   KC_X,     KC_C,     KC_V,   KC_B,       KC_N,     KC_M,   KC_COMM,  KC_DOT,  KC_SLASH,   KC_DELETE,
-        OSM_CTRL,  LP(3),  OSM_ALT,  OSM_GUI,  LP(1),  SHIFT_SPC,  L2_BSPC,  LP(3),  LP(3),    LHT(1),  KC_LEFT,    KC_RIGHT
+        OSM_CTRL,  LH(3),  OSM_ALT,  OSM_GUI,  LH(1),  SHIFT_SPC,  L2_BSPC,  LH(3),  LH(3),    LHT(1),  KC_LEFT,    KC_RIGHT
     ),
 
     /* Layer 1

@@ -1,98 +1,59 @@
 # DALSIK
 
-**Da**vs **L**et's **S**pl**i**t **K**eyboard firmware for atmega32u4
+**Da**vs **L**et's **S**pl**i**t **K**eyboard firmware.
 
 ### 1. Motivation
-Fun :) I made this to see if I can do it and to learn. The list of features is kept to minimal, so the code should be fairly simple (around 1800 lines according to cloc).
+I made this as a fun learning project. The code is working and I've been using it on my keyboard since 2017. You can think of this as "QMK lite". As the code is written for only a single keyboard and MCU, it should be easier to understand as QMK.
 
-### 2. Features
-* Designed for the [Let's Split](https://github.com/nicinabox/lets-split-guide) keyboard by [wootpatoot](https://www.reddit.com/user/wootpatoot)
-* Up to 8 layers (press, toggle and hold-or-toggle key types)
-* Update your keymap without reflashing (the keymap is kept in EEPROM)
-* DualKey - tap for standard key, hold with other key for modifier (e.g. CTRL+ESC on a single key)
-* TapDance - registers as different key based on the number of taps within short time
-* Multimedia and system (power-off, sleep, wake-up) keys
-* Split keyboard support single-wire serial
-* Automatic master/slave election (based on the USB cable)
+The code is designed for the [Let's Split](https://github.com/nicinabox/lets-split-guide) keyboard created by [wootpatoot](https://www.reddit.com/user/wootpatoot).
 
-### 3. Flashing
-To flash the atmega32u4, use the [Arduino IDE](https://www.arduino.cc/en/main/software).
-
-### 4. Inspired by
+### 2. Inspired by
 * [Animus firmware](https://github.com/blahlicus/animus-family)
 * [QMK](https://github.com/qmk/qmk_firmware)
+* [Arduino-Makefile](https://github.com/leka/Arduino-Makefile)
 
-### 5. Setting the keymap
-There are various Perl scripts in the `utils/` directory for communicating the the keyboard. One of these commands is the `SET_KEY` command, which sets the key for a specific row/column/layer into the EEPROM. The main utility is the `utils/set_keymap.pl` script, which sets the whole keymap from a `json` file.
+### 3. Prerequisites
 
-The master side is automatically detected, when the atmega32u4 gets power from the USB.
+The project can be compiled on Linux, if you have to following packages installed:
 
-Example usage: `perl utils/set_keymap.pl -j /path/to/keymap.json [-s /dev/ttyACM0]`
+* Arduino (for the `HID` and `Serial` libraries and `USB` implementation)
+* avr-gcc (for compilation)
+* pyserial (for resetting the MCU via USB)
+* avrdude (for flashing)
 
-### 5.1 Key types
-Every supported key type is in [key_definitions.h](https://github.com/kovdavid/dalsik/blob/master/key_definitions.h). The `KeyInfo` struct mirrors the keymap representation in the EEPROM, having 2 bytes: key type and key. KEY_UNSET and KEY_TRANSPARENT does not take 'key' argument (it is set to 0x00). The following key types are supported:
+On Arch linux you can run:
 
-* KEY_UNSET - Has no effect
-* KEY_NORMAL - Basic keys, like modifiers (CTRL,ALT,SHIFT,GUI), letters, numbers etc.
-* KEY_DUAL_MOD_LCTRL - Left CTRL on hold, other KEY_NORMAL on tap
-* KEY_DUAL_MOD_RCTRL - Right CTRL on hold, other KEY_NORMAL on tap
-* KEY_DUAL_MOD_LSHIFT - Left SHIFT on hold, other KEY_NORMAL on tap
-* KEY_DUAL_MOD_RSHIFT - Right SHIFT on hold, other KEY_NORMAL on tap
-* KEY_DUAL_MOD_LGUI - Left GUI on hold, other KEY_NORMAL on tap
-* KEY_DUAL_MOD_RGUI - Right GUI on hold, other KEY_NORMAL on tap
-* KEY_DUAL_MOD_LALT - Left ALT on hold, other KEY_NORMAL on tap
-* KEY_DUAL_MOD_RALT - Right ALT on hold, other KEY_NORMAL on tap
-* KEY_LAYER_PRESS - Switch to other layer, while the key is pressed
-* KEY_LAYER_TOGGLE - Switch to other layer, until this key is pressed again. Other KEY_LAYER_PRESS keys can momentarily change layers, but after those are release, the current layer stays at the toggled layer
-* KEY_LAYER_TOGGLE_OR_HOLD - Switch momentarily to other layer if held. Toggle layer on tap
-* KEY_WITH_MOD_LCTRL - Press some KEY_NORMAL with Left CTRL
-* KEY_WITH_MOD_RCTRL - Press some KEY_NORMAL with Left CTRL
-* KEY_WITH_MOD_LSHIFT - Press some KEY_NORMAL with Left SHIFT
-* KEY_WITH_MOD_RSHIFT - Press some KEY_NORMAL with Right SHIFT
-* KEY_WITH_MOD_LGUI - Press some KEY_NORMAL with Left GUI
-* KEY_WITH_MOD_RGUI - Press some KEY_NORMAL with Right GUI
-* KEY_WITH_MOD_LALT - Press some KEY_NORMAL with Left ALT
-* KEY_WITH_MOD_RALT - Press some KEY_NORMAL with Right ALT
-* KEY_SYSTEM - System keys (power-off, sleep, wake-up etc)
-* KEY_MULTIMEDIA_0 - Multimedia keys with '0x00' prefix - mute, volume up, volume down etc
-* KEY_MULTIMEDIA_1 - Multimedia keys with '0x01' prefix - application launch (calculator, browser) etc
-* KEY_MULTIMEDIA_2 - Multimedia keys with '0x02' prefix - application control (Save, Exit, Open) etc.
-* KEY_TAPDANCE - Tapdance key - sends one from up to 3 different keys based on number of taps
-* KEY_DUAL_LAYER_1 - Switch to layer 1 on hold, other KEY_NORMAL on tap
-* KEY_DUAL_LAYER_2 - Switch to layer 2 on hold, other KEY_NORMAL on tap
-* KEY_DUAL_LAYER_3 - Switch to layer 3 on hold, other KEY_NORMAL on tap
-* KEY_DUAL_LAYER_4 - Switch to layer 4 on hold, other KEY_NORMAL on tap
-* KEY_DUAL_LAYER_5 - Switch to layer 5 on hold, other KEY_NORMAL on tap
-* KEY_DUAL_LAYER_6 - Switch to layer 6 on hold, other KEY_NORMAL on tap
-* KEY_DUAL_LAYER_7 - Switch to layer 7 on hold, other KEY_NORMAL on tap
-* KEY_TRANSPARENT - Use key from the previous layer
+```bash
+$ pacman -S arduino avr-gcc avrdude python-pyserial
+```
 
-The [USB HID Usage Tables](http://www.usb.org/developers/hidpage/Hut1_12v2.pdf) document contains every possible key codes used in HID communication.
+### 4. Keymap
 
-### 5.2 Keymap JSON format
+You need to specify the location of you keymap file (see `sample_keymap/sample_keymap.cpp`) via the `DALSIK_KEYMAP` env variable. I recommend using [direnv](https://direnv.net/) for this:
 
-TODO
+```bash
+$ cd ~/where/the/dalsik/project/is/cloned
+$ cat .envrc
+export DALSIK_KEYMAP=/path/to/my/keymap/file.cpp
+```
 
-### 6. Code architecture
-Everything starts in the [dalsik.ino](https://github.com/kovdavid/dalsik/blob/master/dalsik.ino) file. It contains the `void setup()` function, which initializes the hardware and the `void loop()` function, which is responsible for managing all the work that the keyboard does. Each side of the keyboard scans it's own set of keys for any change (key press or key release). This scanning is done with the [`matrix.scan()`](#61-the-matrix-module) call.
+### 5. Compilation & flashing
 
-### 6.1 The Matrix module
-The job of this module is to detect and report any key change event (press or release). The keys are wired into a [grid](http://pcbheaven.com/wikipages/How_Key_Matrices_Works/). The `scan` function iterates over every row and for every row check every column, this scanning for changes. The debouncing method was inspired from a solution written by [Kenneth A. Kuhn](http://www.kennethkuhn.com/electronics/debounce.c). The `scan` function returns a [`ChangedKeyCoords`](https://github.com/kovdavid/dalsik/blob/master/matrix.h) structure, which contains the row and column numbers of a changed key and the type of the change (press or release).
+```bash
+# Clean the previous build artifacts (optional)
+$ make clean
+# Compile the project
+$ make verify
+# Run the tests
+$ make test
+# Flash the MCU
+$ make upload
+```
 
-### 6.2 Master and slave differences
-Both the master and slave microcontrollers runs the `matrix.scan()` function on their own key matrix. The only thing the slave microcontroller does is to send the key change event do the master. Every keymap functionality and USB communication is done by the master. The slave does not know about any keys. It knows only about rows, columns, keypresses and keyreleases. The key change event is sent from the slave to the master using the [`DalsikSerial module`](#63-the-dalsikserial-module).
+### 6. Initial flashing
 
-### 6.3 The DalsikSerial module
-The [DalsikSerial module](https://github.com/kovdavid/dalsik/blob/master/dalsik_serial.ino) implements a single-wire, one-way, asynchronous serial communication protocol inspired by [QMK](https://github.com/qmk/qmk_firmware/blob/master/keyboards/lets_split/serial.c). The sender is always the slave half, while the master half only receives data. The line is kept on HIGH during idle. Before sending any data, the slave half pulls the line LOW, so the falling-edge pin interrupt on the master would trigger. After the stop bits the slave sends one byte, which the master half receives. The one byte sent by the slave contains the event type (1 bit - press or release), the row number (the Let's Split has 4 rows - that is 2 bits) and the column number (6 columns - that is 3 bits). This adds up to 6 bits. The last two are used for parity.
+The project assumes that one side of the split keyboard is always on the left and the other is on the right. The sidedness is encoded in EEPROM. To initially set the sidedness of the keyboards, uncomment the corresponding `#define SET_KEYBOARD` line in `src/dalsik/dalsik.h` and do a `clean verify upload` flashing on both sides.
 
-### 6.4 Key event overview
-The translation from `ChangedKeyCoords` to actual keys (and eventually sending data to the PC) is done in the [MasterReport](https://github.com/kovdavid/dalsik/blob/master/master_report.ino) module. It's two main functions are the `handle_master_changed_key` and the `handle_slave_changed_key`. The high-level overview of the keyboard goes like this:
-* We scan the key-matrix once every millisecond, looking for key changes
-* The key change events detected on the slave half are sent to the master half, where it is processed in the `handle_slave_changed_key` function.
-* The key change events on the master half are handled in the `handle_master_changed_key` function.
+### 7. Master election
 
-### 6.5 The KeyMap module
-The main responsibility of the `KeyMap` module is to translate key coordinates (row+column+layer number) into actual keys - see the [`KeyInfo` structure](https://github.com/kovdavid/dalsik/blob/master/keymap.h). This module serves as an interface between the keyboard and the EEPROM, where the whole keymap is kept.
-
-### 6.6 The MasterReport module
-In the end, every key handling is done in `MasterReport`. It's main responsibility is to translate the `ChangedKeyCoords` event into actual keys (using the `KeyMap` module) and to maintain/send the [USB HID report](https://docs.mbed.com/docs/ble-hid/en/latest/api/md_doc_HID.html) structure. There is a separate function for handling a press and release event for every type of key. The HID keyreports are sent by the `send_hid_report()` function. There are currently 3 different HID reports: base keyboard, multimedia and system keyreport. The purpose of the `press_*` and `release_*` functions is to add/remove keys to/from these structures.
+Master election is automatic based on the USB connection. When changing the keymap, only the master side needs to be reflashed. Should the USB connector break on the master keyboard, you can connect the USB cable to the other side, reflash it with your current keymap (if necessary) and it will work.

@@ -1,24 +1,21 @@
 #pragma once
 
 #include "dalsik.h"
-#include "key_event.h"
+#include "extended_key_event.h"
 #include "pressed_key.h"
 
-#define PRESSED_KEY_BUFFER 10
+#define PRESSED_KEY_CAPACITY 10
 
 class PressedKeys {
     public:
         uint8_t count;
-        millisec last_press;
-        PressedKey keys[PRESSED_KEY_BUFFER];
+        PressedKey keys[PRESSED_KEY_CAPACITY];
 
         PressedKeys();
-        PressedKey* add(KeyEvent event, uint8_t key_press_counter);
+        PressedKey* add(ExtendedKeyEvent event, uint8_t key_press_counter);
         PressedKey* find(KeyCoords coords);
-        PressedKey* get_before(PressedKey* pk);
-        void remove(PressedKey* pk);
+        PressedKey* get_last();
 
-        inline bool is_empty() { return this->count == 0; }
-        inline PressedKey* get(uint8_t index) { return &(this->keys[index]); }
-        inline PressedKey* get_last() { return &(this->keys[this->count-1]); }
+        void remove(PressedKey* pk);
+        void print_internal_state(millisec timestamp);
 };

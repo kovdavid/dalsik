@@ -1,8 +1,10 @@
 #pragma once
 
 #include "key_event_handler.h"
+#include "keymap.h"
 #include "keyboard.h"
 #include "tapdance_handler.h"
+#include "combo_handler.h"
 
 class TestFriendClass {
     public:
@@ -10,15 +12,23 @@ class TestFriendClass {
             return &(key_event_handler->keyboard.pressed_keys);
         }
 
-        CombosKeyBuffer* get_combos_key_buffer(KeyEventHandler* key_event_handler) {
-            return &(key_event_handler->combos_handler.key_buffer);
+        ComboHandlerState* get_combo_handler_state(KeyEventHandler* key_event_handler) {
+            return &(key_event_handler->combo_handler.state);
         }
 
         bool get_caps_word_enabled(KeyEventHandler* key_event_handler) {
             return key_event_handler->keyboard.caps_word_enabled;
         }
 
-        TapDanceHandlerInternalState* get_tapdance_state(KeyEventHandler* key_event_handler) {
+        TapDanceHandlerState* get_tapdance_state(KeyEventHandler* key_event_handler) {
             return &(key_event_handler->tapdance_handler.state);
+        }
+
+        uint8_t get_activated_layers_count(KeyMap keymap) {
+            return keymap.activated_layers_count;
+        }
+
+        uint8_t get_activated_layer_at(KeyMap keymap, uint8_t index) {
+            return keymap.activated_layers[index];
         }
 };

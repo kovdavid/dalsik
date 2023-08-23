@@ -17,15 +17,16 @@ static void update(int address, uint8_t value) {
 }
 
 // The keyboard side can be set during flashing. See dalsik.h
-uint8_t EEPROM::get_keyboard_side() {
-#ifdef KEYBOARD_SIDE
-    set_keyboard_side(KEYBOARD_SIDE);
-    return KEYBOARD_SIDE;
-#else
-    return read(KEYBOARD_SIDE_ADDRESS);
+char EEPROM::get_keyboard_side() {
+#ifdef SET_KEYBOARD_SIDE
+    set_keyboard_side(SET_KEYBOARD_SIDE);
 #endif
+
+    return read(KEYBOARD_SIDE_ADDRESS);
 }
 
-void EEPROM::set_keyboard_side(uint8_t side) {
-    update(KEYBOARD_SIDE_ADDRESS, side);
+void EEPROM::set_keyboard_side(char side) {
+    if (side == KEYBOARD_SIDE_LEFT || side == KEYBOARD_SIDE_RIGHT) {
+        update(KEYBOARD_SIDE_ADDRESS, side);
+    }
 }
