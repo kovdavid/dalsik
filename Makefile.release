@@ -35,7 +35,6 @@ SIZE    = $(TOOL_DIR)/$(SIZE_NAME)
 AVRDUDE = $(TOOL_DIR)/$(AVRDUDE_NAME)
 
 ARDUINO_BASE_DIR ?= /usr/share/arduino
-ARDUINO_HW_DIR ?= $(ARDUINO_BASE_DIR)/hardware/archlinux-arduino
 ARDUINO_VERSION_FILE ?= $(ARDUINO_BASE_DIR)/lib/version.txt
 BOARDS_TXT ?= $(ARDUINO_HW_DIR)/avr/boards.txt
 
@@ -56,6 +55,24 @@ SIZE_CHECK_COMMAND = $(SIZE) --mcu=$(MCU) -C --format=avr $(TARGET_ELF)
 SIZE_CHECK_FILE = $(OBJDIR)/.size_ok
 
 get_upload_port = $(if $(wildcard $(DEVICE_PATH)),$(firstword $(wildcard $(DEVICE_PATH))),$(error Arduino port $(DEVICE_PATH) not found!))
+
+# Trying to automatically find ARDUINO_HW_DIR
+ifndef ARDUINO_HW_DIR
+
+ARDUINO_HW_DIR_ARCHLINUX = $(ARDUINO_BASE_DIR)/hardware/archlinux-arduino
+ARDUINO_HW_DIR_NON_ARCHLINUX = $(ARDUINO_BASE_DIR)/hardware/arduino
+
+ifneq ($(wildcard $(ARDUINO_HW_DIR_ARCHLINUX)),)
+ARDUINO_HW_DIR = $(ARDUINO_HW_DIR_ARCHLINUX)
+else ifneq ($(wildcard $(ARDUINO_HW_DIR_NON_ARCHLINUX)),)
+ARDUINO_HW_DIR = $(ARDUINO_HW_DIR_NON_ARCHLINUX)
+endif
+
+endif
+
+ifndef ARDUINO_HW_DIR
+$(error ARDUINO_HW_DIR not found. Please set it manually)
+endif
 
 # Flags
 
