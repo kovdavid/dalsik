@@ -9,7 +9,7 @@
 typedef struct {
     // When did we start processing a pending combo
     millisec pending_combo_start;
-    // The last event that was sent to next_event_handler without processing here
+    // The last event that was sent to tapdance_handler without processing here
     millisec last_non_combo_press;
     // The keys held up by the pending Combo processing
     HeldUpKeys held_up_keys;
@@ -31,7 +31,7 @@ class PressScanResult {
 class ComboHandler {
     TEST_FRIEND_CLASS
     private:
-        TapDanceHandler *next_event_handler;
+        TapDanceHandler *tapdance_handler;
         ComboHandlerState state;
 
         PressScanResult scan_combos_on_press_event(ExtendedKeyEvent event);
@@ -51,7 +51,7 @@ class ComboHandler {
         void release_active_combo_key(HeldUpKey* hkey, millisec timestamp);
 
     public:
-        ComboHandler(TapDanceHandler *next_event_handler);
+        ComboHandler(TapDanceHandler *tapdance_handler);
 
         uint8_t handle_key_event(ExtendedKeyEvent e);
         void print_internal_state(millisec now);

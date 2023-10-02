@@ -13,8 +13,8 @@
 #define PRINT_INTERNAL_STATE
 #endif
 
-ComboHandler::ComboHandler(TapDanceHandler *next_event_handler)
-    : next_event_handler(next_event_handler)
+ComboHandler::ComboHandler(TapDanceHandler *tapdance_handler)
+    : tapdance_handler(tapdance_handler)
     , state({})
 {}
 
@@ -30,17 +30,17 @@ uint8_t ComboHandler::handle_key_event(ExtendedKeyEvent event) {
     }
 
     if (action == CALL_NEXT_EVENT_HANDLER) {
-        this->next_event_handler->handle_key_event(event);
+        this->tapdance_handler->handle_key_event(event);
     }
 
     return action;
 }
 
 // If the event key is part of a combo, then start a pending combo processing.
-// Otherwise pass the event to next_event_handler.
+// Otherwise pass the event to tapdance_handler.
 uint8_t ComboHandler::no_pending_combo_processing(ExtendedKeyEvent event) {
     if (event.type == EVENT_TIMEOUT) {
-        // No combo is active/pending; just pass the execution to next_event_handler
+        // No combo is active/pending; just pass the execution to tapdance_handler
         return CALL_NEXT_EVENT_HANDLER;
     }
 
@@ -305,19 +305,19 @@ void ComboHandler::activate_combo(int8_t index) {
         combo->clear_state();
     }
 
-    // Send the corresponding target_key event to next_event_handler
+    // Send the corresponding target_key event to tapdance_handler
     KeyCoords coords = COMBO_TARGET_KEY_COORDS(index);
     Key key = Key(combo->target_key, coords);
 
     ExtendedKeyEvent event = ExtendedKeyEvent(EVENT_KEY_PRESS, coords, key, this->state.pending_combo_start);
-    this->next_event_handler->handle_key_event(event);
+    this->tapdance_handler->handle_key_event(event);
 
     // Deactivate pending Combo processing
     this->state.pending_combo_start = 0;
 }
 
 void ComboHandler::abort_pending_combos_processing() {
-    // Send the HeldUpKeys to next_event_handler for processing
+    // Send the HeldUpKeys to tapdance_handler for processing
     for (uint8_t i = 0; i < this->state.held_up_keys.count; i++) {
         HeldUpKey* hkey = this->state.held_up_keys.get_by_index(i);
         if (hkey->part_of_active_combo) continue;
@@ -325,7 +325,7 @@ void ComboHandler::abort_pending_combos_processing() {
 
         ExtendedKeyEvent event = ExtendedKeyEvent(EVENT_KEY_PRESS, hkey->coords, hkey->timestamp);
 
-        this->next_event_handler->handle_key_event(event);
+        this->tapdance_handler->handle_key_event(event);
 
         hkey->clear();
     }
@@ -350,7 +350,7 @@ void ComboHandler::release_active_combo_key(HeldUpKey* hkey, millisec timestamp)
 
         ExtendedKeyEvent event = ExtendedKeyEvent(EVENT_KEY_RELEASE, coords, timestamp);
 
-        this->next_event_handler->handle_key_event(event);
+        this->tapdance_handler->handle_key_event(event);
 
         combo->clear_state();
     }

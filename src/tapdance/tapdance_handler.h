@@ -18,7 +18,7 @@ typedef struct {
 class TapDanceHandler {
     TEST_FRIEND_CLASS
     private:
-        Keyboard *next_event_handler;
+        Keyboard *keyboard;
         KeyMap *keymap;
 
         TapDanceHandlerState state;
@@ -30,7 +30,7 @@ class TapDanceHandler {
         void trigger_tapdance(millisec now);
 
     public:
-        TapDanceHandler(Keyboard *next_event_handler, KeyMap *keymap);
+        TapDanceHandler(Keyboard *keyboard, KeyMap *keymap);
 
         void handle_key_event(ExtendedKeyEvent e);
         void print_internal_state(millisec now);

@@ -14,8 +14,8 @@
 #define PRINT_INTERNAL_STATE
 #endif
 
-TapDanceHandler::TapDanceHandler(Keyboard *next_event_handler, KeyMap *keymap)
-    : next_event_handler(next_event_handler)
+TapDanceHandler::TapDanceHandler(Keyboard *keyboard, KeyMap *keymap)
+    : keyboard(keyboard)
     , keymap(keymap)
     , state({})
 {}
@@ -25,7 +25,7 @@ void TapDanceHandler::handle_key_event(ExtendedKeyEvent event) {
 
     if (tapdances_count > 0) {
         if (event.type == EVENT_KEY_PRESS) {
-            this->next_event_handler->run_press_hooks();
+            this->keyboard->run_press_hooks();
         }
 
         event.look_up_key(this->keymap);
@@ -40,7 +40,7 @@ void TapDanceHandler::handle_key_event(ExtendedKeyEvent event) {
     }
 
     if (action == CALL_NEXT_EVENT_HANDLER) {
-        this->next_event_handler->handle_key_event(event);
+        this->keyboard->handle_key_event(event);
     }
 }
 
@@ -93,7 +93,7 @@ uint8_t TapDanceHandler::handle_key_release(ExtendedKeyEvent event) {
         // We basically update event.type + event.timestamp
         this->state.last_key_event = event;
     }
-    // We always call next_event_handler. If we've already triggered a TapDance target key,
+    // We always call keyboard. If we've already triggered a TapDance target key,
     // then we need to release it based on its KeyCoords. Otherwise these KeyCoords won't
     // be in PressedKeys and so this event will be ignored.
     return CALL_NEXT_EVENT_HANDLER;
@@ -137,12 +137,12 @@ void TapDanceHandler::trigger_tapdance(millisec now) {
         now
     );
 
-    this->next_event_handler->handle_key_event(event);
+    this->keyboard->handle_key_event(event);
 
     if (this->state.last_key_event.type == EVENT_KEY_RELEASE) {
         // If the TapDance key is released, we immediately send the release event
         event.type = EVENT_KEY_RELEASE;
-        this->next_event_handler->handle_key_event(event);
+        this->keyboard->handle_key_event(event);
     }
 
     this->state = {};
