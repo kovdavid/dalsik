@@ -316,12 +316,12 @@ void Keyboard::release_desktop_key(Key key) {
 void Keyboard::press_consumer_key(Key key) {
     this->caps_word_turn_off();
 
-    uint16_t consumer_key = (key.code << 8) | key.modifiers;
+    uint16_t consumer_key = (key.modifiers << 8) | key.code;
     this->current_reports.consumer.key = consumer_key;
 }
 
 void Keyboard::release_consumer_key(Key key) {
-    uint16_t consumer_key = (key.code << 8) | key.modifiers;
+    uint16_t consumer_key = (key.modifiers << 8) | key.code;
 
     if (this->current_reports.consumer.key == consumer_key) {
         this->current_reports.consumer.key = 0x00;
