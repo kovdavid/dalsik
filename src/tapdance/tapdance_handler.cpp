@@ -24,6 +24,10 @@ void TapDanceHandler::handle_key_event(ExtendedKeyEvent event) {
     uint8_t action = CALL_NEXT_EVENT_HANDLER;
 
     if (tapdances_count > 0) {
+        if (event.type == EVENT_KEY_PRESS) {
+            this->next_event_handler->run_press_hooks();
+        }
+
         event.look_up_key(this->keymap);
 
         if (event.type == EVENT_KEY_PRESS) {

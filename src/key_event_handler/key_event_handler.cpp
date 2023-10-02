@@ -122,10 +122,6 @@ void KeyEventHandler::handle_key_event(BaseKeyEvent event, millisec now) {
 
     ExtendedKeyEvent extended_event = ExtendedKeyEvent(event, now);
 
-    if (extended_event.type == EVENT_KEY_PRESS) {
-        this->keyboard.run_press_hooks();
-    }
-
     this->combo_handler.handle_key_event(extended_event);
 }
 

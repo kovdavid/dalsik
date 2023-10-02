@@ -1933,6 +1933,25 @@ void test_tapdance_hold_and_different_key(void) {
     REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_1, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
+// Scenario:
+//   * we have a dual layer key, that is also part of a combo
+//   * we press the dual layer key, it goes to the held_up_keys array of ComboHandler
+//   * we press a normal key (e.g. KC_A) that is not part of a combo
+//   * at this point the dual key is not resolved as a layer key before looking up KC_A
+void test_combo_dual_layer_key_1(void) {
+    KeyEventHandler key_event_handler;
+
+    millisec now = 10000;
+
+    KeyCoords combo_dual_key = { 3, 5 };
+
+    key_event_handler.handle_key_event({ P, combo_dual_key }, now++);
+
+    key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
+
+    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
 TEST_LIST = {
     { "test_array_utils1", test_array_utils1 },
     { "test_keymap_1", test_keymap_1 },
@@ -1993,5 +2012,6 @@ TEST_LIST = {
     { "test_tapdance_triple_tap_hold_timeout", test_tapdance_triple_tap_hold_timeout },
     { "test_tapdance_tap_and_different_key", test_tapdance_tap_and_different_key },
     { "test_tapdance_hold_and_different_key", test_tapdance_hold_and_different_key },
+    { "test_combo_dual_layer_key_1", test_combo_dual_layer_key_1 },
     { NULL, NULL }
 };
