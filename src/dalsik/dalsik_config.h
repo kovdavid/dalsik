@@ -20,7 +20,7 @@
 #define COMBO_PROCESSING_LIMIT_MS 75
 // To start a combo processing, this amount of time needs to pass without
 // any events. This is to prevent accidental combo firing when typing fast.
-#define COMBO_START_THRESHOLD_MS 300
+#define COMBO_START_THRESHOLD_MS 200
 
 // If a tapdance key is held for this amount of time, we will trigger the target key for the current tap count
 #define TAPDANCE_HOLD_TRIGGER_THRESHOLD_MS 300

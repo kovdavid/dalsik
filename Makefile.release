@@ -162,7 +162,7 @@ $(OBJDIR)/core/%.S.o: $(ARDUINO_CORE_LIB_DIR)/%.S $(COMMON_DEPS) | $(OBJDIR)
 
 # Warnings in the Arduino core libraries
 %core/Print.cpp.o : CXXFLAGS += -Wno-deprecated-declarations
-%core/new.cpp.o : CXXFLAGS += -Wno-sized-deallocation
+%core/new.cpp.o : CXXFLAGS += -Wno-sized-deallocation -Wno-unused-parameter
 
 # Arduino HID library
 ARDUINO_HID_LIB_DIR ?= $(ARDUINO_HW_DIR)/avr/libraries/HID/src
