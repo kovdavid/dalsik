@@ -1,5 +1,6 @@
 #include "HID.h"
 #include "Serial.h"
+#include "math.h"
 
 #include "acutest.h"
 #include "avr/eeprom.h"
@@ -14,24 +15,36 @@
 #include "keyboard.h"
 #include "keymap.h"
 #include "tapdance.h"
+#include "mouse.h"
 #include "test_friend.h"
 
 TestFriendClass test_friend;
 
-#define REPORT_COMPARE_AT(i, ...) TEST_CHECK(compare_keyboard_report(i, __VA_ARGS__))
+#define KEYBOARD_REPORT_COMPARE_AT(i, ...) TEST_CHECK(compare_keyboard_report(i, __VA_ARGS__))
+#define MOUSE_REPORT_COMPARE_AT(i, ...) TEST_CHECK(compare_mouse_report(i, __VA_ARGS__))
+
 #define COMPARE_LAYERS(keymap, expected_size, ...) \
     do { \
         uint8_t expected_layers[ACTIVATED_LAYERS_CAPACITY] = __VA_ARGS__; \
         compare_activated_layers(keymap, expected_size, expected_layers); \
     } while(0);
 
-#define HID_SIZE_CHECK(expected) \
+#define KEYBOARD_HID_SIZE_CHECK(expected) \
     TEST_CHECK(HID().keyboard_reports.size() == expected); \
-    TEST_MSG("size: %lu expected:%d", HID().keyboard_reports.size(), expected)
+    TEST_MSG("keyboard size: %lu expected:%d", HID().keyboard_reports.size(), expected)
+
+#define MOUSE_HID_SIZE_CHECK(expected) \
+    TEST_CHECK(HID().mouse_reports.size() == expected); \
+    TEST_MSG("mouse size: %lu expected:%d", HID().mouse_reports.size(), expected)
 
 bool compare_keyboard_report(size_t index, KeyboardHIDReport expected) {
     KeyboardHIDReport got = HID().keyboard_reports.at(index);
     return memcmp(&got, &expected, sizeof(KeyboardHIDReport)) == 0;
+}
+
+bool compare_mouse_report(size_t index, MouseHIDReport expected) {
+    MouseHIDReport got = HID().mouse_reports.at(index);
+    return memcmp(&got, &expected, sizeof(MouseHIDReport)) == 0;
 }
 
 void compare_activated_layers(KeyMap keymap, uint8_t expected_count, uint8_t* expected_layers) {
@@ -49,12 +62,21 @@ void compare_activated_layers(KeyMap keymap, uint8_t expected_count, uint8_t* ex
     }
 }
 
-void print_hid_reports() {
-    TEST_MSG("size: %lu", HID().keyboard_reports.size());
+void print_keyboard_hid_reports() {
+    TEST_MSG("keyboard size: %lu", HID().keyboard_reports.size());
     for (uint8_t i = 0; i < HID().keyboard_reports.size(); i++ ) {
         char buffer[10];
         sprintf(buffer, "KEY %d", i);
         TEST_DUMP(buffer, &(HID().keyboard_reports.at(i)), sizeof(KeyboardHIDReport));
+    }
+}
+
+void print_mouse_hid_reports() {
+    TEST_MSG("mouse size: %lu", HID().mouse_reports.size());
+    for (uint8_t i = 0; i < HID().mouse_reports.size(); i++ ) {
+        char buffer[10];
+        sprintf(buffer, "KEY %d", i);
+        TEST_DUMP(buffer, &(HID().mouse_reports.at(i)), sizeof(MouseHIDReport));
     }
 }
 
@@ -68,7 +90,8 @@ void print_combo_states() {
 
 void dump_hid_reports() {
     TEST_CHECK(1 == 0);
-    print_hid_reports();
+    print_keyboard_hid_reports();
+    print_mouse_hid_reports();
 }
 
 #define SEC(x) x*1000
@@ -103,6 +126,19 @@ KeyCoords caps_word = { 2, 2 };
 KeyCoords dth_ctrl_j = { 2, 5 };
 
 KeyCoords td1 = { 2, 6 };
+
+KeyCoords mouse_btn_left   = { 0, 1 };
+KeyCoords mouse_btn_middle = { 0, 2 };
+KeyCoords mouse_btn_right  = { 0, 3 };
+
+KeyCoords mouse_cur_up         = { 0, 4 };
+KeyCoords mouse_cur_up_right   = { 0, 5 };
+KeyCoords mouse_cur_right      = { 0, 6 };
+KeyCoords mouse_cur_down_right = { 0, 7 };
+KeyCoords mouse_cur_down       = { 0, 8 };
+KeyCoords mouse_cur_down_left  = { 0, 9 };
+KeyCoords mouse_cur_left       = { 0, 10 };
+KeyCoords mouse_cur_up_left    = { 0, 11 };
 
 void test_array_utils1(void) {
     uint8_t array[] = { 1, 2, 3, 0 };
@@ -200,13 +236,13 @@ void test_normal_key_1(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Simple press test with long delay between events
@@ -216,15 +252,15 @@ void test_normal_key_2(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     now += SEC(10);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Multiple normal keys pressed at once
@@ -234,21 +270,21 @@ void test_normal_key_3(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ P, normal_KC_B }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event({ R, normal_KC_B }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_A, KC_B, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_A, KC_B, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Dual mod key quick tap
@@ -261,13 +297,13 @@ void test_dual_mod_key_1(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Dual mod key long press and release (timeout check)
@@ -279,23 +315,23 @@ void test_dual_mod_key_2(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     // Not yet...
     now += DUAL_MODE_TIMEOUT_MS - 1;
     key_event_handler.handle_key_event({ T }, now);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     // Fire KC_C
     now++;
     key_event_handler.handle_key_event({ T }, now);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ R, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test dual key with a normal key as well
@@ -307,21 +343,21 @@ void test_dual_mod_key_3(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, normal_KC_B    }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ R, normal_KC_B    }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event({ R, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
-    REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test dual key with a normal key, but with a long delay
@@ -333,25 +369,25 @@ void test_dual_mod_key_4(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     now += DUAL_MODE_TIMEOUT_MS;
     key_event_handler.handle_key_event({ T }, now);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ P, normal_KC_B }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ R, normal_KC_B }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event({ R, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_C, KC_B, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_C, KC_B, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Dual mod key with a normal key, but we release the dual key first.
@@ -362,21 +398,21 @@ void test_dual_mod_key_5(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, normal_KC_B    }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ R, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event({ R, normal_KC_B    }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
-    REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Multiple dual keys without timeout
@@ -389,29 +425,29 @@ void test_dual_mod_key_6(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, dual_shift_KC_D }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ P, normal_KC_B }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event({ R, normal_KC_B }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
     key_event_handler.handle_key_event({ R, dual_shift_KC_D }, now++);
-    HID_SIZE_CHECK(5);
+    KEYBOARD_HID_SIZE_CHECK(5);
 
     key_event_handler.handle_key_event({ R, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(6);
+    KEYBOARD_HID_SIZE_CHECK(6);
 
-    REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x03, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(4, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x03, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(4, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Multiple dual keys with timeout
@@ -425,33 +461,33 @@ void test_dual_mod_key_7(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, dual_shift_KC_D }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     now += DUAL_MODE_TIMEOUT_MS;
     key_event_handler.handle_key_event({ T }, now);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ P, normal_KC_B }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event({ R, normal_KC_B }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
     key_event_handler.handle_key_event({ R, dual_shift_KC_D }, now++);
-    HID_SIZE_CHECK(5);
+    KEYBOARD_HID_SIZE_CHECK(5);
 
     key_event_handler.handle_key_event({ R, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(6);
+    KEYBOARD_HID_SIZE_CHECK(6);
 
-    REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x01, 0x00, KC_D, KC_B, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x01, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(4, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x01, 0x00, KC_D, KC_B, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x01, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(4, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Press only dual mod keys
@@ -464,21 +500,21 @@ void test_dual_mod_key_8(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, dual_shift_KC_D }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ R, dual_shift_KC_D }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event({ R, dual_ctrl_KC_C }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
-    REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 void test_dual_mod_key_9(void) {
@@ -487,21 +523,21 @@ void test_dual_mod_key_9(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ P, dual_shift_KC_D }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ R, dual_shift_KC_D }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When tapping the dual layer key, the secondary key should trigger
@@ -511,13 +547,13 @@ void test_dual_layer_key_1(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dual_layer_1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, dual_layer_1 }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_G, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_G, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When pressing a different key after the dual layer key, we should
@@ -529,12 +565,12 @@ void test_dual_layer_key_2(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dual_layer_1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When pressing a solo dual layer key as the first key, it should trigger
@@ -545,12 +581,12 @@ void test_dual_layer_key_3(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, solo_dual_layer_1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When pressing a solo dual layer key NOT as the first key, it should trigger
@@ -561,13 +597,13 @@ void test_dual_layer_key_4(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ P, solo_dual_layer_1 }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_A, KC_H, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_A, KC_H, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Press only dual layer keys
@@ -580,25 +616,25 @@ void test_dual_layer_key_5(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dual_layer_1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, dual_layer_2 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, dual_layer_3 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, dual_layer_3 }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ R, dual_layer_2 }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ R, dual_layer_1 }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_I, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_I, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // There was an issue with the `key_index` value in the PressedKeys
@@ -611,29 +647,29 @@ void test_stuck_key(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ P, normal_KC_B }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event({ P, dual_shift_KC_D }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event({ R, normal_KC_B }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
     key_event_handler.handle_key_event({ R, dual_shift_KC_D }, now++);
-    HID_SIZE_CHECK(6);
+    KEYBOARD_HID_SIZE_CHECK(6);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_A, KC_B, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(4, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_A, KC_B, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(4, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test that the one-shot CTRL modifier is sent after tapping the one shot key
@@ -643,20 +679,20 @@ void test_one_shot_modifier(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ R, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
-    REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test that after the second press of the one-shot modifier the CTRL modifier
@@ -667,23 +703,23 @@ void test_one_shot_modifier_toggle(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ R, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ P, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ R, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
-    REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When a one-shot modifier is held with a different key, it is registered
@@ -695,29 +731,29 @@ void test_one_shot_modifier_hold(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event({ R, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(5);
+    KEYBOARD_HID_SIZE_CHECK(5);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(6);
+    KEYBOARD_HID_SIZE_CHECK(6);
 
-    REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(4, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(4, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // We won't toggle OSM if the key is tapped/held for too long
@@ -727,15 +763,15 @@ void test_one_shot_modifier_long_tap(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     now += ONE_SHOT_MODIFIER_TAP_TIMEOUT_MS;
 
     key_event_handler.handle_key_event({ R, one_shot_ctrl }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test that the layer switch is applied and we send KC_E (layer1)
@@ -745,15 +781,15 @@ void test_layer_hold_or_toggle(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, layer_hold_or_toggle }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, layer_hold_or_toggle }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test that the second tap on the key toggles the layer off, so we send KC_A
@@ -763,21 +799,21 @@ void test_layer_hold_or_toggle_on_off(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, layer_hold_or_toggle }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, layer_hold_or_toggle }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, layer_hold_or_toggle }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, layer_hold_or_toggle }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When a LHT key is held while a different key is pressed, the LHT should
@@ -789,27 +825,27 @@ void test_layer_hold_or_toggle_hold(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, layer_hold_or_toggle }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ R, layer_hold_or_toggle }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test that pressing an LP key changes the layer, so instead of KC_A we get
@@ -820,12 +856,12 @@ void test_layer_press_1(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, layer_press_1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test that releasing the LP key changes the layer back, so we should get KC_A
@@ -835,15 +871,15 @@ void test_layer_press_2(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, layer_press_1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, layer_press_1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test clearing of the pressed_keys structure. We first fill it up, Then
@@ -907,22 +943,22 @@ void test_combo_simple_press_and_release(void) {
 
         // The first key is part of a combo, so it is buffered in combo_handler
         key_event_handler.handle_key_event(test_case.events[0], now++);
-        HID_SIZE_CHECK(0);
+        KEYBOARD_HID_SIZE_CHECK(0);
 
         // The second key completes the combo and activates it
         key_event_handler.handle_key_event(test_case.events[1], now++);
-        HID_SIZE_CHECK(1);
+        KEYBOARD_HID_SIZE_CHECK(1);
 
         // One of the combo key is still pressed, so we don't release the target key yet
         key_event_handler.handle_key_event(test_case.events[2], now++);
-        HID_SIZE_CHECK(1);
+        KEYBOARD_HID_SIZE_CHECK(1);
 
         // That last key of the combo is released, so we release the target key
         key_event_handler.handle_key_event(test_case.events[3], now++);
-        HID_SIZE_CHECK(2);
+        KEYBOARD_HID_SIZE_CHECK(2);
 
-        REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-        REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+        KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+        KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
     }
 }
 
@@ -933,9 +969,9 @@ void test_combo_state_changes_1(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < combos_count; i++) {
         Combo* combo = COMBO_AT(i);
@@ -956,7 +992,7 @@ void test_combo_state_changes_2(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event(PRESS(3,0), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     for (uint8_t i = 0; i < 4; i++) {
         Combo* combo = COMBO_AT(i);
@@ -989,7 +1025,7 @@ void test_combo_state_changes_3(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event(PRESS(3,3), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     for (uint8_t i = 0; i < 2; i++) { // These should be disabled
         Combo* combo = COMBO_AT(i);
@@ -1026,10 +1062,10 @@ void test_combo_state_changes_4(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event(PRESS(3,3), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,4), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     uint8_t disabled_combo_indexes[] = { 0, 1, 2, 4 };
     uint8_t pending_combo_indexes[] = { 3 };
@@ -1072,18 +1108,18 @@ void test_combo_state_changes_5(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event(PRESS(3,3), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,4), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,0), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,1), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < 3; i++) { // These should be disabled
         Combo* combo = COMBO_AT(i);
@@ -1138,27 +1174,27 @@ void test_combo_state_changes_6(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event(PRESS(3,3), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,4), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,0), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,1), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event(RELEASE(3,4), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event(RELEASE(3,1), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event(RELEASE(3,3), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < 3; i++) { // These should be disabled
         Combo* combo = COMBO_AT(i);
@@ -1190,31 +1226,31 @@ void test_combo_state_changes_7(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event(PRESS(3,3), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,4), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,0), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,1), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event(RELEASE(3,4), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event(RELEASE(3,1), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event(RELEASE(3,3), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event(RELEASE(3,0), now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_D, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < combos_count; i++) { // These should be reset
         Combo* combo = COMBO_AT(i);
@@ -1236,21 +1272,21 @@ void test_combo_state_changes_abort(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event(PRESS(3,0), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event(RELEASE(3,0), now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_Q, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_Q, KC_A, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_Q, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_Q, KC_A, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < combos_count; i++) { // These should be reset
         Combo* combo = COMBO_AT(i);
@@ -1271,22 +1307,22 @@ void test_combo_timeout_abort(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event(PRESS(3,1), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,0), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     // Not yet
     key_event_handler.handle_key_event({ T }, now);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     now += COMBO_PROCESSING_LIMIT_MS;
 
     key_event_handler.handle_key_event({ T }, now);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_W, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_W, KC_Q, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_W, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_W, KC_Q, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < combos_count; i++) { // These should be reset
         Combo* combo = COMBO_AT(i);
@@ -1301,13 +1337,13 @@ void test_combo_timeout_abort(void) {
     // Release the keys - no pending combo processing, so just forward them
     // to the keyboard
     key_event_handler.handle_key_event(RELEASE(3,1), now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
     key_event_handler.handle_key_event(RELEASE(3,0), now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_Q, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_Q, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Activate combo3 after timeout even if combo4 is pending as well, but
@@ -1318,24 +1354,24 @@ void test_combo_timeout_activate(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event(PRESS(3,0), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,1), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,3), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     // Not yet
     key_event_handler.handle_key_event({ T }, now);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     now += COMBO_PROCESSING_LIMIT_MS;
 
     key_event_handler.handle_key_event({ T }, now);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     // These should be reset
     Combo* combo1 = COMBO_AT(0);
@@ -1375,33 +1411,33 @@ void test_combo_multiple_active_combos(void) {
 
     // Combo1
     key_event_handler.handle_key_event(PRESS(3,5), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     key_event_handler.handle_key_event(PRESS(3,6), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     // Combo2
     key_event_handler.handle_key_event(PRESS(3,7), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
     key_event_handler.handle_key_event(PRESS(3,0), now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x01, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     // Relase just a single key from each combo
     key_event_handler.handle_key_event(RELEASE(3,6), now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
     key_event_handler.handle_key_event(RELEASE(3,7), now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     // Release the rest
     key_event_handler.handle_key_event(RELEASE(3,5), now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
     key_event_handler.handle_key_event(RELEASE(3,0), now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
 
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Test stuck combo key - sometimes the release event is not sent to the keyboard
@@ -1414,32 +1450,32 @@ void test_combo_stuck_key1(void) {
 
     // We activate the combo - everything according to the plan
     key_event_handler.handle_key_event(PRESS(3,7), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     key_event_handler.handle_key_event(PRESS(3,0), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     // We release one of the key - we send nothing, which is OK, because
     // the other key is still pressed
     key_event_handler.handle_key_event(RELEASE(3,7), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
     // We press the same key again - this triggered the bug
     key_event_handler.handle_key_event(PRESS(3,7), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     // We release the last key of the combo. Note that (3,7) is still pressed,
     // but after the first release of that key we've already modified the state
     // of the combo; the second press did not change the existing active combo,
     // so after releasing (3,0) we consider it fully released.
     key_event_handler.handle_key_event(RELEASE(3,0), now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
     key_event_handler.handle_key_event(RELEASE(3,7), now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    // At this point before fixing the error, HID_SIZE_CHECK(1) == true, so
+    // At this point before fixing the error, KEYBOARD_HID_SIZE_CHECK(1) == true, so
     // the KC_A key is stuck = the release event was never sent to the keyboard
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When tapping a single combo key, only the PRESS event was sent to the keyboard
@@ -1452,12 +1488,12 @@ void test_combo_stuck_key2(void) {
 
     // We activate the combo - everything according to the plan
     key_event_handler.handle_key_event(PRESS(3,0), now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     key_event_handler.handle_key_event(RELEASE(3,0), now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_Q, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_Q, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // We don't start a new pending combo processing until COMBO_START_THRESHOLD_MS
@@ -1470,12 +1506,12 @@ void test_combo_start_threshold(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, kc_no }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event(PRESS(3,0), now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_Q, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_Q, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     for (uint8_t i = 0; i < combos_count; i++) {
         Combo* combo = COMBO_AT(i);
@@ -1497,55 +1533,55 @@ void test_caps_word_1(void) {
 
     // Toggle caps_word
     key_event_handler.handle_key_event({ P, caps_word }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == true);
 
     key_event_handler.handle_key_event({ R, caps_word }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == true);
 
     // Press A
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == true);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == true);
 
     // Press B
     key_event_handler.handle_key_event({ P, normal_KC_B }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == true);
 
     key_event_handler.handle_key_event({ R, normal_KC_B }, now++);
-    HID_SIZE_CHECK(4);
+    KEYBOARD_HID_SIZE_CHECK(4);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == true);
 
     // Press 1
     key_event_handler.handle_key_event({ P, normal_KC_1 }, now++);
-    HID_SIZE_CHECK(5);
+    KEYBOARD_HID_SIZE_CHECK(5);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == true);
 
     key_event_handler.handle_key_event({ R, normal_KC_1 }, now++);
-    HID_SIZE_CHECK(6);
+    KEYBOARD_HID_SIZE_CHECK(6);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == true);
 
     // Toggle caps_word
     key_event_handler.handle_key_event({ P, caps_word }, now++);
-    HID_SIZE_CHECK(6);
+    KEYBOARD_HID_SIZE_CHECK(6);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == false);
 
     key_event_handler.handle_key_event({ R, caps_word }, now++);
-    HID_SIZE_CHECK(6);
+    KEYBOARD_HID_SIZE_CHECK(6);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == false);
 
-    REPORT_COMPARE_AT(0, { 0x02, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x02, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(4, { 0x00, 0x00, KC_1, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x02, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x02, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(3, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(4, { 0x00, 0x00, KC_1, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(5, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Pressing SPACE should turn off caps_word. No caps_word_modifier is sent at all.
@@ -1556,22 +1592,22 @@ void test_caps_word_2(void) {
 
     // Toggle caps_word
     key_event_handler.handle_key_event({ P, caps_word }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, caps_word }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == true);
 
     // Press Space
     key_event_handler.handle_key_event({ P, normal_KC_SPACE }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == false);
 
     key_event_handler.handle_key_event({ R, normal_KC_SPACE }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_SPC, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_SPC, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Automatically turn off caps_word after timeout
@@ -1582,10 +1618,10 @@ void test_caps_word_3(void) {
 
     // Toggle caps_word
     key_event_handler.handle_key_event({ P, caps_word }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, caps_word }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == true);
 
     now += CAPS_WORD_TIMEOUT_MS - 2;
@@ -1596,7 +1632,7 @@ void test_caps_word_3(void) {
     key_event_handler.handle_key_event({ T }, now);
     TEST_CHECK(test_friend.get_caps_word_enabled(&key_event_handler) == false);
 
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 }
 
 // When pressing a DTH dual_mod key after a different key, it should go to pending state
@@ -1607,16 +1643,16 @@ void test_double_tap_hold_mod_1(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ R, normal_KC_A }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ P, dth_ctrl_j }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     PressedKeys* pressed_keys = test_friend.get_pressed_keys(&key_event_handler);
     PressedKey* pk = pressed_keys->find(dth_ctrl_j);
@@ -1634,17 +1670,17 @@ void test_double_tap_hold_mod_2(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dth_ctrl_j }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, dth_ctrl_j }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ P, dth_ctrl_j }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_J, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_J, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_J, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_J, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     PressedKeys* pressed_keys = test_friend.get_pressed_keys(&key_event_handler);
     PressedKey* pk = pressed_keys->find(dth_ctrl_j);
@@ -1663,18 +1699,18 @@ void test_double_tap_hold_mod_3(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, dth_ctrl_j }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, dth_ctrl_j }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     now += DUAL_TAP_HOLD_THRESHOLD_MS;
 
     key_event_handler.handle_key_event({ P, dth_ctrl_j }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_J, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_J, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
     PressedKeys* pressed_keys = test_friend.get_pressed_keys(&key_event_handler);
     PressedKey* pk = pressed_keys->find(dth_ctrl_j);
@@ -1695,14 +1731,14 @@ void test_tapdance_single_tap_idle_timeout(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     TEST_CHECK(pressed_keys->count == 0);
     TEST_CHECK(td_state->pending_tapdance_start > 0);
     TEST_CHECK(td_state->pending_tap_count == 1);
     TEST_CHECK(td_state->last_key_event.coords.equals(td1));
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     TEST_CHECK(pressed_keys->count == 0);
     TEST_CHECK(td_state->pending_tapdance_start > 0);
     TEST_CHECK(td_state->pending_tap_count == 1);
@@ -1712,16 +1748,16 @@ void test_tapdance_single_tap_idle_timeout(void) {
 
     // 1 ms before the timeout threshold
     key_event_handler.handle_key_event({ T }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     TEST_CHECK(pressed_keys->count == 0);
 
     key_event_handler.handle_key_event({ T }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
     TEST_CHECK(pressed_keys->count == 0);
     TEST_CHECK(td_state->pending_tapdance_start == 0);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When tapping a TapDance key twice, it should send KC_B after timeout.
@@ -1734,33 +1770,33 @@ void test_tapdance_double_tap_idle_timeout(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     TEST_CHECK(td_state->pending_tap_count == 1);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     TEST_CHECK(td_state->pending_tap_count == 2);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     now += TAPDANCE_IDLE_TRIGGER_THRESHOLD_MS - 1;
 
     // 1 ms before the timeout threshold
     key_event_handler.handle_key_event({ T }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
     TEST_CHECK(pressed_keys->count == 0);
 
     key_event_handler.handle_key_event({ T }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
     TEST_CHECK(pressed_keys->count == 0);
     TEST_CHECK(td_state->pending_tapdance_start == 0);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When tapping for the 3rd time - which is the number of target keys for this TapDance -,
@@ -1773,27 +1809,27 @@ void test_tapdance_triple_tap(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     // This is the final tap for this TapDance, so we immediately trigger the target key
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
     TEST_CHECK(td_state->pending_tapdance_start == 0);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x08, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x08, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When pressing and holding a TapDance key on the first tap, we send KC_A after timeout
@@ -1805,22 +1841,22 @@ void test_tapdance_single_tap_hold_timeout(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     now += TAPDANCE_HOLD_TRIGGER_THRESHOLD_MS - 1;
 
     // 1 ms before the timeout threshold
     key_event_handler.handle_key_event({ T }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ T }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When pressing and holding a TapDance key on the second tap, we send KC_B after timeout
@@ -1832,28 +1868,28 @@ void test_tapdance_double_tap_hold_timeout(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     now += TAPDANCE_HOLD_TRIGGER_THRESHOLD_MS - 1;
 
     // 1 ms before the timeout threshold
     key_event_handler.handle_key_event({ T }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ T }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_B, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When pressing and holding a TapDance key on the third tap, we immediately trigger LGUI(KC_C),
@@ -1866,25 +1902,25 @@ void test_tapdance_triple_tap_hold_timeout(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(1);
+    KEYBOARD_HID_SIZE_CHECK(1);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
-    REPORT_COMPARE_AT(0, { 0x08, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x08, 0x00, KC_C, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When pressing a different key after tapping a TapDance, we trigger KC_A and after that we process
@@ -1897,17 +1933,17 @@ void test_tapdance_tap_and_different_key(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, normal_KC_1 }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_1, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_1, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // When pressing a different key after pressing and holding a TapDance, we trigger KC_A and after that
@@ -1920,17 +1956,17 @@ void test_tapdance_hold_and_different_key(void) {
     millisec now = 10000;
 
     key_event_handler.handle_key_event({ P, td1 }, now++);
-    HID_SIZE_CHECK(0);
+    KEYBOARD_HID_SIZE_CHECK(0);
 
     key_event_handler.handle_key_event({ P, normal_KC_1 }, now++);
-    HID_SIZE_CHECK(2);
+    KEYBOARD_HID_SIZE_CHECK(2);
 
     key_event_handler.handle_key_event({ R, td1 }, now++);
-    HID_SIZE_CHECK(3);
+    KEYBOARD_HID_SIZE_CHECK(3);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_A, KC_1, 0x00, 0x00, 0x00, 0x00 });
-    REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_1, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_A, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(1, { 0x00, 0x00, KC_A, KC_1, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(2, { 0x00, 0x00, KC_1, 0x00, 0x00, 0x00, 0x00, 0x00 });
 }
 
 // Scenario:
@@ -1949,7 +1985,161 @@ void test_combo_dual_layer_key_1(void) {
 
     key_event_handler.handle_key_event({ P, normal_KC_A }, now++);
 
-    REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+    KEYBOARD_REPORT_COMPARE_AT(0, { 0x00, 0x00, KC_E, 0x00, 0x00, 0x00, 0x00, 0x00 });
+}
+
+void test_multiply_by_invert_sqrt2(void) {
+    int16_t test_cases[] = { 1, 17, 30, 36, 174, 358, 695, 1583, 3543, 14532, 32123 };
+
+    for (uint8_t t = 0; t < sizeof(test_cases)/sizeof(test_cases[0]); t++) {
+        int16_t test_case = test_cases[t];
+
+        char buffer[16];
+        sprintf(buffer, "TEST %d", test_case);
+        TEST_CASE(buffer);
+
+        int16_t inputs[] = { test_case, -test_case };
+        for (uint8_t i = 0; i < sizeof(inputs)/sizeof(inputs[0]); i++) {
+            int16_t input = inputs[i];
+
+            int16_t result = multiply_by_invert_sqrt2(input);
+            int16_t expected = input * (1 / sqrt(2));
+
+            uint16_t diff = abs(result - expected);
+
+            if (diff > 1) {
+                TEST_CHECK(result == expected);
+                TEST_MSG("result:%d expected:%d diff:%d", result, expected, diff);
+            }
+        }
+    }
+}
+
+void test_divide_by_mousekey_repeats_to_max(void) {
+    int16_t test_cases[] = { 1, 17, 30, 36, 174, 358, 695, 1583, 3543, 14532, 32123 };
+
+    for (uint8_t t = 0; t < sizeof(test_cases)/sizeof(test_cases[0]); t++) {
+        int16_t test_case = test_cases[t];
+
+        char buffer[16];
+        sprintf(buffer, "TEST %d", test_case);
+        TEST_CASE(buffer);
+
+        int16_t inputs[] = { test_case, -test_case };
+        for (uint8_t i = 0; i < sizeof(inputs)/sizeof(inputs[0]); i++) {
+            int16_t input = inputs[i];
+
+            int16_t result = divide_by_mousekey_repeats_to_max(input);
+            int16_t expected = input / CURSOR_REPEATS_TO_MAX;
+
+            uint16_t diff = abs(result - expected);
+
+            if (diff > 1) {
+                TEST_CHECK(result == 0);
+                TEST_MSG("result:%d expected:%d diff:%d", result, expected, diff);
+            }
+        }
+    }
+}
+
+void test_mouse_button_press_1(void) {
+    KeyEventHandler key_event_handler;
+
+    millisec now = 1000;
+
+    key_event_handler.handle_key_event({ P, mouse_btn_left }, now++);
+    MOUSE_HID_SIZE_CHECK(1);
+
+    key_event_handler.handle_key_event({ P, mouse_btn_middle }, now++);
+    MOUSE_HID_SIZE_CHECK(2);
+
+    key_event_handler.handle_key_event({ P, mouse_btn_right }, now++);
+    MOUSE_HID_SIZE_CHECK(3);
+
+    key_event_handler.handle_key_event({ R, mouse_btn_right }, now++);
+    MOUSE_HID_SIZE_CHECK(4);
+
+    key_event_handler.handle_key_event({ R, mouse_btn_middle }, now++);
+    MOUSE_HID_SIZE_CHECK(5);
+
+    key_event_handler.handle_key_event({ R, mouse_btn_left }, now++);
+    MOUSE_HID_SIZE_CHECK(6);
+
+    MOUSE_REPORT_COMPARE_AT(0, { 0x01, 0x00, 0x00, 0x00 });
+    MOUSE_REPORT_COMPARE_AT(1, { 0x05, 0x00, 0x00, 0x00 });
+    MOUSE_REPORT_COMPARE_AT(2, { 0x07, 0x00, 0x00, 0x00 });
+    MOUSE_REPORT_COMPARE_AT(3, { 0x05, 0x00, 0x00, 0x00 });
+    MOUSE_REPORT_COMPARE_AT(4, { 0x01, 0x00, 0x00, 0x00 });
+    MOUSE_REPORT_COMPARE_AT(5, { 0x00, 0x00, 0x00, 0x00 });
+}
+
+void test_mouse_cursor_press_1(void) {
+    KeyEventHandler key_event_handler;
+    MouseCursorState* cursor_state = test_friend.get_mouse_cursor_state(&key_event_handler);
+
+    millisec now = 1000;
+
+    key_event_handler.handle_key_event({ P, mouse_cur_up }, now + 0);
+    MOUSE_HID_SIZE_CHECK(1);
+    TEST_CHECK(cursor_state->repeat == 0);
+    TEST_CHECK(cursor_state->last_repeat == now);
+
+    key_event_handler.handle_key_event({ R, mouse_cur_up }, now + 1);
+    MOUSE_HID_SIZE_CHECK(2);
+    TEST_CHECK(cursor_state->repeat == 0);
+    TEST_CHECK(cursor_state->last_repeat == now);
+
+    key_event_handler.handle_key_event({ P, mouse_cur_down }, now + 2);
+    MOUSE_HID_SIZE_CHECK(3);
+    TEST_CHECK(cursor_state->repeat == 0);
+    TEST_CHECK(cursor_state->last_repeat == now + 2);
+
+    key_event_handler.handle_key_event({ R, mouse_cur_down }, now + 3);
+    MOUSE_HID_SIZE_CHECK(4);
+    TEST_CHECK(cursor_state->repeat == 0);
+    TEST_CHECK(cursor_state->last_repeat == now + 2);
+
+    int16_t delta = CURSOR_MOVE_DELTA;
+
+    MOUSE_REPORT_COMPARE_AT(0, { 0x00, 0x0000, -delta, 0x00 });
+    MOUSE_REPORT_COMPARE_AT(1, { 0x00, 0x0000, 0x0000, 0x00 });
+    MOUSE_REPORT_COMPARE_AT(2, { 0x00, 0x0000,  delta, 0x00 });
+    MOUSE_REPORT_COMPARE_AT(3, { 0x00, 0x0000, 0x0000, 0x00 });
+}
+
+void test_mouse_cursor_repeat_1(void) {
+    KeyEventHandler key_event_handler;
+    MouseCursorState* cursor_state = test_friend.get_mouse_cursor_state(&key_event_handler);
+
+    millisec now = 1000;
+
+    // Send X
+    key_event_handler.handle_key_event({ P, mouse_cur_up }, now);
+    MOUSE_HID_SIZE_CHECK(1);
+    TEST_CHECK(cursor_state->repeat == 0);
+    TEST_CHECK(cursor_state->last_repeat == now);
+
+    // Reset X
+    key_event_handler.handle_timeout(now + 1);
+    MOUSE_HID_SIZE_CHECK(2);
+    TEST_CHECK(cursor_state->repeat == 0);
+    TEST_CHECK(cursor_state->last_repeat == now);
+
+    // Timer not elapsed
+    key_event_handler.handle_timeout(now + CURSOR_DELAY);
+    MOUSE_HID_SIZE_CHECK(2);
+    TEST_CHECK(cursor_state->repeat == 0);
+    TEST_CHECK(cursor_state->last_repeat == now);
+
+    // First repeat
+    key_event_handler.handle_timeout(now + CURSOR_DELAY + 1);
+    MOUSE_HID_SIZE_CHECK(3);
+    TEST_CHECK(cursor_state->repeat == 1);
+    TEST_CHECK(cursor_state->last_repeat == now + CURSOR_DELAY + 1);
+
+    MOUSE_REPORT_COMPARE_AT(0, { 0x00, 0x00, -8, 0x00 });
+    MOUSE_REPORT_COMPARE_AT(1, { 0x00, 0x00, 0, 0x00 });
+    MOUSE_REPORT_COMPARE_AT(2, { 0x00, 0x00, -2, 0x00 });
 }
 
 TEST_LIST = {
@@ -2013,5 +2203,10 @@ TEST_LIST = {
     { "test_tapdance_tap_and_different_key", test_tapdance_tap_and_different_key },
     { "test_tapdance_hold_and_different_key", test_tapdance_hold_and_different_key },
     { "test_combo_dual_layer_key_1", test_combo_dual_layer_key_1 },
+    { "test_multiply_by_invert_sqrt2", test_multiply_by_invert_sqrt2 },
+    { "test_divide_by_mousekey_repeats_to_max", test_divide_by_mousekey_repeats_to_max },
+    { "test_mouse_button_press_1", test_mouse_button_press_1 },
+    { "test_mouse_cursor_press_1", test_mouse_cursor_press_1 },
+    { "test_mouse_cursor_repeat_1", test_mouse_cursor_repeat_1 },
     { NULL, NULL }
 };

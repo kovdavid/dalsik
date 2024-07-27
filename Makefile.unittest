@@ -53,6 +53,7 @@ TEST_OBJS = \
 	  keymap.cpp.o \
 	  mock_eeprom.cpp.o \
 	  mock_keymap.cpp.o \
+	  mouse.cpp.o \
 	  pressed_keys.cpp.o \
 	  tapdance.cpp.o \
 	  tapdance_handler.cpp.o \

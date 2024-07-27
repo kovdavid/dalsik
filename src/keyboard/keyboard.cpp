@@ -22,6 +22,7 @@ Keyboard::Keyboard(KeyMap *keymap)
     , last_reports()
     , pressed_keys()
     , last_press_key_event()
+    , mouse()
     , keymap(keymap)
 {}
 
@@ -49,6 +50,8 @@ void Keyboard::handle_timeout(ExtendedKeyEvent event) {
         }
         return;
     }
+
+    this->mouse.handle_timeout(event.timestamp);
 
     if (pk->state != STATE_PENDING) {
         return;
@@ -126,6 +129,7 @@ void Keyboard::press(PressedKey *pk) {
             return this->press_one_shot_modifier_key(pk);
     }
 
+
     pk->state = STATE_ACTIVE_CODE;
 
     switch (key.type) {
@@ -136,7 +140,9 @@ void Keyboard::press(PressedKey *pk) {
         case KEY_CONSUMER:
             return this->press_consumer_key(key);
         case KEY_MOUSE_BUTTON:
-            return this->press_mouse_button(pk);
+            return this->mouse.press_button(pk);
+        case KEY_MOUSE_CURSOR:
+            return this->mouse.press_cursor(pk);
     }
 }
 
@@ -178,7 +184,10 @@ void Keyboard::release(PressedKey *pk, millisec now) {
             this->release_consumer_key(key);
             break;
         case KEY_MOUSE_BUTTON:
-            this->release_mouse_button(pk);
+            this->mouse.release_button(pk);
+            break;
+        case KEY_MOUSE_CURSOR:
+            this->mouse.release_cursor(pk, now);
             break;
         default:
             if (key.is_any_dual_key()) {
@@ -348,15 +357,6 @@ void Keyboard::release_layer_hold_or_toggle_key(PressedKey *pk) {
 }
 // }}}
 
-// Mouse {{{
-void Keyboard::press_mouse_button(PressedKey *pk) {
-    BIT_SET(this->current_reports.mouse.buttons, pk->key.code);
-}
-void Keyboard::release_mouse_button(PressedKey *pk) {
-    BIT_CLEAR(this->current_reports.mouse.buttons, pk->key.code);
-}
-// }}}
-
 // Caps Word {{{
 void Keyboard::press_toggle_caps_word_key() {
     this->caps_word_toggle();
@@ -434,7 +434,7 @@ void Keyboard::send_hid_report() {
     this->send_keyboard_hid_report();
     this->send_desktop_hid_report();
     this->send_consumer_hid_report();
-    this->send_mouse_hid_report();
+    this->mouse.send_hid_report();
 }
 
 void Keyboard::send_keyboard_hid_report() {
@@ -518,17 +518,6 @@ void Keyboard::send_consumer_hid_report() {
 
     HID().SendReport(CONSUMER_REPORT_ID, current_report, report_size);
     *last_report = *current_report;
-}
-
-void Keyboard::send_mouse_hid_report() {
-    size_t report_size = sizeof(MouseHIDReport);
-    MouseHIDReport* current_report = &(this->current_reports.mouse);
-    MouseHIDReport* last_report = &(this->last_reports.mouse);
-
-    if (memcmp(current_report, last_report, report_size)) {
-        HID().SendReport(MOUSE_REPORT_ID, current_report, report_size);
-        *last_report = *current_report;
-    }
 }
 
 void Keyboard::print_internal_state(millisec now) {

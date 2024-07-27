@@ -17,6 +17,7 @@ enum key_types {
     KEY_TAP_HOLD_DUAL_LAYER,
     KEY_TOGGLE_CAPS_WORD,
     KEY_MOUSE_BUTTON,
+    KEY_MOUSE_CURSOR,
     KEY_TRANSPARENT = 0xFF,
 };
 
@@ -280,6 +281,13 @@ enum hid_mouse_keys {
 #define BTN7 MOUSE_BUTTON7
 #define BTN8 MOUSE_BUTTON8
 
+enum hid_mouse_cursor {
+    MOUSE_CURSOR_UP    = (1 << 0),
+    MOUSE_CURSOR_DOWN  = (1 << 1),
+    MOUSE_CURSOR_LEFT  = (1 << 2),
+    MOUSE_CURSOR_RIGHT = (1 << 3),
+};
+
 #define MOD_CLEAR  0x00
 
 #define MOD_RAW_LCTRL  (1 << 0)
@@ -334,7 +342,8 @@ enum hid_mouse_keys {
 #define DSL(layer, key)  ( KEY_TYPE(KEY_SOLO_DUAL_LAYER)     | LAYER(layer) | key )
 #define THDL(layer, key) ( KEY_TYPE(KEY_TAP_HOLD_DUAL_LAYER) | LAYER(layer) | key )
 
-#define MOUSE_BUTTON(button) ( KEY_TYPE(KEY_MOUSE_BUTTON) | button )
+#define MOUSE_BUTTON(button)    ( KEY_TYPE(KEY_MOUSE_BUTTON) | button )
+#define MOUSE_CURSOR(direction) ( KEY_TYPE(KEY_MOUSE_CURSOR) | direction )
 
 #define CAPS_WORD       ( KEY_TYPE(KEY_TOGGLE_CAPS_WORD) | KC_NO )
 

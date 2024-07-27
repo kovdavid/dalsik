@@ -19,6 +19,8 @@ void TestHID::clear() {
 int TestHID::SendReport(uint8_t type, const void* data, int len) {
     if (type == KEYBOARD_REPORT_ID) {
         this->keyboard_reports.push_back(*(KeyboardHIDReport*)data);
+    } else if (type == MOUSE_REPORT_ID) {
+        this->mouse_reports.push_back(*(MouseHIDReport*)data);
     }
 
     return 0;

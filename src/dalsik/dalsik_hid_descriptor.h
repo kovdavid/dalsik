@@ -27,16 +27,15 @@ typedef struct {
 
 typedef struct {
     uint8_t buttons;
-    int8_t x;
-    int8_t y;
+    int16_t x;
+    int16_t y;
     int8_t wheel;
-} MouseHIDReport;
+} __attribute__((packed)) MouseHIDReport;
 
 typedef struct {
     KeyboardHIDReport keyboard;
     DesktopHIDReport desktop;
     ConsumerHIDReport consumer;
-    MouseHIDReport mouse;
 } HIDReports;
 
 const uint8_t KEYBOARD_HID_DESCRIPTOR[] PROGMEM = {
@@ -100,29 +99,36 @@ const uint8_t KEYBOARD_HID_DESCRIPTOR[] PROGMEM = {
     0x05, 0x01,       // USAGE_PAGE (Generic Desktop)
     0x09, 0x02,       // USAGE (Mouse)
     0xA1, 0x01,       // COLLECTION (Application)
+    0x85, MOUSE_REPORT_ID,
     0x09, 0x01,       //   USAGE (Pointer)
     0xA1, 0x00,       //   COLLECTION (Physical)
-    0x85, MOUSE_REPORT_ID,
+
+    // Button (8 bits)
     0x05, 0x09,       //     USAGE_PAGE (Button)
     0x19, 0x01,       //     USAGE_MINIMUM
-    0x29, 0x05,       //     USAGE_MAXIMUM
+    0x29, 0x08,       //     USAGE_MAXIMUM
     0x15, 0x00,       //     LOGICAL_MINIMUM (0)
     0x25, 0x01,       //     LOGICAL_MAXIMUM (1)
-    0x95, 0x05,       //     REPORT_COUNT (5)
+    0x95, 0x08,       //     REPORT_COUNT (8)
     0x75, 0x01,       //     REPORT_SIZE (1)
     0x81, 0x02,       //     INPUT (Data,Var,Abs)
-    0x95, 0x01,       //     REPORT_COUNT (1)
-    0x75, 0x03,       //     REPORT_SIZE (3)
-    0x81, 0x03,       //     INPUT (Const,Var,Abs)
-    0x05, 0x01,       //     USAGE_PAGE (Generic Desktop)
-    0x09, 0x30,       //     USAGE (X)
-    0x09, 0x31,       //     USAGE (Y)
-    0x09, 0x38,       //     USAGE (Wheel)
-    0x15, 0x81,       //     LOGICAL_MINIMUM (-127)
-    0x25, 0x7F,       //     LOGICAL_MAXIMUM (127)
-    0x75, 0x08,       //     REPORT_SIZE (8)
-    0x95, 0x03,       //     REPORT_COUNT (3)
-    0x81, 0x06,       //     INPUT (Data,Var,Rel)
+    // X/Y position (4 bytes)
+    0x05, 0x01,       //     Usage Page (Generic Desktop)
+    0x09, 0x30,       //     Usage (X)
+    0x09, 0x31,       //     Usage (Y)
+    0x16, 0x01, 0x80, // Logical Minimum (-32767)
+    0x26, 0xFF, 0x7F, // Logical Maximum (32767)
+    0x95, 0x02,       // Report Count (2)
+    0x75, 0x10,       // Report Size (16)
+    0x81, 0x06,       //     Input (Data, Variable, Relative)
+    // Vertical wheel (1 byte)
+    0x09, 0x38,       //     Usage (Wheel)
+    0x15, 0x81,       //     Logical Minimum (-127)
+    0x25, 0x7F,       //     Logical Maximum (127)
+    0x95, 0x01,       //     Report Count (1)
+    0x75, 0x08,       //     Report Size (8)
+    0x81, 0x06,       //     Input (Data, Variable, Relative)
+    // END
     0xC0,             //   END_COLLECTION
     0xC0,             // END COLLECTION
 };

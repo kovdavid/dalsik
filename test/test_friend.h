@@ -5,11 +5,16 @@
 #include "keyboard.h"
 #include "tapdance_handler.h"
 #include "combo_handler.h"
+#include "mouse.h"
 
 class TestFriendClass {
     public:
         PressedKeys* get_pressed_keys(KeyEventHandler* key_event_handler) {
             return &(key_event_handler->keyboard.pressed_keys);
+        }
+
+        MouseCursorState* get_mouse_cursor_state(KeyEventHandler* key_event_handler) {
+            return &(key_event_handler->keyboard.mouse.cursor_state);
         }
 
         ComboHandlerState* get_combo_handler_state(KeyEventHandler* key_event_handler) {

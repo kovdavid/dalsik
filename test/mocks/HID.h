@@ -16,6 +16,7 @@ class TestHID {
         void clear();
 
         std::vector<KeyboardHIDReport> keyboard_reports;
+        std::vector<MouseHIDReport> mouse_reports;
 };
 
 TestHID& HID();

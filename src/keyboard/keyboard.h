@@ -5,6 +5,7 @@
 #include "extended_key_event.h"
 #include "key.h"
 #include "pressed_keys.h"
+#include "mouse.h"
 
 class Keyboard {
     TEST_FRIEND_CLASS
@@ -24,6 +25,7 @@ class Keyboard {
         HIDReports last_reports;
         PressedKeys pressed_keys;
         ExtendedKeyEvent last_press_key_event;
+        Mouse mouse;
         KeyMap *keymap;
 
         // Functions
@@ -62,9 +64,6 @@ class Keyboard {
         void press_layer_hold_or_toggle_key(PressedKey *pk);
         void release_layer_hold_or_toggle_key(PressedKey *pk);
 
-        void press_mouse_button(PressedKey *pk);
-        void release_mouse_button(PressedKey *pk);
-
         void press_toggle_caps_word_key();
 
         void caps_word_toggle();
@@ -75,7 +74,6 @@ class Keyboard {
         void send_keyboard_hid_report();
         void send_desktop_hid_report();
         void send_consumer_hid_report();
-        void send_mouse_hid_report();
 
     public:
         Keyboard(KeyMap *keymap);
