@@ -19,6 +19,7 @@ CXXFLAGS += -fno-threadsafe-statics
 CXXFLAGS += -fpermissive
 CXXFLAGS += -pedantic
 CXXFLAGS += -D TEST
+CXXFLAGS += -D LETS_SPLIT
 
 INCLUDE_DIRECTORIES = $(dir $(wildcard test/ test/*/ test/*/*/ src/*/))
 

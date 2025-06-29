@@ -12,7 +12,59 @@ Matrix::Matrix() {
     memset(this->keystate, 0, sizeof(uint8_t)*ONE_SIDE_KEYS);
     memset(this->debounce, 0, sizeof(uint8_t)*ONE_SIDE_KEYS);
 
+    this->init();
+}
+
+#ifdef FERRIS_SWEEP
+void Matrix::init() {
     for (uint8_t row = 0; row < KEYBOARD_ROWS; row++) {
+        for (uint8_t col = 0; col < KEYBOARD_COLS; col++) {
+            uint8_t pin = DIRECT_PINS[row][col];
+            if (!pin) {
+                continue;
+            }
+
+            PinUtils::pinmode_input_pullup(pin);
+        }
+    }
+}
+
+BaseKeyEvent Matrix::scan() {
+    for (uint8_t row = 0; row < KEYBOARD_ROWS; row++) {
+        for (uint8_t col = 0; col < KEYBOARD_COLS; col++) {
+            uint8_t pin = DIRECT_PINS[row][col];
+            if (!pin) {
+                continue;
+            }
+
+            uint8_t input = !PinUtils::read_pin(pin);
+            uint8_t debounced_input = this->debounce_input(row, col, input);
+
+            if (debounced_input == DEBOUNCE_CHANGING) {
+                continue; // Wait, till the value stabilizes
+            }
+
+            if (debounced_input != this->keystate[row][col]) {
+                this->keystate[row][col] = debounced_input;
+
+                KeyCoords coords = { row, col };
+
+                if (debounced_input == DEBOUNCE_MAX) {
+                    return BaseKeyEvent { EVENT_KEY_PRESS, coords };
+                } else {
+                    return BaseKeyEvent { EVENT_KEY_RELEASE, coords };
+                }
+            }
+        }
+    }
+
+    return BaseKeyEvent { EVENT_NONE, KeyCoords { 0x00, 0x00 } };
+}
+#endif
+
+#ifdef LETS_SPLIT
+void Matrix::init() {
+   for (uint8_t row = 0; row < KEYBOARD_ROWS; row++) {
         PinUtils::pinmode_input_pullup(ROW_PINS[row]);
     }
     for (uint8_t col = 0; col < KEYBOARD_COLS; col++) {
@@ -20,7 +72,6 @@ Matrix::Matrix() {
     }
 }
 
-// duration: 168us when no change is detected
 BaseKeyEvent Matrix::scan() {
     for (uint8_t row = 0; row < KEYBOARD_ROWS; row++) {
         PinUtils::pinmode_output_low(ROW_PINS[row]);
@@ -52,6 +103,8 @@ BaseKeyEvent Matrix::scan() {
 
     return BaseKeyEvent { EVENT_NONE, KeyCoords { 0x00, 0x00 } };
 }
+#endif
+
 
 uint8_t Matrix::debounce_input(uint8_t row, uint8_t col, uint8_t input) {
     if (input) {

@@ -33,6 +33,8 @@ class Matrix {
         uint8_t debounce[KEYBOARD_ROWS][KEYBOARD_COLS];
 
         uint8_t debounce_input(uint8_t row, uint8_t col, uint8_t input);
+        void init();
+
     public:
         Matrix();
         BaseKeyEvent scan();
