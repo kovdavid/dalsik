@@ -10,6 +10,7 @@
 #include "ring_buffer.h"
 #include "dalsik_serial.h"
 #include "dalsik.h"
+#include "keyboard_hardware.h"
 
 inline static void serial_set_interrupt();
 inline static void serial_delay();

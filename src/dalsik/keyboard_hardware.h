@@ -16,7 +16,7 @@ const uint8_t DIRECT_PINS[KEYBOARD_ROWS][KEYBOARD_COLS] = {
     { PIN_B(1), PIN_B(3), PIN_B(2), PIN_B(6), PIN_D(3) },
     { PIN_D(1), PIN_D(0), PIN_D(4), PIN_C(6), PIN_D(7) },
     {     0x00,     0x00,     0x00, PIN_B(4), PIN_B(5) },
-}
+};
 
 #define SERIAL_PIN PIN_D(2)
 
