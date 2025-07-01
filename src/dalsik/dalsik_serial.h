@@ -7,8 +7,8 @@
 
 #include "pin_utils.h"
 #include "ring_buffer.h"
+#include "keyboard_hardware.h"
 
-#define SERIAL_PIN PIN_D(0)
 #define SERIAL_PIN_INTERRUPT INT0_vect
 #define SERIAL_PIN_INTERRUPT_FLAG INTF0
 

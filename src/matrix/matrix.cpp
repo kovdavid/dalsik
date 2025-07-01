@@ -9,8 +9,8 @@
 #define DEBOUNCE_CHANGING 0xFF
 
 Matrix::Matrix() {
-    memset(this->keystate, 0, sizeof(uint8_t)*ONE_SIDE_KEYS);
-    memset(this->debounce, 0, sizeof(uint8_t)*ONE_SIDE_KEYS);
+    memset(this->keystate, 0, sizeof(uint8_t)*KEYBOARD_ROWS*KEYBOARD_COLS);
+    memset(this->debounce, 0, sizeof(uint8_t)*KEYBOARD_ROWS*KEYBOARD_COLS);
 
     this->init();
 }
@@ -60,9 +60,7 @@ BaseKeyEvent Matrix::scan() {
 
     return BaseKeyEvent { EVENT_NONE, KeyCoords { 0x00, 0x00 } };
 }
-#endif
-
-#ifdef LETS_SPLIT
+#else
 void Matrix::init() {
    for (uint8_t row = 0; row < KEYBOARD_ROWS; row++) {
         PinUtils::pinmode_input_pullup(ROW_PINS[row]);
