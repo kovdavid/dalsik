@@ -20,6 +20,8 @@ inline static uint8_t serial_master_read();
 RingBuffer serial_buffer;
 
 void DalsikSerial::master_init(void) {
+    _delay_ms(100);
+
     PinUtils::pinmode_input_pullup(SERIAL_PIN);
     serial_set_interrupt();
 }
@@ -90,6 +92,8 @@ inline static void serial_set_interrupt() {
     // ATmega32U4 datasheet chapter 11.1.1 - External Interrupt Control Register A - EICRA
     EICRA &= ~(1 << ISC00);
     EICRA |=  (1 << ISC01);
+
+    EIFR |= (1 << SERIAL_PIN_INTERRUPT_FLAG);
 }
 
 inline static void serial_delay() {
