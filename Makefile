@@ -14,9 +14,7 @@ verify:
 	make -f Makefile.release verify
 
 upload:
-	$(PRE_UPLOAD_COMMAND)
 	make -f Makefile.release upload
-	$(POST_UPLOAD_COMMAND)
 
 # ctrl-t + q => quit tio session
 tio:
