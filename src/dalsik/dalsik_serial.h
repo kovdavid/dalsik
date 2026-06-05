@@ -9,9 +9,6 @@
 #include "ring_buffer.h"
 #include "keyboard_hardware.h"
 
-#define SERIAL_PIN_INTERRUPT INT0_vect
-#define SERIAL_PIN_INTERRUPT_FLAG INTF0
-
 // Serial pulse period in microseconds.
 #define SERIAL_DELAY 50
 

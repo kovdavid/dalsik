@@ -19,6 +19,11 @@ const uint8_t DIRECT_PINS[KEYBOARD_ROWS][KEYBOARD_COLS] = {
 };
 
 #define SERIAL_PIN PIN_D(2)
+#define SERIAL_PIN_INTERRUPT      INT2_vect
+#define SERIAL_PIN_INTERRUPT_FLAG INTF2
+#define SERIAL_PIN_INTERRUPT_EN   INT2
+#define SERIAL_PIN_ISC0           ISC20
+#define SERIAL_PIN_ISC1           ISC21
 
 #else // Lets Split
 
@@ -34,5 +39,10 @@ const uint8_t COL_PINS[KEYBOARD_COLS] = {
 };
 
 #define SERIAL_PIN PIN_D(0)
+#define SERIAL_PIN_INTERRUPT      INT0_vect
+#define SERIAL_PIN_INTERRUPT_FLAG INTF0
+#define SERIAL_PIN_INTERRUPT_EN   INT0
+#define SERIAL_PIN_ISC0           ISC00
+#define SERIAL_PIN_ISC1           ISC01
 
 #endif

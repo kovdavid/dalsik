@@ -85,13 +85,13 @@ inline static uint8_t serial_master_read() {
 //=========================//
 
 inline static void serial_set_interrupt() {
-    // Enable INT0
-    EIMSK |= _BV(INT0);
+    // Enable the external interrupt
+    EIMSK |= _BV(SERIAL_PIN_INTERRUPT_EN);
 
-    // Trigger on falling edge of INT0
+    // Trigger on falling edge
     // ATmega32U4 datasheet chapter 11.1.1 - External Interrupt Control Register A - EICRA
-    EICRA &= ~(1 << ISC00);
-    EICRA |=  (1 << ISC01);
+    EICRA &= ~(1 << SERIAL_PIN_ISC0);
+    EICRA |=  (1 << SERIAL_PIN_ISC1);
 
     EIFR |= (1 << SERIAL_PIN_INTERRUPT_FLAG);
 }
