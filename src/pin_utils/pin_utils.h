@@ -29,6 +29,6 @@ namespace PinUtils {
     }
 
     static inline uint8_t read_pin(uint8_t pin) {
-        return (_SFR_IO8(pin >> 4) & _BV(pin & 0x0F));
+        return (_SFR_IO8(pin >> 4) & _BV(pin & 0x0F)) ? 1 : 0;
     }
 }
